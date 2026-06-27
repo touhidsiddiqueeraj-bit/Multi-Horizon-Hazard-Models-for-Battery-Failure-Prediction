@@ -1,0 +1,37 @@
+.~lock.*
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+*.swp
+*.swo
+.DS_Store
+private/
+hardware validation/
+
+# Build artifacts
+.pio/
+.pioenvs/
+.piolibdeps/
+__pio_envs__/
+
+# Compiled build artifacts
+*.o
+*.d
+*.elf
+*.a
+
+# PlatformIO
+.pio/
+.sconsign*
+
+# OS
+.DS_Store
+# Raw data (too large for GitHub — see data/*/README.md for download links)
+data/nasa/**
+data/calce/*.zip
+data/oxford/*.mat
+!data/nasa/README.md
+!data/calce/README.md
+!data/oxford/README.md
