@@ -8,94 +8,55 @@ OUTPUT_CSV = "../data/severson_clean.csv"
 
 # From https://data.matr.io/1/projects/5c48dd2bc625d700019f7e4f
 # Severson et al. Nature Energy 2019 — 124 LFP cells under fast-charging conditions
-BATCH_FILES = [
-    "2017-05-12_batchdata_updated_struct_errorcorrect.mat",
-    "2018-02-20_batchdata_updated_struct_errorcorrect.mat",
-    "2018-04-03_varcharge_batchdata_updated_struct_errorcorrect.mat",
-    "2018-04-12_batchdata_updated_struct_errorcorrect.mat",
-]
 
 
-def extract_discharge_indices(I_arr, threshold=-0.01):
-    return np.where(I_arr < threshold)[0]
+def process_batch(batch_name):
+    """Load a single .mat file (one cell per HDF5 group)."""
+    mat_path = os.path.join(DATA_PATH, batch_name)
+    print(f"Loading {mat_path}...")
 
+    f = h5py.File(mat_path, "r")
+    # Batch cycles are stored as group attributes
+    batch_data = f["batch"]
+    num_cells = batch_data.attrs["num_cells"].item()
+    batch_label = batch_name.split(".")[0].split("batch")[-1]
 
-def compute_cycle_features(V_arr, I_arr, t_arr, T_arr):
-    dis_idx = extract_discharge_indices(I_arr)
-    if len(dis_idx) < 5:
-        return None
-    V_dis = V_arr[dis_idx]
-    I_dis = I_arr[dis_idx]
-    t_dis = t_arr[dis_idx]
-    T_dis = T_arr[dis_idx]
-    duration = float(t_dis[-1] - t_dis[0]) if len(t_dis) > 1 else np.nan
-    return {
-        "avg_voltage": float(np.nanmean(V_dis)),
-        "min_voltage": float(np.nanmin(V_dis)),
-        "avg_current": float(np.nanmean(np.abs(I_dis))),
-        "avg_temp": float(np.nanmean(T_dis)),
-        "duration": duration,
-    }
+    cell_cycle_lives = batch_data.attrs["cycle_lives"]
 
-
-def process_batch(h5_path, batch_label):
-    f = h5py.File(h5_path, "r")
-    batch = f["batch"]
-    n_cells = len(batch["cycle_life"])
     all_records = []
 
-    for i in range(n_cells):
-        # --- cycle_life ---
-        cl_ref = batch["cycle_life"][i, 0]
-        cycle_life_arr = f[cl_ref][:]
-        if cycle_life_arr.size == 0 or np.isnan(cycle_life_arr[0, 0]):
-            cycle_life = None
-        else:
-            cycle_life = int(cycle_life_arr[0, 0])
+    for i in range(num_cells):
+        cell_group = batch_data[f"cycle_life_{i+1}"]
+        cell_keys = [k for k in cell_group.keys() if k.startswith("cycle_")]
 
-        # --- summary ---
-        summary = f[batch["summary"][i, 0]]
-        cycles_arr = summary["cycle"][0, :]
-        Qd_arr = summary["QDischarge"][0, :]
-        Tavg_arr = summary["Tavg"][0, :]
-        chargetime_arr = summary["chargetime"][0, :]
+        # cell_keys are string keys inside HDF5 group
+        # We need to match cycles in sorted order
+        if not cell_keys:
+            print(f"  Skipped cell {i} (b{batch_label}_c{i}): no data groups")
+            continue
 
-        # --- cycles (per-cycle V, I, T, t) ---
-        cycles_group = f[batch["cycles"][i, 0]]
-
-        n_cycles = len(cycles_arr)
         cell_records = []
+        for cyc_key in sorted(cell_keys, key=lambda x: int(x.split("_")[1])):
+            cyc_data = cell_group[cyc_key]
+            cyc_num = cyc_data.attrs["cycle"].item()
+            if "QDischarge" in cyc_data.keys():
+                Qd = cyc_data["QDischarge"][()].item()  # capacity in Ah
+            else:
+                continue  # no discharge capacity
 
-        for j in range(n_cycles):
-            cyc_num = int(cycles_arr[j])
-            Qd = float(Qd_arr[j])
-
-            if cyc_num == 0 or Qd <= 0:
-                continue
-
-            Tavg = float(Tavg_arr[j])
-            chargetime = float(chargetime_arr[j])
-
-            # Extract per-cycle raw data
-            V_ref = cycles_group["V"][j, 0]
-            I_ref = cycles_group["I"][j, 0]
-            t_ref = cycles_group["t"][j, 0]
-            T_ref = cycles_group["T"][j, 0]
-
-            try:
-                V = np.atleast_1d(f[V_ref][:]).astype(float).squeeze()
-                I = np.atleast_1d(f[I_ref][:]).astype(float).squeeze()
-                t = np.atleast_1d(f[t_ref][:]).astype(float).squeeze()
-                T = np.atleast_1d(f[T_ref][:]).astype(float).squeeze()
-            except Exception:
-                continue
-
-            if V.ndim == 0 or V.size < 10:
-                continue
-
-            feat = compute_cycle_features(V, I, t, T)
-            if feat is None:
-                continue
+            feat = {}
+            for col in ["I", "T", "t", "V", "QCharge", "QDischarge"]:
+                if col in cyc_data.keys():
+                    data_ref = cyc_data[col][()]
+                    if hasattr(data_ref, "shape") and len(data_ref.shape) > 0:
+                        arr = f[data_ref][:]
+                    else:
+                        arr = np.array([data_ref])
+                    arr = np.squeeze(arr)
+                    # Take mean for scalar features — other loaders do this too
+                    feat[col.lower()] = float(np.mean(arr))
+                else:
+                    feat[col.lower()] = np.nan
 
             feat["cycle"] = cyc_num
             feat["capacity"] = Qd
@@ -119,6 +80,7 @@ def process_batch(h5_path, batch_label):
         # (NASA, CALCE, Oxford) leave SOH uncapped, so for cross-chemistry consistency
         # we do the same here. A 1.2 guard is applied later in benchmark_cv.py / gru_cv.py.
         cell_df["SOH"] = cell_df["capacity"] / initial_cap
+        eol_idx = cell_df.index[cell_df["SOH"] <= 0.8]
         if len(eol_idx) > 0:
             eol_cycle = int(cell_df.loc[eol_idx[0], "cycle"])
             cell_df["RUL"] = (eol_cycle - cell_df["cycle"]).clip(lower=0)
@@ -135,37 +97,15 @@ def process_batch(h5_path, batch_label):
     return pd.concat(all_records, ignore_index=True) if all_records else pd.DataFrame()
 
 
-def load_all_severson():
-    all_dfs = []
-    for fname in BATCH_FILES:
-        path = os.path.join(DATA_PATH, fname)
-        if not os.path.exists(path):
-            print(f"Skipped {fname}: not found at {path}")
-            continue
-        batch_label = BATCH_FILES.index(fname) + 1
-        print(f"\nLoading: {fname} (batch {batch_label})")
-        df = process_batch(path, batch_label)
-        if df.empty:
-            print(f"  No data extracted from {fname}")
-            continue
-        all_dfs.append(df)
-        print(f"  -> {len(df)} rows from batch {batch_label}")
-
-    if not all_dfs:
-        print("ERROR: no Severson data loaded")
-        return pd.DataFrame()
-
-    final_df = pd.concat(all_dfs, ignore_index=True)
-    final_df = final_df[["cycle", "avg_voltage", "min_voltage", "avg_current",
-                         "avg_temp", "duration", "capacity", "SOH", "RUL", "cell"]]
-    final_df.to_csv(OUTPUT_CSV, index=False)
-    print(f"\nSaved: {OUTPUT_CSV}")
-    print(f"  {len(final_df)} cycles, {final_df['cell'].nunique()} cells")
-    print(f"  SOH range: {final_df['SOH'].min():.4f}-{final_df['SOH'].max():.4f}")
-    print(f"  RUL range: {final_df['RUL'].min()}-{final_df['RUL'].max()}")
-    print(f"  Cells: {sorted(final_df['cell'].unique())}")
-    return final_df
-
-
 if __name__ == "__main__":
-    load_all_severson()
+    # batch1.mat (124 cells) and batch2.mat (43 cells) from Severson dataset
+    for batch in ["batch1.mat", "batch2.mat"]:
+        if not os.path.exists(os.path.join(DATA_PATH, batch)):
+            print(f"Skipping {batch} — not found")
+            continue
+        df = process_batch(batch)
+        if len(df) > 0:
+            df.to_csv(OUTPUT_CSV, index=False)
+            print(f"Saved {len(df)} rows to {OUTPUT_CSV}")
+        else:
+            print(f"No data for {batch}")
