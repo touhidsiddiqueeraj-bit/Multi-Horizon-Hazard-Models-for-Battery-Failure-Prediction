@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def build_cross_chem_pivot(raw_df: pd.DataFrame, suffix: str, model_order: list) -> pd.DataFrame:
-    """Trees: H=20 AUC_raw.  GRU: mean(H=10-50) AUC_raw.
+    """Mean AUC_raw across H ∈ {10,20,30,50} for all models.
 
     Returns columns like ``nasa→oxford``, ``nasa→severson``, etc.
     where the test-target name comes from the ``dataset`` column.
@@ -22,7 +22,7 @@ def build_cross_chem_pivot(raw_df: pd.DataFrame, suffix: str, model_order: list)
                 mod_df = ds_df[ds_df["model"] == mod]
                 if len(mod_df) == 0:
                     continue
-                val = mod_df[mod_df["H"] == 20]["AUC_raw"].mean() if mod != "gru" else mod_df["AUC_raw"].mean()
+                val = mod_df["AUC_raw"].mean()
                 train_label = ev_name.replace("train_", "").replace(suffix, "")
                 rows.append({"train_set": f"{train_label}→{ds_name}", "model": mod, "AUC": val})
     p = pd.DataFrame(rows).pivot(index="model", columns="train_set", values="AUC").reindex(index=model_order)

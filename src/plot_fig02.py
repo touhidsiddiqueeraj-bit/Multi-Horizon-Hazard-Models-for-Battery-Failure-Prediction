@@ -1,4 +1,4 @@
-"""Generate Fig02: Isotonic vs Platt calibration comparison (2 panels: NASA + CALCE)"""
+"""Generate Fig02a (NASA) and Fig02b (CALCE): Platt vs Isotonic calibration comparison"""
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,12 +8,11 @@ model_order = ["xgboost", "lightgbm", "random_forest", "gru"]
 model_labels = ["XGBoost", "LightGBM", "Random Forest", "GRU"]
 model_colors = ["#E24A33", "#348ABD", "#988ED5", "#2ECC40"]
 
-fig, axes = plt.subplots(1, 2, figsize=(9, 3.2))
-
-for ax, (eval_type, ds, title) in zip(axes, [
-    ("within", "nasa", "NASA"),
-    ("within", "calce", "CALCE"),
-]):
+for eval_type, ds, title, out in [
+    ("within", "nasa", "NASA", "../data/Fig02a_Calibration_NASA.png"),
+    ("within", "calce", "CALCE", "../data/Fig02b_Calibration_CALCE.png"),
+]:
+    fig, ax = plt.subplots(figsize=(5, 3.2))
     sub = df[(df["eval"] == eval_type) & (df["dataset"] == ds)]
     for i, model in enumerate(model_order):
         msub = sub[sub["model"] == model]
@@ -23,12 +22,17 @@ for ax, (eval_type, ds, title) in zip(axes, [
                 color=model_colors[i], label=f"{model_labels[i]} iso")
         ax.plot(pla["H"], pla["Brier_cal"], linestyle="-", marker="s",
                 color=model_colors[i], label=f"{model_labels[i]} Platt")
-    ax.set_xlabel("Horizon H (cycles)", fontsize=10)
-    ax.set_ylabel("Brier (calibrated)", fontsize=10)
-    ax.set_title(title, fontsize=11, pad=8)
-    ax.legend(fontsize=6.5, loc="upper right", ncol=1)
+    ax.set_xlabel("Horizon H (cycles)", fontsize=10, fontweight="bold")
+    ax.set_ylabel("Brier (calibrated)", fontsize=10, fontweight="bold")
+    ax.set_title(title, fontsize=11, pad=8, fontweight="bold")
+    leg = ax.legend(fontsize=5.5, loc="upper right", ncol=2, handlelength=1.2, handletextpad=0.5, columnspacing=0.8)
+    leg.get_frame().set_linewidth(0.5)
+    for text in leg.get_texts():
+        text.set_fontweight("bold")
     ax.grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.savefig("../data/Fig02_Calibration_Comparison.png", dpi=300, bbox_inches="tight")
-print("Saved: Fig02_Calibration_Comparison.png")
+    ax.tick_params(axis="both", which="major", labelsize=9)
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontweight("bold")
+    plt.tight_layout()
+    plt.savefig(out, dpi=600, bbox_inches="tight")
+    print(f"Saved: {out}")

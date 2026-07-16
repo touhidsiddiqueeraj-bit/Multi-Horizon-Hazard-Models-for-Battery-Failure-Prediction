@@ -567,10 +567,14 @@ def build_document():
     doc.para("")
 
     doc.figure(
-        os.path.join(FIG_DIR, "Fig02_Calibration_Comparison.png"),
-        "Figure 3. Platt vs. isotonic calibration reliability diagrams for NASA and CALCE "
-        "(XGBoost, H = 20). Platt maintains smoother calibration curves; isotonic produces "
-        "degenerate bins on long-tailed CALCE data."
+        os.path.join(FIG_DIR, "Fig02a_Calibration_NASA.png"),
+        "Figure 3a. Platt vs. isotonic calibration reliability diagrams for NASA "
+        "(XGBoost, H = 20). Platt maintains smoother calibration curves."
+    )
+    doc.figure(
+        os.path.join(FIG_DIR, "Fig02b_Calibration_CALCE.png"),
+        "Figure 3b. Platt vs. isotonic calibration reliability diagrams for CALCE "
+        "(XGBoost, H = 20). Isotonic produces degenerate bins on long-tailed data."
     )
 
     # IV.C
@@ -605,16 +609,20 @@ def build_document():
     )
 
     doc.figure(
-        os.path.join(FIG_DIR, "Fig03_CrossChem_With_SOH.png"),
-        "Figure 4. Cross-chemistry transfer with SOH (raw AUC, trees H = 20, GRU mean across H). "
-        "Left: Oxford (5 cells). Right: Severson (141 cells). Consistent SOH-driven high AUC "
-        "across both LFP targets."
+        os.path.join(FIG_DIR, "Fig03a_CrossChem_With_SOH_Oxford.png"),
+        "Figure 4a. Cross-chemistry transfer with SOH \u2014 Oxford (raw AUC, trees H = 20, GRU mean across H). SOH-driven high AUC."
     )
     doc.figure(
-        os.path.join(FIG_DIR, "Fig04_CrossChem_No_SOH.png"),
-        "Figure 5. Cross-chemistry transfer without SOH (raw AUC, trees H = 20, GRU mean across H). "
-        "Left: Oxford (5 cells). Right: Severson (141 cells). AUC collapses across all "
-        "training-by-target combinations, confirming SOH dependence."
+        os.path.join(FIG_DIR, "Fig03b_CrossChem_With_SOH_Severson.png"),
+        "Figure 4b. Cross-chemistry transfer with SOH \u2014 Severson (raw AUC, trees H = 20, GRU mean across H). Consistent SOH-driven high AUC across 141 cells."
+    )
+    doc.figure(
+        os.path.join(FIG_DIR, "Fig04a_CrossChem_No_SOH_Oxford.png"),
+        "Figure 5a. Cross-chemistry transfer without SOH \u2014 Oxford (raw AUC, trees H = 20, GRU mean across H). AUC collapses."
+    )
+    doc.figure(
+        os.path.join(FIG_DIR, "Fig04b_CrossChem_No_SOH_Severson.png"),
+        "Figure 5b. Cross-chemistry transfer without SOH \u2014 Severson (raw AUC, trees H = 20, GRU mean across H). AUC collapses, confirming SOH dependence."
     )
 
     # IV.D
@@ -722,38 +730,24 @@ def build_document():
         "cross-chemistry predictions."
     )
 
-    for fig_label, fig_file, model_name in [
-        ("a", "Fig06a_XGBoost_SHAP.png", "XGBoost"),
-        ("b", "Fig06b_LightGBM_SHAP.png", "LightGBM"),
-        ("c", "Fig06c_RandomForest_SHAP.png", "Random Forest"),
+    for fig_file, model_name in [
+        ("Fig06a_XGBoost_SHAP.png", "XGBoost"),
+        ("Fig06b_LightGBM_SHAP.png", "LightGBM"),
+        ("Fig06c_RandomForest_SHAP.png", "Random Forest"),
     ]:
         doc.figure(
             os.path.join(FIG_DIR, fig_file),
-            f"Figure 6{fig_label}. SHAP feature importance for {model_name} in "
-            "NASA-to-Oxford cross-chemistry transfer (H = 20, with SOH). SOH dominates all other features."
+            f"Figure 6. SHAP feature importance for {model_name} in "
+            "NASA-to-Oxford cross-chemistry transfer (H = 20). "
+            "Top: with SOH (SOH dominates). Bottom: without SOH (all features collapse)."
         )
 
     doc.para(
-        "Figures 6d-6f present the corresponding SHAP summary plots for the no-SOH condition "
-        "(training on NASA features excluding SOH, testing on Oxford, H = 20). The contrast is "
-        "stark: where Figures 6a-6c show SOH dominating with high-magnitude SHAP values across "
-        "the full feature range, Figures 6d-6f show all remaining features collapsed to near-zero "
-        "SHAP spread with no meaningful ranking signal. This visual collapse mirrors the quantitative "
-        "AUC collapse: without SOH, no feature carries sufficient chemistry-invariant signal to drive "
-        "discriminative splits, and SHAP values reflect near-random permutation effects."
+        "Each figure presents a 2-panel summary: the top panel shows SHAP values with SOH included "
+        "(SOH dominates by a wide margin), and the bottom panel shows SHAP values without SOH "
+        "(all features collapsed to near-zero spread). The contrast provides a one-glance "
+        "demonstration of the paper\u2019s central negative result."
     )
-
-    for fig_label, fig_file, model_name in [
-        ("d", "Fig06d_XGBoost_SHAP_noSOH.png", "XGBoost"),
-        ("e", "Fig06e_LightGBM_SHAP_noSOH.png", "LightGBM"),
-        ("f", "Fig06f_RandomForest_SHAP_noSOH.png", "Random Forest"),
-    ]:
-        doc.figure(
-            os.path.join(FIG_DIR, fig_file),
-            f"Figure 6{fig_label}. SHAP feature importance for {model_name} in "
-            "NASA-to-Oxford cross-chemistry transfer (H = 20, without SOH). All features collapse "
-            "to near-zero SHAP spread."
-        )
 
     # ═════════════════════════════════════════════════════════════════════
     # V. DISCUSSION (condensed)

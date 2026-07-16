@@ -28,6 +28,10 @@ __pio_envs__/
 
 # OS
 .DS_Store
+# Stray copies
+12th IEEE International Women in Engineering copy*
+IEEE WIECON 2024 camera ready template*.docx
+
 # Raw data (too large for GitHub — see data/*/README.md for download links)
 data/nasa/**
 data/calce/*.zip

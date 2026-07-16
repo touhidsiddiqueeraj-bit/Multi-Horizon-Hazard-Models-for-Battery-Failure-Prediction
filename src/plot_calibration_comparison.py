@@ -35,5 +35,5 @@ for ax, panel in zip(axes, panels):
     ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig("../data/calibration_comparison.png", dpi=300, bbox_inches="tight")
+plt.savefig("../data/calibration_comparison.png", dpi=600, bbox_inches="tight")
 print("Saved: ../data/calibration_comparison.png")

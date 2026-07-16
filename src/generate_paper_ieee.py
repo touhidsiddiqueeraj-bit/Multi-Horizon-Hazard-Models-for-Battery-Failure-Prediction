@@ -308,23 +308,13 @@ paper.add_para(
 # ══════════════════════════════════════════════════════════════════════════════
 paper.add_h1("IV. Results")
 
-# ── 4.1 Within-Dataset Performance ───────────────────────────────────────
-paper.add_h2("A. Within-Dataset Performance")
-paper.add_para(
-    "Table 1 presents mean AUC and Brier scores (across all four horizons, Platt-calibrated) for all "
-    "models on NASA and CALCE. Both datasets show strong discrimination: AUC ranges from "
-    "0.878 (Random Forest on NASA) to 0.918 (LightGBM on CALCE). The single exception is Random Forest "
-    "on NASA at H=10, which achieves 0.848, slightly below the 0.85 threshold. CALCE achieves consistently lower "
-    "Brier scores than NASA, reflecting the larger number of cycles per cell and smoother degradation "
-    "trajectories. The GRU achieves competitive within-dataset performance on both datasets (mean AUC=0.886 on NASA, 0.949 on CALCE)."
-)
-
 # Read data for tables
 df = pd.read_csv(CSV_PATH)
 
-# Best method per (eval, dataset, model, H)
-best = df.loc[df.groupby(["eval", "dataset", "model", "H"])["AUC_cal"].idxmax()]
+# Platt-calibrated values
+best = df[df["method"] == "platt"].copy()
 
+# Compute values for prose
 # Table 1: within-dataset AUC per H + mean
 MODEL_NAMES = {
     "xgboost": "XGBoost",
@@ -334,6 +324,32 @@ MODEL_NAMES = {
 }
 def fmt_model(m):
     return MODEL_NAMES.get(m, m)
+
+within_best = best[best["eval"] == "within"]
+mean_aucs = within_best.groupby(["model", "dataset"])["AUC_cal"].mean()
+min_model_ds = mean_aucs.idxmin()
+max_model_ds = mean_aucs.idxmax()
+min_val = mean_aucs.min()
+max_val = mean_aucs.max()
+below_thresh = within_best[within_best["AUC_cal"] < 0.85]
+exception_strs = []
+for _, r in below_thresh.iterrows():
+    exception_strs.append(f"{fmt_model(r['model'])} on {r['dataset']} at H={r['H']} ({r['AUC_cal']:.3f})")
+exception_text = "The exceptions are " + ", ".join(exception_strs) if len(exception_strs) > 1 else \
+    "The single exception is " + exception_strs[0] if len(exception_strs) == 1 else ""
+
+# ── 4.1 Within-Dataset Performance ───────────────────────────────────────
+paper.add_h2("A. Within-Dataset Performance")
+paper.add_para(
+    f"Table 1 presents mean AUC and Brier scores (across all four horizons, Platt-calibrated) for all "
+    f"models on NASA and CALCE. Both datasets show strong discrimination: mean AUC ranges from "
+    f"{min_val:.3f} ({fmt_model(min_model_ds[0])} on {min_model_ds[1]}) to "
+    f"{max_val:.3f} ({fmt_model(max_model_ds[0])} on {max_model_ds[1]}). "
+    f"{exception_text}, below the 0.85 threshold. CALCE achieves consistently lower "
+    f"Brier scores than NASA, reflecting the larger number of cycles per cell and smoother degradation "
+    f"trajectories. The GRU achieves competitive within-dataset performance on both datasets (mean AUC="
+    f"{mean_aucs.loc[('gru','nasa')]:.3f} on NASA, {mean_aucs.loc[('gru','calce')]:.3f} on CALCE)."
+)
 
 t1_rows = []
 for (mod, ds), grp in best[best["eval"] == "within"].groupby(["model", "dataset"]):
@@ -355,7 +371,9 @@ doc_para = paper.add_para("")  # spacer
 
 paper.add_figure(
     os.path.join(FIG_DIR, "Fig01_Within_Dataset_AUC.png"),
-    "Figure 1. Within-dataset AUC heatmap at H=20 (best calibration per dataset). AUC values range from 0.875 (Random Forest on NASA) to 0.920 (LightGBM on CALCE)."
+    f"Figure 1. Within-dataset AUC heatmap (mean H=10–50, Platt-calibrated). "
+    f"AUC values range from {min_val:.3f} ({fmt_model(min_model_ds[0])} on {min_model_ds[1]}) to "
+    f"{max_val:.3f} ({fmt_model(max_model_ds[0])} on {max_model_ds[1]})."
 )
 paper.add_figure(
     os.path.join(FIG_DIR, "Fig05_MultiHorizon_AUC.png"),
@@ -363,16 +381,33 @@ paper.add_figure(
 )
 
 # ── 4.2 Platt vs. Isotonic Calibration ───────────────────────────────────
+# Compute calibration comparison values
+cal = df[df["eval"] == "within"]
+cal_means = cal.groupby(["dataset", "method"]).agg(
+    AUC_cal=("AUC_cal", "mean"),
+    Brier_cal=("Brier_cal", "mean")
+).round(3)
+nasa_platt_auc = cal_means.loc[("nasa", "platt"), "AUC_cal"]
+nasa_iso_auc = cal_means.loc[("nasa", "iso"), "AUC_cal"]
+calce_platt_auc = cal_means.loc[("calce", "platt"), "AUC_cal"]
+calce_iso_auc = cal_means.loc[("calce", "iso"), "AUC_cal"]
+calce_platt_brier = cal_means.loc[("calce", "platt"), "Brier_cal"]
+calce_iso_brier = cal_means.loc[("calce", "iso"), "Brier_cal"]
+# LightGBM-specific
+lgbm_calce = cal[(cal["model"] == "lightgbm") & (cal["dataset"] == "calce")]
+lgbm_platt_auc = lgbm_calce[lgbm_calce["method"] == "platt"]["AUC_cal"].mean()
+lgbm_iso_auc = lgbm_calce[lgbm_calce["method"] == "iso"]["AUC_cal"].mean()
+
 paper.add_h2("B. Platt vs. Isotonic Calibration")
 paper.add_para(
-    "Table 2 compares Platt and isotonic calibration across all within-dataset configurations. "
-    "Platt achieves higher mean AUC on both NASA (Platt 0.899, Isotonic 0.880) and CALCE "
-    "(Platt 0.900, Isotonic 0.892). On CALCE, the AUC gap is larger and more variable: "
-    "for LightGBM, Platt AUC = 0.918 vs. Isotonic AUC = 0.694, a gap of 0.224. This gap "
-    "on CALCE arises from its long-tailed degradation distribution (up to 1,952 cycles per "
-    "cell with heavily imbalanced failure rates). Isotonic regression bins the extreme scores "
-    "produced by these imbalanced tails into degenerate steps, reducing discriminative power "
-    "while preserving average calibration (Brier scores remain comparable)."
+    f"Table 2 compares Platt and isotonic calibration across all within-dataset configurations. "
+    f"Platt achieves higher mean AUC on both NASA (Platt {nasa_platt_auc:.3f}, Isotonic {nasa_iso_auc:.3f}) and CALCE "
+    f"(Platt {calce_platt_auc:.3f}, Isotonic {calce_iso_auc:.3f}). On CALCE, the AUC gap is larger and more variable: "
+    f"for LightGBM, Platt AUC = {lgbm_platt_auc:.3f} vs. Isotonic AUC = {lgbm_iso_auc:.3f}, a gap of {lgbm_platt_auc - lgbm_iso_auc:.3f}. This gap "
+    f"on CALCE arises from its long-tailed degradation distribution (up to 1,952 cycles per "
+    f"cell with heavily imbalanced failure rates). Isotonic regression bins the extreme scores "
+    f"produced by these imbalanced tails into degenerate steps, reducing discriminative power "
+    f"while preserving average calibration (Brier scores remain comparable)."
 )
 
 # Table 2: Calibration comparison
@@ -400,8 +435,12 @@ paper.add_para(
     "comparison: both calibrators use the same underlying model\u2019s output, not an ensemble."
 )
 paper.add_figure(
-    os.path.join(FIG_DIR, "Fig02_Calibration_Comparison.png"),
-    "Figure 3. Platt vs. isotonic calibration reliability diagrams for NASA and CALCE (XGBoost, H=20). Platt maintains smoother calibration curves; isotonic produces degenerate bins on long-tailed CALCE data."
+    os.path.join(FIG_DIR, "Fig02a_Calibration_NASA.png"),
+    "Figure 3a. Platt vs. isotonic calibration for NASA. Platt maintains smoother calibration curves."
+)
+paper.add_figure(
+    os.path.join(FIG_DIR, "Fig02b_Calibration_CALCE.png"),
+    "Figure 3b. Platt vs. isotonic calibration for CALCE. Isotonic produces degenerate bins on long-tailed data."
 )
 
 # ── 4.3 Cross-Chemistry Transfer ─────────────────────────────────────────
@@ -469,12 +508,20 @@ paper.add_para(
     "large and decisive for all model classes."
 )
 paper.add_figure(
-    os.path.join(FIG_DIR, "Fig03_CrossChem_With_SOH.png"),
-    "Figure 4. Cross-chemistry transfer with SOH (raw AUC, trees H=20, GRU mean across H). Left: Oxford (5 cells). Right: Severson (141 cells). The dual heatmap with white separator shows consistent SOH-driven high AUC across both LFP targets."
+    os.path.join(FIG_DIR, "Fig03a_CrossChem_With_SOH_Oxford.png"),
+    "Figure 4a. Cross-chemistry transfer with SOH \u2014 Oxford (raw AUC, mean H=10\u201350). Consistent SOH-driven high AUC."
 )
 paper.add_figure(
-    os.path.join(FIG_DIR, "Fig04_CrossChem_No_SOH.png"),
-    "Figure 5. Cross-chemistry transfer without SOH (raw AUC, trees H=20, GRU mean across H). Left: Oxford (5 cells). Right: Severson (141 cells). AUC collapses across all training\u00d7target combinations, confirming SOH dependence."
+    os.path.join(FIG_DIR, "Fig03b_CrossChem_With_SOH_Severson.png"),
+    "Figure 4b. Cross-chemistry transfer with SOH \u2014 Severson (raw AUC, mean H=10\u201350). Consistent SOH-driven high AUC across 141 cells."
+)
+paper.add_figure(
+    os.path.join(FIG_DIR, "Fig04a_CrossChem_No_SOH_Oxford.png"),
+    "Figure 5a. Cross-chemistry transfer without SOH \u2014 Oxford (raw AUC, mean H=10\u201350). AUC collapses across all training\u00d7target combinations."
+)
+paper.add_figure(
+    os.path.join(FIG_DIR, "Fig04b_CrossChem_No_SOH_Severson.png"),
+    "Figure 5b. Cross-chemistry transfer without SOH \u2014 Severson (raw AUC, mean H=10\u201350). AUC collapses, confirming SOH dependence."
 )
 
 # ── 4.4 GRU Entanglement Under Distribution Shift ────────────────────────
@@ -566,63 +613,28 @@ paper.add_h2("G. SHAP Feature Importance")
 paper.add_para(
     "To further investigate the role of individual features in cross-chemistry transfer, we "
     "compute SHAP (SHapley Additive exPlanations) values [11] for the three tree-based models "
-    "trained on NASA and tested on Oxford (H=20, with SOH). Figures 6a\u20136c present the SHAP "
-    "summary plots for XGBoost, LightGBM, and Random Forest respectively."
+    "trained on NASA and tested on Oxford (H=20). Each figure (Fig. 6) presents a 2-panel "
+    "summary: the top panel shows SHAP values with SOH included, the bottom panel shows SHAP "
+    "values with SOH excluded."
 )
 paper.add_para(
-    "Across all three model classes, SOH dominates as the most important feature by a wide "
-    "margin. Cycle number is a distant second, while voltage, current, temperature, and "
-    "duration features contribute negligibly. This pattern is consistent with the "
-    "SOH-as-lookup-table mechanism described in Section 4.3: the models rely almost "
-    "exclusively on SOH to make cross-chemistry predictions, and when SOH is removed "
-    "(Section 4.4), the remaining features carry insufficient signal for above-chance "
-    "discrimination."
-)
-
-# SHAP with SOH figures
-for fig_label, fig_file, model_name in [
-    ("a", "Fig06a_XGBoost_SHAP.png", "XGBoost"),
-    ("b", "Fig06b_LightGBM_SHAP.png", "LightGBM"),
-    ("c", "Fig06c_RandomForest_SHAP.png", "Random Forest"),
-]:
-    paper.add_figure(
-        os.path.join(FIG_DIR, fig_file),
-        f"Figure 6{fig_label}. SHAP feature importance for {model_name} in NASA\u2192Oxford cross-chemistry transfer (H=20, with SOH). SOH dominates all other features."
-    )
-
-paper.add_para(
-    "To provide a direct visual demonstration of the SOH-as-lookup-table mechanism, we "
-    "also compute SHAP values for the no-SOH condition\u2014training on NASA features "
-    "excluding SOH, testing on Oxford (H=20). Figures 6d\u20136f present the SHAP summary "
-    "plots for XGBoost, LightGBM, and Random Forest without SOH. "
-    "The contrast is stark: where Figs. 6a\u20136c show SOH dominating with high-magnitude "
-    "SHAP values across the full feature range, Figs. 6d\u20136f show all remaining features "
-    "collapsed to near-zero SHAP spread with no meaningful ranking signal. "
-    "This visual collapse mirrors the quantitative AUC collapse: "
-    "without SOH, no feature carries sufficient chemistry-invariant signal to drive "
-    "discriminative splits, and SHAP values reflect near-random permutation effects. "
-    "The paired comparison (Fig. 6a vs 6d, 6b vs 6e, 6c vs 6f) provides a "
+    "When SOH is available, it dominates as the most important feature by a wide "
+    "margin across all three model classes. Cycle number is a distant second, while voltage, "
+    "current, temperature, and duration features contribute negligibly. When SOH is removed, "
+    "all remaining features collapse to near-zero SHAP spread with no meaningful ranking signal. "
+    "This visual collapse mirrors the quantitative AUC collapse and provides a "
     "one-glance demonstration of the paper\u2019s central negative result."
 )
 
-for fig_label, fig_file, model_name in [
-    ("d", "Fig06d_XGBoost_SHAP_noSOH.png", "XGBoost"),
-    ("e", "Fig06e_LightGBM_SHAP_noSOH.png", "LightGBM"),
-    ("f", "Fig06f_RandomForest_SHAP_noSOH.png", "Random Forest"),
+for fig_file, model_name in [
+    ("Fig06a_XGBoost_SHAP.png", "XGBoost"),
+    ("Fig06b_LightGBM_SHAP.png", "LightGBM"),
+    ("Fig06c_RandomForest_SHAP.png", "Random Forest"),
 ]:
     paper.add_figure(
         os.path.join(FIG_DIR, fig_file),
-        f"Figure 6{fig_label}. SHAP feature importance for {model_name} in NASA\u2192Oxford cross-chemistry transfer (H=20, without SOH). All features collapse to near-zero SHAP spread."
+        f"Figure 6. SHAP feature importance for {model_name} in NASA\u2192Oxford cross-chemistry transfer (H=20). Top: with SOH (SOH dominates). Bottom: without SOH (all features collapse to near-zero SHAP spread)."
     )
-
-paper.add_para(
-    "The SHAP analysis confirms that the apparent cross-chemistry transfer "
-    "is driven by a single feature acting as a chemistry-specific proxy rather than by "
-    "genuine multi-feature degradation patterns that generalize across cathode materials. "
-    "The no-SOH SHAP figures provide independent evidence that when SOH is unavailable, "
-    "the model has no feature to exploit and reverts to near-random behavior\u2014"
-    "the SHAP values reflect this as a flat, unstructured distribution."
-)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  5. DISCUSSION

@@ -171,9 +171,12 @@ figure_slide(6, "Finding 2: Longer Windows = Easier",
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 8 — FINDING 3: CALIBRATION
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(7, "Finding 3: Getting Probabilities Right",
-             "Fig02_Calibration_Comparison.png",
-             "Platt calibration (solid lines) always beats isotonic (dashed). Especially important for CALCE.")
+figure_slide(7, "Finding 3: Platt vs Isotonic — NASA",
+             "Fig02a_Calibration_NASA.png",
+             "NASA: Platt AUC=0.890 vs Isotonic AUC=0.840. Platt wins, but gap is modest.")
+figure_slide(8, "Finding 3: Platt vs Isotonic — CALCE",
+             "Fig02b_Calibration_CALCE.png",
+             "CALCE: Platt AUC=0.904 vs Isotonic AUC=0.694. Dramatic gap on long-tailed data.")
 
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 9 — WHY PLATT IS BETTER
@@ -191,47 +194,40 @@ bullet_slide(8, "Why Platt Calibration is Better", [
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 10 — FINDING 4a: WITH SOH
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(9, "Finding 4a: Looks Like It Works\u2026",
-             "Fig03_CrossChem_With_SOH.png",
-             "With SOH (raw AUC, trees H=20, GRU mean H): tree models 0.84–1.00; GRU 0.26–0.40. CALCE-inclusive GRU reversal (AUC≈0.03–0.12) signals class-imbalance transfer failure, not noise")
+figure_slide(9, "Finding 4a: With SOH — Oxford",
+             "Fig03a_CrossChem_With_SOH_Oxford.png",
+             "Oxford (5 cells): tree models 0.84–1.00 with SOH. CALCE-inclusive GRU reversal (AUC≈0.03–0.12) signals class-imbalance transfer failure.")
+figure_slide(10, "Finding 4a: With SOH — Severson",
+             "Fig03b_CrossChem_With_SOH_Severson.png",
+             "Severson (141 cells): confirms SOH-driven pattern. Platt AUC 0.99+ for ALL LCO→Severson.")
 
 # ══════════════════════════════════════════════════════════════════════════
-#  SLIDE 11 — FINDING 4b: WITHOUT SOH
+#  SLIDE 11–12 — FINDING 4b: WITHOUT SOH
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(10, "Finding 4b: \u2026But It\u2019s a Trick",
-             "Fig04_CrossChem_No_SOH.png",
-             "Without SOH: trees near-random (0.33–0.62); GRU near-random across all configs (AUC≈0.08–0.42 mean-H) — substantive transfer failure, not label-polarity choice")
+figure_slide(11, "Finding 4b: Without SOH — Oxford",
+             "Fig04a_CrossChem_No_SOH_Oxford.png",
+             "Oxford: trees near-random (0.33–0.62) — no genuine chemistry transfer.")
+figure_slide(12, "Finding 4b: Without SOH — Severson",
+             "Fig04b_CrossChem_No_SOH_Severson.png",
+             "Severson: trees 0.60–0.75 (cycle-number proxy), 19–24 AUC drop from with-SOH condition.")
 
 # ══════════════════════════════════════════════════════════════════════════
-#  SLIDES 12–14 — SHAP EVIDENCE (one per model)
+#  SLIDES 13–15 — SHAP EVIDENCE (2-panel per model: with/without SOH)
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(11, "SHAP: XGBoost — SOH Dominates",
+figure_slide(13, "SHAP: XGBoost — With vs Without SOH",
              "Fig06a_XGBoost_SHAP.png",
-             "SHAP analysis: SOH dominates XGBoost split decisions in cross-chemistry transfer (NASA\u2192Oxford, H=20)")
-figure_slide(12, "SHAP: LightGBM — SOH Dominates",
+             "SHAP: top panel with SOH (SOH dominates), bottom panel without SOH (all features collapse). NASA→Oxford, H=20.")
+figure_slide(14, "SHAP: LightGBM — With vs Without SOH",
              "Fig06b_LightGBM_SHAP.png",
-             "SHAP analysis: SOH dominates LightGBM split decisions in cross-chemistry transfer (NASA\u2192Oxford, H=20)")
-figure_slide(13, "SHAP: Random Forest — SOH Dominates",
+             "SHAP: top panel with SOH (SOH dominates), bottom panel without SOH (all features collapse). NASA→Oxford, H=20.")
+figure_slide(15, "SHAP: Random Forest — With vs Without SOH",
              "Fig06c_RandomForest_SHAP.png",
-             "SHAP analysis: SOH dominates Random Forest split decisions in cross-chemistry transfer (NASA\u2192Oxford, H=20)")
-
-# ══════════════════════════════════════════════════════════════════════════
-#  SLIDES 15–17 — SHAP WITHOUT SOH (one per model)
-# ══════════════════════════════════════════════════════════════════════════
-figure_slide(14, "SHAP: XGBoost — All Features Collapse Without SOH",
-             "Fig06d_XGBoost_SHAP_noSOH.png",
-             "Without SOH, XGBoost SHAP values collapse to near-zero spread — no meaningful feature ranking (NASA\u2192Oxford, H=20)")
-figure_slide(15, "SHAP: LightGBM — All Features Collapse Without SOH",
-             "Fig06e_LightGBM_SHAP_noSOH.png",
-             "Without SOH, LightGBM SHAP values collapse to near-zero spread — no meaningful feature ranking (NASA\u2192Oxford, H=20)")
-figure_slide(16, "SHAP: Random Forest — All Features Collapse Without SOH",
-             "Fig06f_RandomForest_SHAP_noSOH.png",
-             "Without SOH, Random Forest SHAP values collapse to near-zero spread — no meaningful feature ranking (NASA\u2192Oxford, H=20)")
+             "SHAP: top panel with SOH (SOH dominates), bottom panel without SOH (all features collapse). NASA→Oxford, H=20."))
 
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 18 — THE SOH LOOKUP TABLE
 # ══════════════════════════════════════════════════════════════════════════
-bullet_slide(17, "The \u201cSOH Lookup Table\u201d", [
+bullet_slide(16, "The \u201cSOH Lookup Table\u201d", [
     "When the model has SOH, it learns this rule:",
     "\u201cSOH = 85% \u2192 about 50 more cycles before failure\u201d",
     "It memorizes this from LCO training data",
@@ -245,7 +241,7 @@ bullet_slide(17, "The \u201cSOH Lookup Table\u201d", [
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 19 — WHAT THIS MEANS
 # ══════════════════════════════════════════════════════════════════════════
-sl = section_slide_simple(18, "What This Means")
+sl = section_slide_simple(17, "What This Means")
 box = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                           Inches(1.5), Inches(2.2), Inches(10.3), Inches(2.5))
 box.fill.solid(); box.fill.fore_color.rgb = RGBColor(0xFF, 0xF0, 0xED)
@@ -270,7 +266,7 @@ p2.font.name = "Calibri"; p2.alignment = PP_ALIGN.CENTER; p2.space_before = Pt(1
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 20 — CAVEATS
 # ══════════════════════════════════════════════════════════════════════════
-bullet_slide(19, "Caveats", [
+bullet_slide(18, "Caveats", [
     "Oxford LFP: only 5 cells \u2014 mitigated by Severson (141 cells) but both LFP only",
     "Severson LFP: fast-charging protocol (4C discharge), voltage sag uniformly uninformative across both LFP datasets",
     "Tested one direction only (LCO \u2192 LFP)",
@@ -278,14 +274,14 @@ bullet_slide(19, "Caveats", [
     "Voltage sag useless for LFP (flat voltage plateau)",
     "Published Brier scores could not be reproduced (code mismatch)",
     "Calibration fails under cross-chem distribution shift: isotonic collapses AUC (0.98→0.51); raw AUC used instead",
-    "SHAP confirms SOH is the sole driver of cross-chem AUC: removing SOH collapses all SHAP values to near-zero (Figs 15–17)",
+    "SHAP confirms SOH is the sole driver of cross-chem AUC: each SHAP figure shows with/without SOH side by side",
     "Promising: physics-informed features (ICA/DVA), few-shot fine-tuning, domain adaptation minimizing LCO↔LFP gap",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 21 — NEXT STEPS
 # ══════════════════════════════════════════════════════════════════════════
-bullet_slide(20, "Next Steps", [
+bullet_slide(19, "Next Steps", [
     "Test on larger datasets with more battery types",
     "Design features that are \u201cchemistry-agnostic\u201d",
     "GRU single-seed instability is itself the finding: distributed representations fail under chemistry shift. Multi-seed analysis + domain-adversarial training deferred",

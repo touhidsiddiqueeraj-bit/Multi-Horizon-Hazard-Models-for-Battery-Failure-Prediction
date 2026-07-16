@@ -27,18 +27,18 @@ This project spans two tracks:
 
 ### Finding 1: Within-Dataset Reliability
 
-All models achieve Platt-calibrated AUC ≥ 0.85 on 31 of 32 model–horizon–dataset combinations. The single exception is Random Forest on NASA at H=10 (AUC=0.848).
+All models achieve Platt-calibrated AUC ≥ 0.85 on 30 of 32 model–horizon–dataset combinations. The exceptions are GRU on CALCE at H=20 (0.779) and H=30 (0.768).
 
 | Dataset | Model | Mean AUC (Platt) | Range |
 |---------|-------|-----------------:|------:|
-| NASA | XGBoost | 0.904 | 0.867–0.936 |
-| NASA | LightGBM | 0.889 | 0.867–0.905 |
-| NASA | Random Forest | 0.878 | 0.848–0.908 |
-| NASA | GRU | 0.886 | 0.860–0.900 |
-| CALCE | XGBoost | 0.911 | 0.893–0.921 |
-| CALCE | LightGBM | 0.918 | 0.909–0.924 |
-| CALCE | Random Forest | 0.882 | 0.867–0.894 |
-| CALCE | GRU | 0.949 | 0.871–0.993 |
+| NASA | XGBoost | 0.907 | 0.899–0.918 |
+| NASA | LightGBM | 0.903 | 0.892–0.912 |
+| NASA | Random Forest | 0.913 | 0.901–0.927 |
+| NASA | GRU | 0.889 | 0.868–0.930 |
+| CALCE | XGBoost | 0.913 | 0.899–0.926 |
+| CALCE | LightGBM | 0.909 | 0.886–0.924 |
+| CALCE | Random Forest | 0.883 | 0.864–0.895 |
+| CALCE | GRU | 0.844 | 0.768–0.944 |
 
 Means across all four horizons (H=10, 20, 30, 50). All within-dataset evaluation uses 5-fold GroupKFold stratified by cell — no cell leaks across folds.
 
@@ -46,8 +46,8 @@ Means across all four horizons (H=10, 20, 30, 50). All within-dataset evaluation
 
 | Dataset | Mean AUC (isotonic) | Mean AUC (Platt) | Mean Brier (iso) | Mean Brier (Platt) |
 |---------|-------------------:|-----------------:|-----------------:|-------------------:|
-| NASA | 0.840 | 0.890 | 0.222 | 0.220 |
-| CALCE | 0.694 | 0.904 | 0.098 | 0.098 |
+| NASA | 0.838 | 0.903 | 0.209 | 0.212 |
+| CALCE | 0.713 | 0.887 | 0.107 | 0.105 |
 
 Tree-model means across all H. The AUC gap is genuine — isotonic's step function degrades discrimination on long-tailed degradation data by collapsing scores into degenerate bins. Platt's sigmoid preserves the model's original ranking. Brier scores are comparable because both methods produce similarly calibrated probabilities on average, but isotonic achieves this at the cost of ranking quality. This is a fair comparison: both calibrators use the same underlying classifier's raw outputs, not a cross-validated ensemble.
 
@@ -57,14 +57,14 @@ Tree-model means across all H. The AUC gap is genuine — isotonic's step functi
 
 **Tree models at H=20 (AUC_raw, mean ± std across cells):**
 
-| Training → Test | With SOH (mean ± std) | Without SOH (mean ± std) | Test Cells |
-|-----------------|:--------------------:|:------------------------:|:----------:|
-| NASA → Oxford | 0.957–1.000 (σ=0.00–0.03) | 0.518–0.539 (σ=0.00–0.01) | 5 |
-| CALCE → Oxford | 0.836–0.885 (σ=0.00–0.17) | 0.461–0.616 (σ=0.00–0.22) | 5 |
-| ALL LCO → Oxford | 0.979–0.996 (σ=0.00–0.23) | 0.328–0.468 (σ=0.00–0.25) | 5 |
-| NASA → Severson | 0.787–0.996 (σ=0.00–0.14) | 0.595–0.752 (σ=0.02–0.12) | 141 |
-| CALCE → Severson | 0.632–0.937 (σ=0.04–0.20) | 0.606–0.811 (σ=0.04–0.12) | 141 |
-| ALL LCO → Severson | 0.767–0.994 (σ=0.01–0.09) | 0.698–0.851 (σ=0.01–0.07) | 141 |
+| Training → Test | With SOH (model-mean range) | Without SOH (model-mean range) | Test Cells |
+|-----------------|:---------------------------:|:------------------------------:|:----------:|
+| NASA → Oxford | 0.959–1.000 (σ=0.02) | 0.442–0.519 (σ=0.04) | 5 |
+| CALCE → Oxford | 0.763–0.837 (σ=0.04) | 0.360–0.435 (σ=0.04) | 5 |
+| ALL LCO → Oxford | 0.826–0.992 (σ=0.09) | 0.316–0.608 (σ=0.15) | 5 |
+| NASA → Severson | 0.992–0.999 (σ=0.00) | 0.535–0.836 (σ=0.15) | 141 |
+| CALCE → Severson | 0.952–0.996 (σ=0.02) | 0.806–0.870 (σ=0.03) | 141 |
+| ALL LCO → Severson | 0.993–0.996 (σ=0.00) | 0.808–0.876 (σ=0.04) | 141 |
 
 > A σ near 0.00 indicates degenerate predictions where the model assigns nearly identical scores to all 5 Oxford cells regardless of ground truth — consistent with the SOH-as-lookup-table mechanism.
 
@@ -102,9 +102,9 @@ Under cross-chemistry covariate shift, isotonic regression systematically collap
 
 | Training Config | AUC_raw → AUC_iso (loss) |
 |-----------------|-------------------------:|
-| NASA → Oxford with SOH | 0.957–1.000 → 0.715–0.846 (0.14–0.24 loss) |
-| CALCE → Oxford with SOH | 0.836–0.885 → 0.510–0.516 (0.33–0.38 loss) |
-| ALL → Oxford with SOH | 0.979–0.996 → 0.510–0.701 (0.29–0.49 loss) |
+| NASA → Oxford with SOH | 0.959–1.000 → 0.773–0.969 (0.03–0.19 loss) |
+| CALCE → Oxford with SOH | 0.763–0.837 → 0.510–0.513 (0.25–0.33 loss) |
+| ALL → Oxford with SOH | 0.826–0.992 → 0.510–0.572 (0.32–0.42 loss) |
 
 Isotonic fits a step function to the training-score distribution. Under shift, multiple test scores fall into the same bin and receive identical calibrated probabilities, creating ties that penalize AUC. This is a failure mode independent of the SOH lookup-table mechanism: even when raw scores carry transferable signal (as they do with SOH), post-hoc calibration destroys it.
 
@@ -136,7 +136,7 @@ Six SHAP summary plots are generated (Figs. 6a–f, in `data/`). Figs. 6a–c (w
 | XGBoost | max_depth=4, n_estimators=300, lr=0.05, subsample=0.8, colsample_bytree=0.8, min_child_weight=5 |
 | LightGBM | max_depth=4, n_estimators=300, lr=0.05, subsample=0.8, colsample_bytree=0.8, min_child_samples=20 |
 | Random Forest | max_depth=6, n_estimators=300 |
-| GRU | 1 layer, 8 hidden units, W=10 window, BCEWithLogits loss, Adam lr=0.005, patience=10, `torch.manual_seed(42)` |
+| GRU | 1 layer, 8 hidden units, W=10 window, BCEWithLogits loss, Adam lr=0.005, patience=10, `torch.manual_seed(0)` |
 
 Tree hyperparameters matched to the original Shikdar & Laaksonen study.
 
@@ -355,14 +355,17 @@ python src/plot_fig02.py
 python src/plot_fig05.py
 python src/plot_shap.py
 
-# 3. Build paper and presentations
-python src/generate_paper.py
+# 3. Build papers and presentations
+python src/generate_paper.py               # paper/paper.docx
+python src/generate_paper_ieee.py           # paper/paper_ieee.docx
+python src/generate_paper_ieee_edge.py      # paper/Paper_IEEE.docx (edge deployment)
+python src/generate_paper_methodology.py    # paper/paper_methodology_results.docx
 python src/generate_presentation.py
 python src/generate_presentation_simple.py
 ```
 
 Outputs:
-- `paper/paper.docx`
+- `paper/paper.docx`, `paper/paper_ieee.docx`, `paper/Paper_IEEE.docx`, `paper/paper_methodology_results.docx`
 - `presentation/presentation.pptx` (18 slides, detailed)
 - `presentation/presentation_simple.pptx` (18 slides, simplified)
 - `data/Fig*.png` — all generated figures
@@ -463,7 +466,7 @@ Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction/
 
 ## Journal-Ready Outputs
 
-- **`figs_journal_clean/`** — Publication-quality PNGs (6 figures + graphical abstract, 300+ DPI)
+- **`figs_journal_clean/`** — Publication-quality PNGs (16 figures, 600 DPI)
 - **`figs_journal_editable/`** — Source files in SVG, PPTX, and PDF (6 figures, 18 files) for journal submission or revision
 - **`tables_journal/`** — Cross-dataset AUC table (H=20, Platt-calibrated) as CSV for direct inclusion in manuscripts
 

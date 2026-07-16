@@ -76,5 +76,5 @@ if "nasa+calce\u2192oxford" in p_cross_no.columns:
     axes[2].axvline(idx0 + 0.5, color='white', linewidth=2)
 
 plt.tight_layout()
-plt.savefig("../data/auc_dual_heatmap_H20.png", dpi=300, bbox_inches="tight")
+plt.savefig("../data/auc_dual_heatmap_H20.png", dpi=600, bbox_inches="tight")
 print("Saved: ../data/auc_dual_heatmap_H20.png")

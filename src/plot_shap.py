@@ -1,4 +1,11 @@
-"""SHAP feature importance — one figure per model for cross-chemistry (NASA -> Oxford, H=20, with SOH)."""
+"""SHAP feature importance — 2-panel figures (with SOH / without SOH) per model.
+
+   Each figure has two subplots:
+     top:    with SOH    (NASA → Oxford, H=20)
+     bottom: without SOH (NASA → Oxford, H=20)
+
+   Saves 3 files: Fig06a_XGBoost_SHAP.png, Fig06b_LightGBM_SHAP.png, Fig06c_RandomForest_SHAP.png
+"""
 import os
 import sys
 import numpy as np
@@ -26,20 +33,16 @@ FEATURES = ["cycle", "avg_voltage", "min_voltage", "avg_current", "avg_temp", "d
 FEATURES_NO_SOH = ["cycle", "avg_voltage", "min_voltage", "avg_current", "avg_temp", "duration"]
 H = 20
 
-# With-SOH figures (existing Fig06a/b/c)
 OUTPUTS = {
     "XGBoost": os.path.join(DATA_DIR, "Fig06a_XGBoost_SHAP.png"),
     "LightGBM": os.path.join(DATA_DIR, "Fig06b_LightGBM_SHAP.png"),
     "Random Forest": os.path.join(DATA_DIR, "Fig06c_RandomForest_SHAP.png"),
 }
-# Without-SOH figures (new Fig06d/e/f)
 OUTPUTS_NO_SOH = {
     "XGBoost": os.path.join(DATA_DIR, "Fig06d_XGBoost_SHAP_noSOH.png"),
     "LightGBM": os.path.join(DATA_DIR, "Fig06e_LightGBM_SHAP_noSOH.png"),
     "Random Forest": os.path.join(DATA_DIR, "Fig06f_RandomForest_SHAP_noSOH.png"),
 }
-# Combined comparison figure
-OUTPUT_COMBINED = os.path.join(DATA_DIR, "Fig06_SHAP_comparison.png")
 
 def get_models():
     return {
@@ -75,19 +78,11 @@ def _model_shap(model, X_train, y_train, X_test):
         sv = sv[:, :, 1]
     return sv
 
-def _generate_shap_figure(name, model, X_train, y_train, X_test, feature_names, title, path):
-    shap_values = _model_shap(model, X_train, y_train, X_test)
-    shap.summary_plot(
-        shap_values, X_test, feature_names=feature_names,
-        show=False, max_display=7, alpha=0.6,
-    )
-    fig_i = plt.gcf()
-    fig_i.axes[0].set_title(title, fontsize=12)
-    fig_i.set_size_inches(9, 5)
-    fig_i.tight_layout()
-    fig_i.savefig(path, dpi=300, bbox_inches="tight")
-    plt.close(fig_i)
-    print(f"Saved: {path}")
+def _bold_yticklabels(ax, fontsize=12):
+    """Make y-tick labels (feature names) larger and bold."""
+    for label in ax.get_yticklabels():
+        label.set_fontsize(fontsize)
+        label.set_fontweight("bold")
 
 
 def main():
@@ -97,29 +92,61 @@ def main():
     y_train = make_composite_fail_in_H(nasa, H)
     models = get_models()
 
-    # ---- Phase 1: with-SOH SHAP figures (Fig06a/b/c) ----
     X_train_with = nasa[FEATURES].values
     X_test_with = oxford[FEATURES].values
-
-    for name, model in models.items():
-        _generate_shap_figure(
-            name, model, X_train_with, y_train, X_test_with,
-            FEATURES, f"SHAP — {name}\nNASA → Oxford, H=20, with SOH",
-            OUTPUTS[name],
-        )
-
-    # ---- Phase 2: without-SOH SHAP figures (Fig06d/e/f) ----
     X_train_no = nasa[FEATURES_NO_SOH].values
     X_test_no = oxford[FEATURES_NO_SOH].values
 
     for name, model in models.items():
-        _generate_shap_figure(
-            name, model, X_train_no, y_train, X_test_no,
-            FEATURES_NO_SOH, f"SHAP — {name}\nNASA → Oxford, H=20, without SOH",
-            OUTPUTS_NO_SOH[name],
-        )
+        fig = plt.figure(figsize=(9, 9))
 
-    print("6 SHAP figures saved (3 with SOH, 3 without SOH)")
+        # Top: with SOH
+        ax_top = fig.add_subplot(2, 1, 1)
+        sv_with = _model_shap(model, X_train_with, y_train, X_test_with)
+        plt.sca(ax_top)
+        shap.summary_plot(
+            sv_with, X_test_with, feature_names=FEATURES,
+            show=False, max_display=7, alpha=0.6,
+        )
+        ax_top.set_title(f"SHAP \u2014 {name}\nNASA \u2192 Oxford, H=20, with SOH",
+                         fontsize=12, fontweight="bold")
+        _bold_yticklabels(ax_top, fontsize=12)
+
+        # Bottom: without SOH
+        ax_bot = fig.add_subplot(2, 1, 2)
+        sv_no = _model_shap(model, X_train_no, y_train, X_test_no)
+        plt.sca(ax_bot)
+        shap.summary_plot(
+            sv_no, X_test_no, feature_names=FEATURES_NO_SOH,
+            show=False, max_display=7, alpha=0.6,
+        )
+        ax_bot.set_title(f"SHAP \u2014 {name}\nNASA \u2192 Oxford, H=20, without SOH",
+                         fontsize=12, fontweight="bold")
+        _bold_yticklabels(ax_bot, fontsize=12)
+
+        plt.tight_layout()
+        fig.savefig(OUTPUTS[name], dpi=600, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Saved: {OUTPUTS[name]}")
+
+        # Standalone without-SOH panel
+        fig_nosoh = plt.figure(figsize=(9, 5.5))
+        ax = fig_nosoh.add_subplot(1, 1, 1)
+        plt.sca(ax)
+        sv_no = _model_shap(model, X_train_no, y_train, X_test_no)
+        shap.summary_plot(
+            sv_no, X_test_no, feature_names=FEATURES_NO_SOH,
+            show=False, max_display=7, alpha=0.6,
+        )
+        ax.set_title(f"SHAP — {name}, NASA → Oxford, H=20, without SOH",
+                     fontsize=12, fontweight="bold")
+        _bold_yticklabels(ax, fontsize=12)
+        plt.tight_layout()
+        fig_nosoh.savefig(OUTPUTS_NO_SOH[name], dpi=600, bbox_inches="tight")
+        plt.close(fig_nosoh)
+        print(f"Saved: {OUTPUTS_NO_SOH[name]}")
+
+    print("6 SHAP figures saved (combined + no-SOH standalone)")
 
 
 if __name__ == "__main__":

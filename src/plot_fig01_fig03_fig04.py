@@ -1,10 +1,10 @@
-"""Generate Fig01, Fig03, Fig04 as separate heatmaps from benchmark_results.csv
+"""Generate Fig01, Fig03a/b, Fig04a/b as separate heatmaps from benchmark_results.csv
 
    Fig01 (within-dataset):      calibrated AUC (best method)
-   Fig03 (cross-chem with SOH): raw AUC — trees at H=20, GRU mean(H=10–50)
-   Fig04 (cross-chem no SOH):   raw AUC — trees at H=20, GRU mean(H=10–50)
-
-   Both Fig03 and Fig04 include columns for Oxford LFP and Severson LFP.
+   Fig03a (cross-chem with SOH, Oxford): raw AUC
+   Fig03b (cross-chem with SOH, Severson): raw AUC
+   Fig04a (cross-chem no SOH, Oxford): raw AUC
+   Fig04b (cross-chem no SOH, Severson): raw AUC
 """
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,34 +17,27 @@ df = pd.read_csv("../data/benchmark_results.csv")
 model_order = ["xgboost", "lightgbm", "random_forest", "gru"]
 model_labels = ["XGBoost", "LightGBM", "Random Forest", "GRU"]
 
-raw = df.groupby(["eval", "model", "H", "dataset"], as_index=False).first()
+# For tree cross-chem heatmaps: use platt method (has AUC_raw); GRU has no raw split
+platt_df = df[df["method"] == "platt"]
 
 heatmap_kw = dict(annot=True, fmt=".3f", cmap="YlOrRd", linewidths=0.5, cbar_kws={"label": "AUC"})
 
-# --- Within-dataset ---
-best_methods = {}
-for (eval_type, ds), g in df.groupby(["eval", "dataset"]):
-    means = g.groupby("method")["AUC_cal"].mean()
-    best_methods[(eval_type, ds)] = means.idxmax()
-best_rows = []
-for (eval_type, ds, method), g in df.groupby(["eval", "dataset", "method"]):
-    if method == best_methods.get((eval_type, ds)):
-        best_rows.append(g)
-best_df = pd.concat(best_rows, ignore_index=True)
-h20_cal = best_df[best_df["H"] == 20].copy()
-
-within = h20_cal[h20_cal["eval"] == "within"]
-p_within = within.pivot(index="model", columns="dataset", values="AUC_cal").reindex(index=model_order)
+# --- Within-dataset: mean-across-H, best-method-by-Brier ---
+best_by_brier = df.loc[df.groupby(["eval", "dataset", "model", "H"])["Brier_cal"].idxmin()]
+within = best_by_brier[best_by_brier["eval"] == "within"]
+within_mean = within.groupby(["model", "dataset"])["AUC_cal"].mean().reset_index()
+p_within = within_mean.pivot(index="model", columns="dataset", values="AUC_cal").reindex(index=model_order)
 p_within = p_within[[c for c in ["nasa", "calce"] if c in p_within.columns]]
 
 fig, ax = plt.subplots(figsize=(4, 2.5))
 sns.heatmap(p_within, **heatmap_kw, ax=ax)
-ax.set_title("Within-Dataset AUC (H=20, best cal.)", fontsize=10, pad=8)
+ax.set_title("Within-Dataset AUC (mean H=10–50, best cal.)", fontsize=10, pad=8, fontweight="bold")
 ax.set_xlabel(""); ax.set_ylabel("")
-ax.set_xticklabels(["NASA 18650", "CALCE LCO"], fontsize=9)
-ax.set_yticklabels(model_labels, fontsize=9, rotation=0)
+ax.set_xticklabels(["NASA 18650", "CALCE LCO"], fontsize=9, fontweight="bold")
+ax.set_yticklabels(model_labels, fontsize=9, rotation=0, fontweight="bold")
+ax.figure.axes[-1].yaxis.label.set_fontweight("bold")
 plt.tight_layout()
-plt.savefig("../data/Fig01_Within_Dataset_AUC.png", dpi=300, bbox_inches="tight")
+plt.savefig("../data/Fig01_Within_Dataset_AUC.png", dpi=600, bbox_inches="tight")
 print("Saved: Fig01_Within_Dataset_AUC.png")
 
 
@@ -55,36 +48,48 @@ def short_col(col):
     return m.get(parts[0], parts[0]) + "\u2192" + m.get(parts[1], parts[1])
 
 
-# ===== Fig03: Cross-chem WITH SOH =====
-p = build_cross_chem_pivot(raw, "_with_soh", model_order)
+def _split_pivot(p, target_suffix):
+    """Return only columns where the target (after →) matches target_suffix."""
+    cols = [c for c in p.columns if c.endswith("\u2192" + target_suffix)]
+    return p[cols]
 
-fig, ax = plt.subplots(figsize=(7.0, 2.5))
-sns.heatmap(p, **heatmap_kw, ax=ax)
-ax.set_title("Cross-Chem LCO->LFP with SOH\n(trees H=20, GRU mean H=10-50, raw scores)", fontsize=10, pad=8)
-ax.set_xlabel(""); ax.set_ylabel("")
-ax.set_xticklabels([short_col(c) for c in p.columns], fontsize=8, rotation=35, ha="right")
-ax.set_yticklabels(model_labels, fontsize=9, rotation=0)
-if "nasa+calce\u2192oxford" in p.columns:
-    idx = list(p.columns).index("nasa+calce\u2192oxford")
-    ax.axvline(idx + 0.5, color='white', linewidth=2)
-plt.tight_layout()
-plt.savefig("../data/Fig03_CrossChem_With_SOH.png", dpi=300, bbox_inches="tight")
-print("Saved: Fig03_CrossChem_With_SOH.png")
+
+def _save_heatmap(p, title, fname, vmin=None, vmax=None):
+    fig, ax = plt.subplots(figsize=(5.0, 2.5))
+    kw = dict(heatmap_kw)
+    if vmin is not None and vmax is not None:
+        kw["vmin"] = vmin
+        kw["vmax"] = vmax
+    sns.heatmap(p, **kw, ax=ax)
+    ax.set_title(title, fontsize=10, pad=8, fontweight="bold")
+    ax.set_xlabel(""); ax.set_ylabel("")
+    ax.set_xticklabels([short_col(c) for c in p.columns], fontsize=8, rotation=35, ha="right", fontweight="bold")
+    ax.set_yticklabels(model_labels, fontsize=9, rotation=0, fontweight="bold")
+    ax.figure.axes[-1].yaxis.label.set_fontweight("bold")
+    plt.tight_layout()
+    plt.savefig(fname, dpi=600, bbox_inches="tight")
+    print(f"Saved: {fname}")
+
+
+# ===== Fig03: Cross-chem WITH SOH =====
+p_with = build_cross_chem_pivot(platt_df, "_with_soh", model_order)
+
+p_with_oxf = _split_pivot(p_with, "oxford")
+p_with_sev = _split_pivot(p_with, "severson")
+
+_save_heatmap(p_with_oxf, "Cross-Chem LCO→LFP with SOH — Oxford\n(mean H=10–50, raw scores)",
+              "../data/Fig03a_CrossChem_With_SOH_Oxford.png")
+_save_heatmap(p_with_sev, "Cross-Chem LCO→LFP with SOH — Severson\n(mean H=10–50, raw scores)",
+              "../data/Fig03b_CrossChem_With_SOH_Severson.png")
 
 
 # ===== Fig04: Cross-chem NO SOH =====
-p = build_cross_chem_pivot(raw, "_no_soh", model_order)
+p_no = build_cross_chem_pivot(platt_df, "_no_soh", model_order)
 
-fig, ax = plt.subplots(figsize=(7.0, 2.5))
-sns.heatmap(p, vmin=0.30, vmax=0.70, **{k: v for k, v in heatmap_kw.items() if k != "cbar_kws"},
-            cbar_kws={"label": "AUC"}, ax=ax)
-ax.set_title("Cross-Chem LCO\u2192LFP without SOH\n(trees H=20, GRU mean H=10\u201350, raw scores)", fontsize=10, pad=8)
-ax.set_xlabel(""); ax.set_ylabel("")
-ax.set_xticklabels([short_col(c) for c in p.columns], fontsize=8, rotation=35, ha="right")
-ax.set_yticklabels(model_labels, fontsize=9, rotation=0)
-if "nasa+calce\u2192oxford" in p.columns:
-    idx = list(p.columns).index("nasa+calce\u2192oxford")
-    ax.axvline(idx + 0.5, color='white', linewidth=2)
-plt.tight_layout()
-plt.savefig("../data/Fig04_CrossChem_No_SOH.png", dpi=300, bbox_inches="tight")
-print("Saved: Fig04_CrossChem_No_SOH.png")
+p_no_oxf = _split_pivot(p_no, "oxford")
+p_no_sev = _split_pivot(p_no, "severson")
+
+_save_heatmap(p_no_oxf, "Cross-Chem LCO→LFP without SOH — Oxford\n(mean H=10–50, raw scores)",
+              "../data/Fig04a_CrossChem_No_SOH_Oxford.png", vmin=0.30, vmax=0.70)
+_save_heatmap(p_no_sev, "Cross-Chem LCO→LFP without SOH — Severson\n(mean H=10–50, raw scores)",
+              "../data/Fig04b_CrossChem_No_SOH_Severson.png", vmin=0.30, vmax=0.70)

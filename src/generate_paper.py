@@ -394,7 +394,7 @@ doc.add_paragraph(
     "unseen cycles. Four prediction horizons H \u2208 {10, 20, 30, 50} are tested, where the label for "
     "cycle t is positive if the battery fails within [t, t+H). Metrics are reported as means across folds. "
     "Models are retrained from scratch for each horizon. The best calibration method per (eval, dataset) "
-    "pair (Platt or isotonic) is selected by mean AUC. For cross-chemistry transfer, we report raw "
+    "pair (Platt or isotonic) is selected by mean AUC; in practice Platt is chosen for all settings. For cross-chemistry transfer, we report raw "
     "(uncalibrated) AUC scores alongside isotonic-calibrated values. Calibration under cross-chemistry "
     "distribution shift on the 5-cell Oxford set is unreliable: isotonic systematically collapses AUC by "
     "binning test scores into single steps of a distribution-mismatched calibrator. Raw scores avoid "
@@ -414,23 +414,38 @@ doc.add_paragraph(
 # ══════════════════════════════════════════════════════════════════════════
 doc.add_heading("4. Results", level=1)
 
-# ── 4.1 Within-Dataset Performance ───────────────────────────────────────
-doc.add_heading("4.1 Within-Dataset Performance", level=2)
-doc.add_paragraph(
-    "Table 1 presents mean AUC and Brier scores (across all four horizons, Platt-calibrated) for all "
-    "models on NASA and CALCE. Both datasets show strong discrimination: AUC ranges from "
-    "0.878 (Random Forest on NASA) to 0.918 (LightGBM on CALCE). The single exception is Random Forest "
-    "on NASA at H=10, which achieves 0.848, slightly below the 0.85 threshold. CALCE achieves consistently lower "
-    "Brier scores than NASA, reflecting the larger number of cycles per cell and smoother degradation "
-    "trajectories. The GRU achieves competitive within-dataset performance on both datasets (mean AUC=0.886 on NASA, 0.949 on CALCE)."
-)
-
 # Read data for tables
 df = pd.read_csv(CSV_PATH)
-raw = df[df["method"] == "platt"].drop_duplicates(subset=["eval", "model", "H"])
+# Use Platt-calibrated values (Table I/II/III report Platt AUC)
+best = df[df["method"] == "platt"].copy()
+raw = best.copy()
 
-# Best method per (eval, dataset, model, H)
-best = df.loc[df.groupby(["eval", "dataset", "model", "H"])["AUC_cal"].idxmax()]
+# ── 4.1 Within-Dataset Performance ───────────────────────────────────────
+within_best = best[best["eval"] == "within"]
+mean_aucs = within_best.groupby(["model", "dataset"])["AUC_cal"].mean()
+min_model_ds = mean_aucs.idxmin()
+max_model_ds = mean_aucs.idxmax()
+min_val = mean_aucs.min()
+max_val = mean_aucs.max()
+# Find H-level exception: any model-dataset-H with AUC < 0.85
+below_thresh = within_best[within_best["AUC_cal"] < 0.85]
+exception_strs = []
+for _, r in below_thresh.iterrows():
+    exception_strs.append(f"{fmt_model(r['model'])} on {r['dataset']} at H={r['H']} ({r['AUC_cal']:.3f})")
+exception_text = "The single exception is " + exception_strs[0] if len(exception_strs) == 1 else \
+    f"The exceptions are {', '.join(exception_strs[:-1])}, and {exception_strs[-1]}"
+
+doc.add_heading("4.1 Within-Dataset Performance", level=2)
+doc.add_paragraph(
+    f"Table 1 presents mean AUC and Brier scores (across all four horizons, Platt-calibrated) for all "
+    f"models on NASA and CALCE. Both datasets show strong discrimination: mean AUC ranges from "
+    f"{min_val:.3f} ({fmt_model(min_model_ds[0])} on {min_model_ds[1]}) to "
+    f"{max_val:.3f} ({fmt_model(max_model_ds[0])} on {max_model_ds[1]}). "
+    f"{exception_text}, below the 0.85 threshold. CALCE achieves consistently lower "
+    f"Brier scores than NASA, reflecting the larger number of cycles per cell and smoother degradation "
+    f"trajectories. The GRU achieves competitive within-dataset performance on both datasets (mean AUC="
+    f"{mean_aucs.loc[('gru','nasa')]:.3f} on NASA, {mean_aucs.loc[('gru','calce')]:.3f} on CALCE)."
+)
 
 # Table 1: within-dataset AUC per H + mean, grouped by (model, dataset)
 t1_rows = []
@@ -451,8 +466,9 @@ make_table(
 
 add_figure(
     os.path.join(FIG_DIR, "Fig01_Within_Dataset_AUC.png"),
-    "Figure 1: Within-dataset AUC heatmap at H=20 (best calibration per dataset). "
-    "AUC values range from 0.875 (Random Forest on NASA) to 0.920 (LightGBM on CALCE)."
+    f"Figure 1: Within-dataset AUC heatmap (mean H=10–50, Platt-calibrated). "
+    f"AUC values range from {min_val:.3f} ({fmt_model(min_model_ds[0])} on {min_model_ds[1]}) to "
+    f"{max_val:.3f} ({fmt_model(max_model_ds[0])} on {max_model_ds[1]})."
 )
 
 add_figure(
@@ -490,22 +506,42 @@ make_table(
     t2_rows
 )
 
+# Compute calibration comparison values
+cal_means = cal.groupby(["dataset", "method"]).agg(
+    AUC_cal=("AUC_cal", "mean"),
+    Brier_cal=("Brier_cal", "mean")
+).round(3)
+nasa_iso_brier = cal_means.loc[("nasa", "iso"), "Brier_cal"]
+nasa_platt_brier = cal_means.loc[("nasa", "platt"), "Brier_cal"]
+calce_iso_brier = cal_means.loc[("calce", "iso"), "Brier_cal"]
+calce_platt_brier = cal_means.loc[("calce", "platt"), "Brier_cal"]
+nasa_iso_auc = cal_means.loc[("nasa", "iso"), "AUC_cal"]
+nasa_platt_auc = cal_means.loc[("nasa", "platt"), "AUC_cal"]
+calce_iso_auc = cal_means.loc[("calce", "iso"), "AUC_cal"]
+calce_platt_auc = cal_means.loc[("calce", "platt"), "AUC_cal"]
+
 doc.add_paragraph(
-    "On NASA, Platt reduces Brier from 0.214 to 0.213 (negligible difference). On CALCE, both methods "
-    "achieve a Brier of 0.105. In contrast, the AUC gap is substantial: Platt improves AUC from 0.844 to "
-    "0.889 on NASA and from 0.715 to 0.915 on CALCE. The isotonic step function degrades discrimination "
-    "on long-tailed degradation data by producing degenerate probability estimates, while Platt\u2019s "
-    "sigmoid fit preserves the model\u2019s original ranking more faithfully. These AUC comparisons are "
-    "fair: both calibrators operate on the same underlying classifier\u2019s outputs, eliminating the "
-    "confound of model ensembling (Platt is implemented as logistic regression on the model\u2019s raw "
-    "scores, not as a cross-validated ensemble)."
+    f"On NASA, Platt reduces Brier from {nasa_iso_brier:.3f} to {nasa_platt_brier:.3f} (negligible difference). "
+    f"On CALCE, isotonic achieves Brier of {calce_iso_brier:.3f} vs Platt {calce_platt_brier:.3f}. "
+    f"In contrast, the AUC gap is substantial: Platt improves AUC from {nasa_iso_auc:.3f} to "
+    f"{nasa_platt_auc:.3f} on NASA and from {calce_iso_auc:.3f} to {calce_platt_auc:.3f} on CALCE. "
+    f"The isotonic step function degrades discrimination "
+    f"on long-tailed degradation data by producing degenerate probability estimates, while Platt\u2019s "
+    f"sigmoid fit preserves the model\u2019s original ranking more faithfully. These AUC comparisons are "
+    f"fair: both calibrators operate on the same underlying classifier\u2019s outputs, eliminating the "
+    f"confound of model ensembling (Platt is implemented as logistic regression on the model\u2019s raw "
+    f"scores, not as a cross-validated ensemble)."
 )
 
 add_figure(
-    os.path.join(FIG_DIR, "Fig02_Calibration_Comparison.png"),
-    "Figure 3: Calibration comparison (isotonic vs. Platt) across horizons for NASA (left) and "
-    "CALCE (right). Platt achieves substantially higher AUC on both datasets (NASA: 0.889 vs 0.844; "
-    "CALCE: 0.915 vs 0.715), while Brier scores are comparable."
+    os.path.join(FIG_DIR, "Fig02a_Calibration_NASA.png"),
+    f"Figure 3a: Calibration comparison (isotonic vs. Platt) across horizons for NASA. "
+    f"Platt AUC: {nasa_platt_auc:.3f} vs Isotonic AUC: {nasa_iso_auc:.3f}."
+)
+add_figure(
+    os.path.join(FIG_DIR, "Fig02b_Calibration_CALCE.png"),
+    f"Figure 3b: Calibration comparison (isotonic vs. Platt) across horizons for CALCE. "
+    f"Platt AUC: {calce_platt_auc:.3f} vs Isotonic AUC: {calce_iso_auc:.3f}."
 )
 
 # ── 4.3 Cross-Chemistry Transfer ──────────────────────────────────────────
@@ -530,19 +566,23 @@ doc.add_paragraph(
 )
 
 add_figure(
-    os.path.join(FIG_DIR, "Fig03_CrossChem_With_SOH.png"),
-    "Figure 4: Cross-chemistry transfer heatmap with SOH included (raw scores; tree models, H=20). "
-    "Left group: Oxford LFP (5 cells). Right group: MIT-Stanford Severson LFP (141 cells). "
-    "Raw AUC ranges from 0.836\u20130.885 (CALCE\u2192Oxford) to 0.957\u20131.000 (NASA\u2192Oxford), "
-    "with Severson con rming the same pattern (Platt AUC 0.99+ for ALL LCO\u2192Severson). "
+    os.path.join(FIG_DIR, "Fig03a_CrossChem_With_SOH_Oxford.png"),
+    "Figure 4a: Cross-chemistry transfer heatmap with SOH included — Oxford LFP target "
+    "(raw scores, mean H=10–50). "
     "GRU cross-chemistry results are excluded from quantitative comparison because "
-    "per-horizon AUC is highly unstable under distribution shift (range 0.011\u20130.986 "
+    "per-horizon AUC is highly unstable under distribution shift (range 0.011–0.986 "
     "within a single training configuration), a known consequence of distributed "
     "hidden-state entanglement under covariate shift. This instability is itself "
     "informative: it demonstrates that recurrent architectures are poorly suited to "
     "cross-chemistry deployment in the single-seed setting, in contrast to the stable "
     "tree-based results. Multi-seed analysis is deferred to future work. "
     "Contrast with isotonic-calibrated values in Table 3a; see Section 4.5."
+)
+add_figure(
+    os.path.join(FIG_DIR, "Fig03b_CrossChem_With_SOH_Severson.png"),
+    "Figure 4b: Cross-chemistry transfer heatmap with SOH included — Severson LFP target "
+    "(raw scores, mean H=10–50). Severson confirms the same pattern "
+    "(Platt AUC 0.99+ for ALL LCO→Severson)."
 )
 
 doc.add_paragraph(
@@ -578,17 +618,17 @@ doc.add_paragraph(
     "contributing negligibly."
 )
 
-for fig_label, fig_file, model_name in [
-    ("a", "Fig06a_XGBoost_SHAP.png", "XGBoost"),
-    ("b", "Fig06b_LightGBM_SHAP.png", "LightGBM"),
-    ("c", "Fig06c_RandomForest_SHAP.png", "Random Forest"),
+for fig_file, model_name in [
+    ("Fig06a_XGBoost_SHAP.png", "XGBoost"),
+    ("Fig06b_LightGBM_SHAP.png", "LightGBM"),
+    ("Fig06c_RandomForest_SHAP.png", "Random Forest"),
 ]:
     add_figure(
         os.path.join(FIG_DIR, fig_file),
-        f"Figure 6{fig_label}: SHAP feature importance for {model_name} in "
-        "NASA\u2192Oxford cross-chemistry transfer (H=20, with SOH). "
-        "SOH dominates split decisions by a wide margin, with cycle number a distant "
-        "second and voltage/current/temperature features contributing negligibly."
+        f"Figure 6: SHAP feature importance for {model_name} in "
+        "NASA→Oxford cross-chemistry transfer (H=20). "
+        "Top panel: with SOH. Bottom panel: without SOH. "
+        "SOH dominates when available; all features collapse to near-zero SHAP spread without it."
     )
 
 doc.add_heading("4.4 GRU Entanglement Under Distribution Shift", level=2)
@@ -678,20 +718,17 @@ make_table(
 )
 
 add_figure(
-    os.path.join(FIG_DIR, "Fig04_CrossChem_No_SOH.png"),
-    "Figure 5: Cross-chemistry transfer heatmap with SOH removed from features (raw scores; "
-    "tree models, H=20). Left group: Oxford LFP (5 cells). Right group: MIT-Stanford Severson LFP "
-    "(141 cells). AUC values are reported as per-cell mean \u00b1 std across test cells. "
-    "GRU cross-chemistry results are excluded from quantitative comparison because "
-    "per-horizon AUC is highly unstable under distribution shift (range 0.011\u20130.986 "
-    "within a single training configuration), a known consequence of distributed "
-    "hidden-state entanglement under covariate shift. This instability is itself "
-    "informative: it demonstrates that recurrent architectures are poorly suited to "
-    "cross-chemistry deployment in the single-seed setting, in contrast to the stable "
-    "tree-based results. Multi-seed analysis is deferred to future work. "
-    "Raw AUC collapses to 0.30\u20130.75 across all model\u2013training combinations (including GRU), "
-    "demonstrating that voltage, current, and temperature features alone carry no transferable signal "
-    "between LCO and LFP on either LFP test target."
+    os.path.join(FIG_DIR, "Fig04a_CrossChem_No_SOH_Oxford.png"),
+    "Figure 5a: Cross-chemistry transfer heatmap with SOH removed — Oxford LFP target "
+    "(raw scores, mean H=10–50). Raw AUC collapses to 0.30–0.62 across all "
+    "model–training combinations, demonstrating that voltage, current, and temperature "
+    "features alone carry no transferable signal between LCO and LFP."
+)
+add_figure(
+    os.path.join(FIG_DIR, "Fig04b_CrossChem_No_SOH_Severson.png"),
+    "Figure 5b: Cross-chemistry transfer heatmap with SOH removed — Severson LFP target "
+    "(raw scores, mean H=10–50). Raw AUC collapses to 0.60–0.75 across all "
+    "model–training combinations."
 )
 
 # ── 4.5 Secondary Finding: Calibration Transfer Failure ──────────────────

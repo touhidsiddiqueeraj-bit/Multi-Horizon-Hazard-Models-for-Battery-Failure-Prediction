@@ -237,14 +237,12 @@ figure_slide(6, "Finding 2: Multi-Horizon Performance (NASA)", "Fig05_MultiHoriz
 #  SLIDE 8 — CALIBRATION NASA
 # ══════════════════════════════════════════════════════════════════════════
 sl = section_slide(7, "Finding 3: Platt vs Isotonic — NASA")
-img_path = os.path.join(FIG, "Fig02_Calibration_Comparison.png")
+img_path = os.path.join(FIG, "Fig02a_Calibration_NASA.png")
 if os.path.exists(img_path):
-    # Crop to left half (NASA panel)
     sl.shapes.add_picture(img_path, Inches(0.5), Inches(2.0), width=Inches(6.5))
-    # Right side: annotation
     tf = text_box(sl, Inches(7.5), Inches(2.5), Inches(5.3), Inches(4.0), "", size=16, color=DARK)
     tf.paragraphs[0].text = ""
-    add_para(tf, "NASA (left panel of Fig 2):", size=18, bold=True, color=ACCENT)
+    add_para(tf, "NASA:", size=18, bold=True, color=ACCENT)
     add_para(tf, "Platt AUC: 0.890 vs Isotonic AUC: 0.840", size=20, bold=True, space_before=Pt(16))
     add_para(tf, "Platt Brier: 0.213 vs Isotonic Brier: 0.214", size=16, color=GRAY, space_before=Pt(4))
     add_para(tf, "", size=10)
@@ -256,16 +254,15 @@ if os.path.exists(img_path):
 #  SLIDE 9 — CALIBRATION CALCE
 # ══════════════════════════════════════════════════════════════════════════
 sl = section_slide(8, "Finding 3: Platt vs Isotonic — CALCE")
-img_path = os.path.join(FIG, "Fig02_Calibration_Comparison.png")
+img_path = os.path.join(FIG, "Fig02b_Calibration_CALCE.png")
 if os.path.exists(img_path):
-    sl.shapes.add_picture(img_path, Inches(6.3), Inches(2.0), width=Inches(6.5))
-    tf = text_box(sl, Inches(0.6), Inches(2.5), Inches(5.3), Inches(4.0), "", size=16, color=DARK)
+    sl.shapes.add_picture(img_path, Inches(0.5), Inches(2.0), width=Inches(6.5))
+    tf = text_box(sl, Inches(7.5), Inches(2.5), Inches(5.3), Inches(4.0), "", size=16, color=DARK)
     tf.paragraphs[0].text = ""
-    add_para(tf, "CALCE (right panel of Fig 2):", size=18, bold=True, color=ACCENT)
+    add_para(tf, "CALCE:", size=18, bold=True, color=ACCENT)
     add_para(tf, "Platt AUC: 0.904 vs Isotonic AUC: 0.694", size=20, bold=True, space_before=Pt(16))
-    add_para(tf, "AUC gap is dramatic on CALCE", size=16, color=GRAY, space_before=Pt(4))
-    add_para(tf, "", size=10)
     add_para(tf, "Brier is nearly identical: 0.105 for both", size=16, color=GRAY, space_before=Pt(4))
+    add_para(tf, "", size=10)
     add_para(tf, "The advantage is in discrimination,", size=16, color=GRAY)
     add_para(tf, "not calibration — isotonic produces", size=16, color=GRAY)
     add_para(tf, "degenerate probabilities on long-tailed data.", size=16, color=GRAY)
@@ -276,8 +273,8 @@ if os.path.exists(img_path):
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 10 — CROSS-CHEM WITH SOH
 # ══════════════════════════════════════════════════════════════════════════
-sl = section_slide(9, "Finding 4a: Cross-Chemistry Transfer — With SOH")
-img_path = os.path.join(FIG, "Fig03_CrossChem_With_SOH.png")
+sl = section_slide(9, "Finding 4a: Cross-Chemistry Transfer — With SOH (Oxford)")
+img_path = os.path.join(FIG, "Fig03a_CrossChem_With_SOH_Oxford.png")
 if os.path.exists(img_path):
     sl.shapes.add_picture(img_path, Inches(0.8), Inches(1.9), width=Inches(7.5))
     tf = text_box(sl, Inches(8.8), Inches(2.2), Inches(4.0), Inches(4.5), "", size=16, color=DARK)
@@ -285,73 +282,75 @@ if os.path.exists(img_path):
     add_para(tf, "Raw AUC 0.84–1.00", size=28, bold=True, color=ACCENT)
     add_para(tf, "Per-cell mean ± std across test cells (trees H=20)", size=14, color=GRAY, space_before=Pt(6))
     add_para(tf, "", size=6)
-    add_para(tf, "Oxford (5 cells)  → same pattern", size=14, color=GRAY)
-    add_para(tf, "Severson (141 cells) → 0.99+ Platt AUC", size=14, color=GRAY, space_before=Pt(1))
+    add_para(tf, "Oxford (5 cells)", size=14, color=GRAY)
+    add_para(tf, "NASA→Oxford: 0.96–1.00", size=16, bold=True, color=DARK, space_before=Pt(8))
+    add_para(tf, "CALCE→Oxford: 0.84–0.89", size=16, color=GRAY, space_before=Pt(2))
+    add_para(tf, "ALL→Oxford: 0.98–1.00", size=16, color=GRAY, space_before=Pt(2))
     add_para(tf, "", size=6)
-    add_para(tf, "NASA→LFP: ", size=16, bold=True, color=DARK)
-    add_para(tf, "0.96–1.00 (σ=0.00–0.03), 0.40 (GRU mean)", size=16, color=GRAY, space_before=Pt(2))
-    add_para(tf, "CALCE→LFP: ", size=16, bold=True, color=DARK, space_before=Pt(8))
-    add_para(tf, "0.84–0.89 (σ=0.00–0.17), 0.32 (GRU mean)", size=16, color=GRAY, space_before=Pt(2))
-    add_para(tf, "ALL→LFP: ", size=16, bold=True, color=DARK, space_before=Pt(8))
-    add_para(tf, "0.98–1.00 (σ=0.00–0.23), 0.26 (GRU mean)", size=16, color=GRAY, space_before=Pt(2))
+    add_para(tf, "Severson (141 cells) → 0.99+ Platt AUC", size=14, color=GRAY, space_before=Pt(2))
     add_para(tf, "", size=6)
-    add_para(tf, "GRU values for CALCE-inclusive sets show", size=14, color=GRAY, space_before=Pt(6))
-    add_para(tf, "reversal (AUC≈0.03–0.12): CALCE's 92% failure", size=14, color=GRAY, space_before=Pt(2))
-    add_para(tf, "rate biases the decision boundary → inverted", size=14, color=GRAY, space_before=Pt(2))
-    add_para(tf, "ranking on Oxford. Not random noise; a", size=14, color=GRAY, space_before=Pt(2))
-    add_para(tf, "substantive class-imbalance transfer failure.", size=14, color=GRAY, space_before=Pt(2))
-    add_para(tf, "Distributed state entangles SOH with voltage/cycle", size=16, color=GRAY, space_before=Pt(2))
-    add_para(tf, "", size=10)
-    add_para(tf, "BUT \u2014 even with SOH, sequence models", size=16, bold=True, color=ACCENT, space_before=Pt(12))
+    add_para(tf, "BUT — even with SOH, sequence models", size=16, bold=True, color=ACCENT, space_before=Pt(12))
     add_para(tf, "are less able to exploit it than tree-based models", size=16, bold=True, color=ACCENT)
 
 # ══════════════════════════════════════════════════════════════════════════
-#  SLIDE 11 — CROSS-CHEM WITHOUT SOH
+#  SLIDE 10 — CROSS-CHEM WITH SOH SEVERSON
 # ══════════════════════════════════════════════════════════════════════════
-sl = section_slide(10, "Finding 4b: Cross-Chemistry Transfer — Without SOH")
-img_path = os.path.join(FIG, "Fig04_CrossChem_No_SOH.png")
+sl = section_slide(9.5, "Finding 4a: Cross-Chemistry — With SOH (Severson)")
+img_path = os.path.join(FIG, "Fig03b_CrossChem_With_SOH_Severson.png")
 if os.path.exists(img_path):
     sl.shapes.add_picture(img_path, Inches(0.8), Inches(1.9), width=Inches(7.5))
     tf = text_box(sl, Inches(8.8), Inches(2.2), Inches(4.0), Inches(4.5), "", size=16, color=DARK)
     tf.paragraphs[0].text = ""
-    add_para(tf, "Raw AUC 0.08–0.62 (incl. GRU)", size=28, bold=True, color=ACCENT)
-    add_para(tf, "Per-cell mean ± std (trees H=20)", size=14, color=GRAY, space_before=Pt(6))
-    add_para(tf, "Oxford raw: 0.33–0.62 | Severson raw: 0.60–0.75", size=14, color=GRAY)
+    add_para(tf, "Severson (141 cells)", size=28, bold=True, color=ACCENT)
+    add_para(tf, "Platt AUC 0.99+ across all models", size=16, color=GRAY, space_before=Pt(6))
+    add_para(tf, "Confirms SOH-driven pattern", size=16, color=GRAY, space_before=Pt(6))
+
+# ══════════════════════════════════════════════════════════════════════════
+#  SLIDE 11 — CROSS-CHEM WITHOUT SOH (OXFORD)
+# ══════════════════════════════════════════════════════════════════════════
+sl = section_slide(10, "Finding 4b: Cross-Chemistry — Without SOH (Oxford)")
+img_path = os.path.join(FIG, "Fig04a_CrossChem_No_SOH_Oxford.png")
+if os.path.exists(img_path):
+    sl.shapes.add_picture(img_path, Inches(0.8), Inches(1.9), width=Inches(7.5))
+    tf = text_box(sl, Inches(8.8), Inches(2.2), Inches(4.0), Inches(4.5), "", size=16, color=DARK)
+    tf.paragraphs[0].text = ""
+    add_para(tf, "Raw AUC 0.33–0.62 (Oxford)", size=28, bold=True, color=ACCENT)
+    add_para(tf, "Trees: near-random across all configs", size=16, color=GRAY, space_before=Pt(6))
     add_para(tf, "", size=6)
-    add_para(tf, "Trees: near-random (0.33–0.75) across all configs", size=16, color=GRAY, space_before=Pt(6))
-    add_para(tf, "", size=6)
-    add_para(tf, "GRU: reversal in CALCE-inclusive sets", size=14, color=GRAY, space_before=Pt(6))
-    add_para(tf, "(AUC≈0.12–0.43) from class-imbalance-", size=14, color=GRAY, space_before=Pt(2))
-    add_para(tf, "driven domain mismatch, not random noise", size=14, color=GRAY, space_before=Pt(2))
+    add_para(tf, "NASA→Oxford: 0.52–0.54", size=16, bold=True, color=DARK)
+    add_para(tf, "CALCE→Oxford: 0.46–0.62", size=16, color=GRAY, space_before=Pt(2))
+    add_para(tf, "ALL→Oxford: 0.33–0.47", size=16, color=GRAY, space_before=Pt(2))
     add_para(tf, "", size=10)
-    add_para(tf, "NASA→LFP (tree): ", size=16, bold=True, color=DARK)
-    add_para(tf, "0.52–0.54 (σ=0.00–0.01)", size=16, color=GRAY, space_before=Pt(2))
-    add_para(tf, "CALCE→LFP (tree): ", size=16, bold=True, color=DARK, space_before=Pt(8))
-    add_para(tf, "0.46–0.62 (σ=0.00–0.22)", size=16, color=GRAY, space_before=Pt(2))
-    add_para(tf, "ALL→LFP (tree): ", size=16, bold=True, color=DARK, space_before=Pt(8))
-    add_para(tf, "0.33–0.47 (σ=0.00–0.25)", size=16, color=GRAY, space_before=Pt(2))
+    add_para(tf, "No model class achieves above-chance", size=16, bold=True, color=ACCENT, space_before=Pt(12))
+    add_para(tf, "AUC once SOH is removed", size=16, bold=True, color=ACCENT)
+
+# ══════════════════════════════════════════════════════════════════════════
+#  SLIDE 11B — CROSS-CHEM WITHOUT SOH (SEVERSON)
+# ══════════════════════════════════════════════════════════════════════════
+sl = section_slide(10.5, "Finding 4b: Cross-Chemistry — Without SOH (Severson)")
+img_path = os.path.join(FIG, "Fig04b_CrossChem_No_SOH_Severson.png")
+if os.path.exists(img_path):
+    sl.shapes.add_picture(img_path, Inches(0.8), Inches(1.9), width=Inches(7.5))
+    tf = text_box(sl, Inches(8.8), Inches(2.2), Inches(4.0), Inches(4.5), "", size=16, color=DARK)
+    tf.paragraphs[0].text = ""
+    add_para(tf, "Severson raw: 0.60–0.75", size=28, bold=True, color=ACCENT)
+    add_para(tf, "Cycle-number proxy partially overlaps", size=16, color=GRAY, space_before=Pt(6))
+    add_para(tf, "with wider LCO cycle-life range", size=16, color=GRAY, space_before=Pt(2))
     add_para(tf, "", size=10)
-    add_para(tf, "No model class \u2014 tree-based or sequence-aware \u2014", size=16, bold=True, color=ACCENT, space_before=Pt(12))
-    add_para(tf, "achieves above-chance AUC once SOH is removed", size=16, bold=True, color=ACCENT)
+    add_para(tf, "19–24 AUC point drop from with-SOH", size=16, bold=True, color=ACCENT, space_before=Pt(12))
+    add_para(tf, "Confirms SOH is the sole driver", size=16, bold=True, color=ACCENT)
 
 # ══════════════════════════════════════════════════════════════════════════
-#  SLIDES 12–14 — SHAP EVIDENCE (one per model)
+#  SLIDES 12–14 — SHAP EVIDENCE (2-panel per model, with/without SOH)
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(11, "SHAP: XGBoost — SOH Dominates", "Fig06a_XGBoost_SHAP.png")
-figure_slide(12, "SHAP: LightGBM — SOH Dominates", "Fig06b_LightGBM_SHAP.png")
-figure_slide(13, "SHAP: Random Forest — SOH Dominates", "Fig06c_RandomForest_SHAP.png")
+figure_slide(11, "SHAP: XGBoost — With vs Without SOH", "Fig06a_XGBoost_SHAP.png")
+figure_slide(12, "SHAP: LightGBM — With vs Without SOH", "Fig06b_LightGBM_SHAP.png")
+figure_slide(13, "SHAP: Random Forest — With vs Without SOH", "Fig06c_RandomForest_SHAP.png")
 
 # ══════════════════════════════════════════════════════════════════════════
-#  SLIDES 14–16 — SHAP WITHOUT SOH (one per model)
+#  SLIDE 14 — DELONG TEST: STATISTICAL SIGNIFICANCE
 # ══════════════════════════════════════════════════════════════════════════
-figure_slide(14, "SHAP: XGBoost — All Features Collapse Without SOH", "Fig06d_XGBoost_SHAP_noSOH.png")
-figure_slide(15, "SHAP: LightGBM — All Features Collapse Without SOH", "Fig06e_LightGBM_SHAP_noSOH.png")
-figure_slide(16, "SHAP: Random Forest — All Features Collapse Without SOH", "Fig06f_RandomForest_SHAP_noSOH.png")
-
-# ══════════════════════════════════════════════════════════════════════════
-#  SLIDE 17 — DELONG TEST: STATISTICAL SIGNIFICANCE
-# ══════════════════════════════════════════════════════════════════════════
-sl = section_slide(17, "Statistical Significance — DeLong Test")
+sl = section_slide(14, "Statistical Significance — DeLong Test")
 tf = text_box(sl, Inches(0.9), Inches(1.9), Inches(11.5), Inches(5.0),
               "", size=16, color=DARK)
 tf.paragraphs[0].text = ""
@@ -378,7 +377,7 @@ add_para(tf, "Within-dataset (NASA): only XGB vs LGBM reaches p=0.014", size=16,
 #  SLIDE 18 — THE MECHANISM
 # ══════════════════════════════════════════════════════════════════════════
 callout_slide(
-    18, "Why? The SOH-as-Lookup-Table Mechanism",
+    15, "Why? The SOH-as-Lookup-Table Mechanism",
     "When SOH is available as a feature:\n\n"
     "• Model learns: SOH=0.85 means ~50 cycles to failure\n"
     "  from LCO training data\n\n"
@@ -401,7 +400,7 @@ callout_slide(
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 19 — KEY TAKEAWAY
 # ══════════════════════════════════════════════════════════════════════════
-sl = section_slide(19, "Key Takeaway")
+sl = section_slide(16, "Key Takeaway")
 # Big centered statement
 box = sl.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
                           Inches(1.0), Inches(2.2), Inches(11.3), Inches(2.8))
@@ -424,7 +423,7 @@ text_box(sl, Inches(1.0), Inches(5.5), Inches(11.3), Inches(1.2),
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 20 — LIMITATIONS
 # ══════════════════════════════════════════════════════════════════════════
-bullet_slide(20, "Limitations", [
+bullet_slide(17, "Limitations", [
     "Oxford LFP: only 5 cells (partially mitigated by Severson LFP, 141 cells — reproduces all qualitative findings)",
     "Cross-chemistry: unidirectional only (LCO→LFP); may not generalize to LCO→NMC, NMC→LFP",
     "GRU cross-chem unstable across H (e.g., CALCE→Oxford ranges 0.022–0.978); mean-H reported in figures",
@@ -437,7 +436,7 @@ bullet_slide(20, "Limitations", [
 # ══════════════════════════════════════════════════════════════════════════
 #  SLIDE 21 — NEXT STEPS
 # ══════════════════════════════════════════════════════════════════════════
-bullet_slide(21, "Next Steps", [
+bullet_slide(18, "Next Steps", [
     "Train on larger multi-chemistry datasets with balanced cell counts across chemistries",
     "Develop learned feature representations designed explicitly for chemistry invariance (e.g., domain-adversarial training)",
     "Bidirectional transfer evaluation: LCO↔NMC, NMC↔LFP, LCO↔LFP",
