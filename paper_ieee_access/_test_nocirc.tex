@@ -131,15 +131,9 @@ while XGBoost and LightGBM pass the summed score through a sigmoid,
 \begin{equation}\label{eq:sigmoid}
 p \;=\; \frac{1}{1+\exp\!\bigl(-\textstyle\sum_{t=1}^{T}\ell_t - s_0\bigr)},
 \end{equation}
-where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). Fig.~\ref{fig:circuit} shows the wiring. Three validation stages confirm correctness: a Python walker that mirrors the C logic and is compared against \texttt{predict\_proba()}, a cross-compiled C binary tested on desktop x86\_64, and on-target execution on an ESP32-S3-DevKitC-1 reading the binary from flash. All three must report maximum absolute error below $10^{-5}$ on every row before deployment is accepted.
+where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). Three validation stages confirm correctness: a Python walker that mirrors the C logic and is compared against \texttt{predict\_proba()}, a cross-compiled C binary tested on desktop x86\_64, and on-target execution on an ESP32-S3-DevKitC-1 reading the binary from flash. All three must report maximum absolute error below $10^{-5}$ on every row before deployment is accepted.
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=0.85\textwidth]{circuit.png}
-\caption{Prototype wiring for the ESP32-S3 deployment. The battery discharges through the INA219 shunt into a load, the 2:1 divider senses cell voltage at ADC GPIO1, and I2C (GPIO8/9) serves the INA219 and DS3231 while OneWire (GPIO10) reads the DS18B20. The boards are a \$12 ESP32-S3-DevKitC-1 and two breakout modules.}
-\label{fig:circuit}
-\end{figure*}
-\clearpage
+
 
 \section{Results}
 
@@ -167,7 +161,20 @@ GRU & CALCE & 0.944 & 0.779 & 0.768 & 0.885 & 0.844 & 0.124\\
 \end{table*}
 
 
-\begin{figure}[t]
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig_deploy.png}
+\caption{Deployment trade-offs: (a) measured single-row inference time per model at 240 MHz (PC, and ESP32-S3 with the binary in flash, PSRAM, or a single model in internal SRAM); (b) memory footprint of the 372 kB binary as a share of each tier, exceeding the ESP32-S3's roughly 320 kB of free internal SRAM.}
+\label{fig:deploy}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig_py_c_agreement.png}
+\caption{On-device C engine predictions versus Python \texttt{predict\_proba()} over all 1,028 rows and three models (agreement scatter on the identity line, inset residual histogram of C minus Python in units of $10^{-6}$). Maximum absolute errors are $2.4\times10^{-7}$ (XGBoost), $1.1\times10^{-6}$ (LightGBM), and $3.0\times10^{-8}$ (Random Forest).}
+\label{fig:pyc}
+\end{figure}\begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{Fig01_Within_Dataset_AUC.png}
 \caption{Within-dataset AUC heatmap, mean across horizons, Platt-calibrated.}
@@ -353,6 +360,11 @@ TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothe
 \label{fig:shap_norf}
 \end{figure}
 
+\subsection{Embedded deployment validation}
+Three independent validation stages confirm that the C tree engine reproduces the Python training libraries through the output transforms of \eqref{eq:rf} and \eqref{eq:sigmoid}: a Python walker over the extracted trees, the same walker cross-checked on the full 1,028-row set, and the C engine run on-device on an ESP32-S3 against the library's \texttt{predict\_proba()}. Fig.~\ref{fig:pyc} plots every one of the 1,028 on-device predictions against the Python values for all three models; the points sit on the identity line and the residual histograms are pinned to zero. The measured on-device maximum absolute error is $2.4\times10^{-7}$ for XGBoost, $1.1\times10^{-6}$ for LightGBM, and $3.0\times10^{-8}$ for Random Forest, all far inside the $10^{-5}$ tolerance.
+
+Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the on-device validation error, and the measured inference time, and Fig.~\ref{fig:deploy} plots the latency, the speed--accuracy trade-off, and the footprint. The three ensembles occupy 372 kB in the flat binary. Measured single-row inference at 240 MHz depends on where the binary sits: 0.76 ms, 1.55 ms, and 2.36 ms for XGBoost, LightGBM, and Random Forest from memory-mapped flash; 0.50 ms, 0.93 ms, and 1.29 ms from PSRAM; and 0.32 ms, 0.43 ms, and 0.50 ms when a single model is placed in internal SRAM. The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 320 kB, but each individual model does (XGBoost is about 46 kB, LightGBM 98 kB, Random Forest 225 kB), and the firmware runs one model at a time, so the SRAM-resident numbers are the realistic per-inference cost. Both flash and PSRAM land well above the 150--250 \textmu s we first projected, because the working set exceeds the ESP32-S3's data cache and nearly every node read misses; PSRAM is about 1.5\texttimes\ faster than flash for the same reason. The all-three PSRAM path still clears the 100 ms per-cycle budget by roughly 37\texttimes, and a single model from SRAM runs close to the original projection.
+
 \begin{table*}[!t]
 \caption{Embedded Deployment: Model Size, Accuracy, On-Device Validation Error, and Measured Inference Time. Errors Are Maximum $|$C engine $-$ \texttt{predict\_proba()}$|$ Over All 1,028 Rows, Measured on the ESP32-S3. Timings Measured On-Device at 240 MHz With the Binary in Flash (PROGMEM), PSRAM, or a Single Model in Internal SRAM. The AUC Column Is the 5-Fold GroupKFold Platt Value at H=20 From Table I (Deployed Models Are Retrained on the Full Data).}
 \label{tab:deploy}
@@ -369,26 +381,10 @@ All three & 26,336 & --- & --- & 4.7 ms & 2.7 ms & ---\\
 \end{tabular}
 \end{table*}
 
-\subsection{Embedded deployment validation}
-Three independent validation stages confirm that the C tree engine reproduces the Python training libraries through the output transforms of \eqref{eq:rf} and \eqref{eq:sigmoid}: a Python walker over the extracted trees, the same walker cross-checked on the full 1,028-row set, and the C engine run on-device on an ESP32-S3 against the library's \texttt{predict\_proba()}. Fig.~\ref{fig:pyc} plots every one of the 1,028 on-device predictions against the Python values for all three models; the points sit on the identity line and the residual histograms are pinned to zero. The measured on-device maximum absolute error is $2.4\times10^{-7}$ for XGBoost, $1.1\times10^{-6}$ for LightGBM, and $3.0\times10^{-8}$ for Random Forest, all far inside the $10^{-5}$ tolerance.
-
-Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the on-device validation error, and the measured inference time, and Fig.~\ref{fig:deploy} plots the latency, the speed--accuracy trade-off, and the footprint. The three ensembles occupy 372 kB in the flat binary. Measured single-row inference at 240 MHz depends on where the binary sits: 0.76 ms, 1.55 ms, and 2.36 ms for XGBoost, LightGBM, and Random Forest from memory-mapped flash; 0.50 ms, 0.93 ms, and 1.29 ms from PSRAM; and 0.32 ms, 0.43 ms, and 0.50 ms when a single model is placed in internal SRAM. The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 320 kB, but each individual model does (XGBoost is about 46 kB, LightGBM 98 kB, Random Forest 225 kB), and the firmware runs one model at a time, so the SRAM-resident numbers are the realistic per-inference cost. Both flash and PSRAM land well above the 150--250 \textmu s we first projected, because the working set exceeds the ESP32-S3's data cache and nearly every node read misses; PSRAM is about 1.5\texttimes\ faster than flash for the same reason. The all-three PSRAM path still clears the 100 ms per-cycle budget by roughly 37\texttimes, and a single model from SRAM runs close to the original projection.
 
 
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{fig_deploy.png}
-\caption{Deployment trade-offs: (a) measured single-row inference time per model at 240 MHz (PC, and ESP32-S3 with the binary in flash, PSRAM, or a single model in internal SRAM); (b) memory footprint of the 372 kB binary as a share of each tier, exceeding the ESP32-S3's roughly 320 kB of free internal SRAM.}
-\label{fig:deploy}
-\end{figure}
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{fig_py_c_agreement.png}
-\caption{On-device C engine predictions versus Python \texttt{predict\_proba()} over all 1,028 rows and three models (agreement scatter on the identity line, inset residual histogram of C minus Python in units of $10^{-6}$). Maximum absolute errors are $2.4\times10^{-7}$ (XGBoost), $1.1\times10^{-6}$ (LightGBM), and $3.0\times10^{-8}$ (Random Forest).}
-\label{fig:pyc}
-\end{figure}
 
 
 \section{Discussion}
@@ -408,7 +404,11 @@ This study widens a multi-horizon hazard classification framework, first shown o
 The embedded deployment adds a concrete positive result to these cautions. Three ensembles totaling 900 trees and 26,336 nodes fit into 372 kB, run on a \$12 microcontroller in about 2.7 ms for all three models from PSRAM, about 0.5 ms for a single model kept in internal SRAM, and reproduce the Python training libraries to within $1.1\times10^{-6}$ across more than a thousand validation rows. Future work should pursue learned feature representations built for chemistry invariance, bidirectional transfer, and multi-seed GRU evaluation.
 
 \section*{Acknowledgment}
-This work received no external funding. The authors declare no conflicts of interest. The source code, data, trained models, firmware, and validation pipeline are publicly available at \url{https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction}.
+No external funding was received for this work. The authors declare no conflicts of interest.
+
+The complete source code, data processing scripts, trained models, embedded firmware, and validation pipeline are publicly available at
+
+{\small\url{https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction}}.
 
 \begin{thebibliography}{20}
 \bibitem{shikdar2026learning} T. A. Shikdar and H. Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{Int. Trans. Electr. Energy Syst.}, vol. 36, Art. no. 6000810, 2026.
