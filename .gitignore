@@ -46,3 +46,5 @@ data/oxford/*.mat
 !data/nasa/README.md
 !data/calce/README.md
 !data/oxford/README.md
+# Generated copy (regenerate with bin2c.py)
+arduino_firmware/bench/models_data.h

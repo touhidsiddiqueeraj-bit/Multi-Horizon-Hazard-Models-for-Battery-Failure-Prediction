@@ -16,6 +16,7 @@
 //  Includes
 // ═══════════════════════════════════════════════════════════════════════════
 #include <Arduino.h>
+#include <math.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <DNSServer.h>
@@ -233,7 +234,6 @@ bool tree_engine_select(int model_idx) {
 
 float tree_engine_predict(const float features[7]) {
   model_parsed_t *m = &g_models[g_sel_model];
-  bool is_rf = (m->model_type == 2);
 
   // Cast to f32 for XGBoost
   float f32_feat[7];
@@ -241,7 +241,7 @@ float tree_engine_predict(const float features[7]) {
     for (int i = 0; i < 7; i++) f32_feat[i] = features[i];
   }
 
-  double total = is_rf ? 0.0 : (double)m->init_score;
+  double total = 0.0;
 
   for (int ti = 0; ti < m->n_trees; ti++) {
     uint32_t offset = m->tree_offsets[ti];
@@ -262,7 +262,7 @@ float tree_engine_predict(const float features[7]) {
         break;
       }
       int fi = node.feature_idx;
-      if (fi < 0 || fi >= 7) { total += 0; break; }
+      if (fi < 0 || fi >= 7) break;
 
       if (m->use_strict_lt) {
         // XGBoost: strict < with f32 cast
@@ -277,7 +277,30 @@ float tree_engine_predict(const float features[7]) {
       }
     }
   }
-  return (float)sig;
+
+  // Output transform — matches esp32_firmware/components/tree_engine/tree_engine.c.
+  switch (m->model_type) {
+    case 2: {  // Random Forest: average leaf probabilities, clamp to [0,1]
+      float p = (float)(total / (double)m->n_trees);
+      if (p < 0.0f) p = 0.0f;
+      if (p > 1.0f) p = 1.0f;
+      return p;
+    }
+    case 0: {  // XGBoost: init_score + sigmoid
+      double raw = total + (double)m->init_score;
+      if (raw < -45.0) return 0.0f;
+      if (raw > 45.0)  return 1.0f;
+      return (float)(1.0 / (1.0 + exp(-raw)));
+    }
+    case 1: {  // LightGBM: sigmoid (init_score is 0.0)
+      double raw = total;
+      if (raw < -45.0) return 0.0f;
+      if (raw > 45.0)  return 1.0f;
+      return (float)(1.0 / (1.0 + exp(-raw)));
+    }
+    default:
+      return 0.5f;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
