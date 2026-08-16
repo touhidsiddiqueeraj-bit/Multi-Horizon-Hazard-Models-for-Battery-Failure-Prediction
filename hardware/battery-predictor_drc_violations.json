@@ -1,0 +1,874 @@
+{
+  "board": "/home/touhid/multi-horizon-battery/hardware/battery-predictor.kicad_pcb",
+  "timestamp": "2026-08-16T01:19:59",
+  "total_violations": 85,
+  "violation_counts": {
+    "solder_mask_bridge": 14,
+    "starved_thermal": 2,
+    "clearance": 14,
+    "hole_clearance": 10,
+    "shorting_items": 4,
+    "silk_over_copper": 1,
+    "lib_footprint_mismatch": 16,
+    "lib_footprint_issues": 9,
+    "hole_to_hole": 1,
+    "isolated_copper": 14
+  },
+  "severity_counts": {
+    "error": 44,
+    "warning": 41,
+    "info": 0
+  },
+  "violations": [
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Front solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "solder_mask_bridge",
+      "severity": "error",
+      "message": "Rear solder mask aperture bridges items with different nets",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "starved_thermal",
+      "severity": "error",
+      "message": "Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "starved_thermal",
+      "severity": "error",
+      "message": "Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets GND and 3V3)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets GND and 3V3)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_clearance",
+      "severity": "error",
+      "message": "Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets SDA and 3V3)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "shorting_items",
+      "severity": "error",
+      "message": "Items shorting two nets (nets SDA and 3V3)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.4754 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.4681 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.4754 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "clearance",
+      "severity": "error",
+      "message": "Clearance violation (zone clearance 0.5000 mm; actual 0.4681 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "silk_over_copper",
+      "severity": "warning",
+      "message": "Silkscreen clipped by solder mask",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'M3' not found in library 'MountingHole'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'SOIC-8_3.9x4.9mm_P1.27mm' does not match copy in library 'Package_SO'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'BatteryHolder_Keystone_3001_1xCR1220' not found in library 'Battery'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'SOIC-16W_7.5x10.3mm_P1.27mm' does not match copy in library 'Package_SO'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'D_DO-35_SOD27_P7.62mm_Horizontal' does not match copy in library 'Diode_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'M3' not found in library 'MountingHole'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'C_Radial_D5.0mm_P2.5mm' not found in library 'Capacitor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'TO-92_Inline' does not match copy in library 'Package_TO_SOT_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'C_Radial_D5.0mm_P2.5mm' not found in library 'Capacitor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'LED_D3.0mm' does not match copy in library 'LED_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'M3' not found in library 'MountingHole'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal' does not match copy in library 'TerminalBlock_Phoenix'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'M3' not found in library 'MountingHole'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal' does not match copy in library 'TerminalBlock_Phoenix'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical' does not match copy in library 'Resistor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'C_Radial_D5.0mm_P2.5mm' not found in library 'Capacitor_THT'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal' does not match copy in library 'TerminalBlock_Phoenix'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_mismatch",
+      "severity": "warning",
+      "message": "Footprint 'PinHeader_2x19_P2.54mm_Vertical' does not match copy in library 'Connector_PinHeader_2.54mm'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "lib_footprint_issues",
+      "severity": "warning",
+      "message": "Footprint 'Crystal_SMD_3.2x1.5mm_HandSoldering' not found in library 'Crystal'",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "hole_to_hole",
+      "severity": "warning",
+      "message": "Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    },
+    {
+      "type": "isolated_copper",
+      "severity": "warning",
+      "message": "Isolated copper fill",
+      "location": {
+        "x": 0,
+        "y": 0,
+        "unit": "mm"
+      }
+    }
+  ]
+}

@@ -32,6 +32,13 @@ __pio_envs__/
 12th IEEE International Women in Engineering copy*
 IEEE WIECON 2024 camera ready template*.docx
 
+# Local draft (superseded by paper/Paper_IEEE.docx + paper_fixed.pdf)
+IEEE FORMATED.docx
+# Tool artifacts (not project files)
+hardware/.history/
+.history/
+.palimpsest/
+*.kicad_pcb-bak
 # Raw data (too large for GitHub — see data/*/README.md for download links)
 data/nasa/**
 data/calce/*.zip

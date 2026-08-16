@@ -1,0 +1,14 @@
+Ref,Part,Qty,Spec,Store,Price_BDT,Link,Notes
+U0,ESP32-S3-DevKitC-1 (N16R8),1,240 MHz MCU + WiFi/BLE, 8MB PSRAM,RoboticsBD,1250,https://store.roboticsbd.com/development-boards/2366-espressif-esp32-s3-devkitc-1-n8r8-robotics-bangladesh.html,N8R8 variant also works; cheaper N16R8 ~BDT 880 at CircuitPointBD / TechShopBD
+U1,INA219 current sensor breakout,1,I2C addr 0x40, 0.1 ohm shunt, 3.2A high-side,Electronics.com.bd,214,https://electronics.com.bd/ina219-i2c-interface-high-side-dc-current-sensor-module,Alt: Biggan Project BDT 215; TechShopBD
+U2,DS3231 RTC breakout,1,I2C addr 0x68, TCXO, coin-cell holder,ElectroXBD,250,https://electroxbd.com/product/ds3231-real-time-clock-rtc-module-electrox/,Alt: Biggan Project BDT 299; Dream RC BDT 329
+U3,DS18B20 temperature sensor (TO-92),1,OneWire, -55 to +125 C,RoboticsBD,95,https://store.roboticsbd.com/search?controller=search&s=DS18B20,Original chip BDT 181; waterproof probe BDT 280+
+R1/R2,10k ohm resistor (1/4W),2,2:1 voltage divider,RoboticsBD,15,https://store.roboticsbd.com/search?controller=search&s=resistor,Pack of 10
+R3,4.7k ohm resistor (1/4W),1,OneWire pull-up to 3V3,RoboticsBD,15,https://store.roboticsbd.com/search?controller=search&s=resistor,Pack of 10
+BB,Breadboard half-size (400 tie point),1,Prototyping board,RoboticsBD,90,https://store.roboticsbd.com/search?controller=search&s=breadboard,Full-size 830 tie point = BDT 160
+JW,Jumper wires M-M (40 pcs, 20 cm),1 set,Plus a few M-F for breakouts,RoboticsBD,100,https://store.roboticsbd.com/search?controller=search&s=jumper+wire,M-F / F-F 20 pcs = BDT 55 each
+C1/C2,100nF ceramic + 100uF 16V electrolytic,1 each,Decoupling (3V3 rail),RoboticsBD,20,https://store.roboticsbd.com/search?controller=search&s=capacitor,Optional — breakouts already decoupled
+BT,CR2032 coin cell,1,DS3231 backup battery,Local,40,,"Usually ships with the DS3231 module; BOM lists CR1220 — CR2032 is the standard holder size"
+BATT,18650 cell + single holder,1,Battery under test (or lab supply),RoboticsBD,300,https://store.roboticsbd.com/search?controller=search&s=18650,Holder BDT 50; cell BDT 139 (budget) to BDT 350+; reuse any cell on hand
+OPT1,LED 3mm + 1k ohm resistor,1,Power indicator (optional),RoboticsBD,15,https://store.roboticsbd.com/search?controller=search&s=resistor,,
+TOTAL,,,,,,2404,,

@@ -51,29 +51,33 @@ ds_map = {"nasa": "NASA 18650", "calce": "CALCE LCO"}
 axes[0].set_xticklabels([ds_map.get(c, c) for c in p_within.columns], fontsize=9)
 axes[0].set_yticklabels(model_labels, fontsize=9, rotation=0)
 
-# Panel 2: Cross-chem WITH SOH
-sns.heatmap(p_cross_with, annot=True, fmt=".3f", cmap="YlOrRd",
+# Panel 2: Cross-chem WITH SOH — split into Oxford/Severson sub-panels
+if "nasa+calce\u2192oxford" in p_cross_with.columns:
+    split_oxf = [c for c in p_cross_with.columns if c.endswith("\u2192oxford")]
+    split_sev = [c for c in p_cross_with.columns if c.endswith("\u2192severson")]
+else:
+    split_oxf = p_cross_with.columns[:3]
+    split_sev = p_cross_with.columns[3:]
+
+# Sub-panel 2a: With SOH → Oxford
+sns.heatmap(p_cross_with[split_oxf], annot=True, fmt=".3f", cmap="YlOrRd",
             vmin=0.70, vmax=1.0, linewidths=0.5, ax=axes[1],
             cbar_kws={"label": "AUC"})
-axes[1].set_title("LCO\u2192LFP with SOH\n(trees H=20, GRU mean H=10\u201350)", fontsize=11, pad=10)
+axes[1].set_title("With SOH → Oxford\n(trees H=20, GRU mean H=10–50)", fontsize=11, pad=10)
 axes[1].set_xlabel(""); axes[1].set_ylabel("")
-axes[1].set_xticklabels([short_col(c) for c in p_cross_with.columns], fontsize=8, rotation=45, ha="right")
+axes[1].set_xticklabels([short_col(c) for c in split_oxf], fontsize=8, rotation=45, ha="right")
 axes[1].set_yticklabels(model_labels, fontsize=9, rotation=0)
-if "nasa+calce\u2192oxford" in p_cross_with.columns:
-    idx0 = list(p_cross_with.columns).index("nasa+calce\u2192oxford")
-    axes[1].axvline(idx0 + 0.5, color='white', linewidth=2)
+if "nasa+calce\u2192oxford" in split_oxf:
+    axes[1].axvline(split_oxf.index("nasa+calce\u2192oxford") + 0.5, color='white', linewidth=2)
 
-# Panel 3: Cross-chem NO SOH
-sns.heatmap(p_cross_no, annot=True, fmt=".3f", cmap="YlOrRd",
-            vmin=0.30, vmax=0.70, linewidths=0.5, ax=axes[2],
+# Panel 3: Cross-chem WITH SOH → Severson
+sns.heatmap(p_cross_with[split_sev], annot=True, fmt=".3f", cmap="YlOrRd",
+            vmin=0.70, vmax=1.0, linewidths=0.5, ax=axes[2],
             cbar_kws={"label": "AUC"})
-axes[2].set_title("LCO\u2192LFP without SOH\n(trees H=20, GRU mean H=10\u201350)", fontsize=11, pad=10)
+axes[2].set_title("With SOH → Severson\n(trees H=20, GRU mean H=10–50)", fontsize=11, pad=10)
 axes[2].set_xlabel(""); axes[2].set_ylabel("")
-axes[2].set_xticklabels([short_col(c) for c in p_cross_no.columns], fontsize=8, rotation=45, ha="right")
+axes[2].set_xticklabels([short_col(c) for c in split_sev], fontsize=8, rotation=45, ha="right")
 axes[2].set_yticklabels(model_labels, fontsize=9, rotation=0)
-if "nasa+calce\u2192oxford" in p_cross_no.columns:
-    idx0 = list(p_cross_no.columns).index("nasa+calce\u2192oxford")
-    axes[2].axvline(idx0 + 0.5, color='white', linewidth=2)
 
 plt.tight_layout()
 plt.savefig("../data/auc_dual_heatmap_H20.png", dpi=600, bbox_inches="tight")

@@ -39,7 +39,7 @@
 #define PIN_I2C_SDA       8       // I2C bus (INA219 + DS3231)
 #define PIN_I2C_SCL       9
 #define ADC_ATTEN         ADC_11db  // 0–3.3V input range
-#define VOLTAGE_DIVIDER_RATIO  3.0f   // 10k+1k → 3:1 divider
+#define VOLTAGE_DIVIDER_RATIO  2.0f   // 10k+10k → 2:1 divider (matches ESP-IDF firmware + BOM)
 #define VOLTAGE_REF           3.3f   // ESP32-S3 ADC reference
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -91,6 +91,7 @@ int   g_active_model = 0;      // 0=XGBoost, 1=LightGBM, 2=RF
 int   g_cal_cycle_count = 0;   // cycles during calibration
 int   g_cycle = 0;             // total discharge cycles observed
 float g_prediction = 0.0f;     // latest prediction
+uint32_t g_infer_us = 0;       // last inference latency (microseconds)
 float g_soh = 1.0f;
 float g_soh_baseline = 0.0f;   // average capacity of first 10 cycles
 
@@ -402,7 +403,9 @@ void end_cycle() {
   };
 
   tree_engine_select(g_active_model);
+  uint32_t t0 = micros();
   g_prediction = tree_engine_predict(features);
+  g_infer_us = micros() - t0;
 
   // Save to history
   if (g_history_count < MAX_HISTORY_POINTS) {
@@ -850,6 +853,7 @@ String build_status_json() {
   doc["soh"] = g_soh;
   doc["cycle"] = g_cycle;
   doc["pred"] = g_prediction;
+  doc["infer_us"] = g_infer_us;
   doc["state"] = STATE_NAMES[g_state];
   doc["model"] = MODEL_NAMES[g_active_model];
   doc["active_model"] = g_active_model;
