@@ -27,8 +27,9 @@
 \tfootnote{This work received no external funding. The authors declare no conflicts of interest.}
 \markboth{Anonymous \headeretal: Multi-Horizon Hazard Models for Battery Failure Prediction}{Anonymous \headeretal: Multi-Horizon Hazard Models for Battery Failure Prediction}
 \corresp{Corresponding author: Anonymous (e-mail: corresponding.author@example.com).}
+\emergencystretch=6em
 \begin{abstract}
-Predicting whether a lithium-ion cell will fail inside a short operating window is a different question from estimating its remaining useful life, and it is the one that matters most for real-time dispatch in electric vehicles and grid storage. This paper widens a recently proposed multi-horizon hazard classification framework, first shown on one model and one dataset, into a study that covers four model families, three LCO training configurations, and two lithium-iron-phosphate (LFP) transfer targets. Within-dataset reliability holds across the board, with area under the curve (AUC) of 0.85 or better in 30 of 32 configurations under Platt calibration. A fairness-corrected comparison shows Platt scaling beats isotonic regression on discrimination, with the largest gap on the long-tailed CALCE set (AUC 0.713 to 0.887). The central result is a controlled State-of-Health (SOH) ablation: removing SOH collapses cross-chemistry AUC from 0.57--1.00 to 0.32--0.61 on Oxford LFP and to 0.54--0.88 on the 141-cell MIT--Stanford Severson set, with DeLong $p$ values ranging down to $2.6\times10^{-64}$ on Oxford and below $10^{-100}$ on Severson. SOH therefore acts as a chemistry-specific lookup key rather than a transferable degradation signal, and isotonic calibration largely fails to transfer as well. On the deployment side, all three tree ensembles (900 trees, 26,336 nodes) pack into a 372 kB binary and run on a \$12 ESP32-S3 through a hand-written C tree walker, reproducing the Python training libraries to within $1.1\times10^{-6}$ across all 1,028 validation rows, with measured single-row latency of 0.50--1.29 ms with all three models in PSRAM and 0.32--0.50 ms for a single model held in internal SRAM.
+Predicting whether a lithium-ion cell will fail inside a short operating window is a different question from estimating its remaining useful life, and it is the one that matters most for real-time dispatch in electric vehicles and grid storage. This study widens a recently proposed multi-horizon hazard classification framework, first shown on one model and one dataset, into a study that covers four model families, three LCO training configurations, and two lithium-iron-phosphate (LFP) transfer targets. Within-dataset reliability holds across the board, with area under the curve (AUC) of 0.85 or better in 30 of 32 configurations under Platt calibration. A fairness-corrected comparison shows Platt scaling outperforms isotonic regression in discrimination, with the largest gap on the long-tailed CALCE set (AUC 0.713 to 0.887). The central result is a controlled State-of-Health (SOH) ablation: removing SOH collapses cross-chemistry AUC from 0.57--1.00 to 0.32--0.61 on Oxford LFP and to 0.54--0.88 on the 141-cell MIT--Stanford Severson set, with DeLong $p$ values ranging down to $2.6\times10^{-64}$ on Oxford and below $10^{-100}$ on Severson. SOH therefore acts as a chemistry-specific lookup key rather than a transferable degradation signal, and isotonic calibration largely fails to transfer as well. On the deployment side, all three tree ensembles (900 trees, 26 336 nodes) fit into a 372 kB binary and run on a \$12 ESP32-S3 through a hand-written C tree walker, reproducing the Python training libraries to within $1.1\times10^{-6}$ across all 1 028 validation rows, with measured single-row latency of 0.50--1.29 ms with all three models in PSRAM and 0.32--0.50 ms for a single model held in internal SRAM.
 \end{abstract}
 \begin{keywords}
 Battery failure prediction, multi-horizon hazard classification, cross-chemistry transfer, probability calibration, SHAP, embedded machine learning, ESP32-S3.
@@ -38,33 +39,48 @@ Battery failure prediction, multi-horizon hazard classification, cross-chemistry
 \emergencystretch=6em
 \makeatletter\def\UrlBreaks{\do\/\do\-}\makeatother
 \section{Introduction}
-\IEEEPARstart{L}{ithium-ion} batteries sit underneath the electrification of transport and the decarbonization of grids, yet their long-term reliability remains hard to certify in the field. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression, where a model predicts a continuous cycle count to end of life \cite{meng2019review,breiman2001random,chen2016xgboost}. RUL regression is fine for capacity-fade studies, but it answers a question operators rarely ask in real time. A battery management system needs to know whether a specific cell will survive the next mission, not how many cycles it has left in aggregate.
+Lithium-ion batteries sit underneath the electrification of transport and the decarbonization of grids, yet their long-term reliability remains hard to certify in the field. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression, in which a model predicts a continuous cycle count to end of life \cite{meng2019review}. RUL regression is appropriate for capacity-fade studies, but it answers a question operators rarely ask in real time: a battery management system needs to know whether a specific cell will survive the next mission, not how many cycles it has left in aggregate. Review studies group prior methods into physics-based, purely data-driven, and hybrid families \cite{meng2019review}. Tree ensembles, such as Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, and LightGBM \cite{ke2017lightgbm}, have been applied to capacity and RUL estimation, but their use for binary hazard classification at multiple horizons is recent \cite{shikdar2026learning}.
 
-Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-horizon hazard classification. For a given cycle $t$ and horizon $H$, the model predicts whether failure, defined as SOH below 0.80 or average voltage sag beyond 6\%, occurs within the next $H$ cycles. Their histogram-based gradient boosting model on the NASA 18650 set (37 LCO cells) reached AUC of 0.87--0.90 across $H \in \{10,20,30,50\}$.
+Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-horizon hazard classification. For a given cycle $t$ and horizon $H$, the model predicts whether failure, defined as SOH below 0.80 or average voltage sag beyond 6\%, occurs within the next $H$ cycles. Their histogram-based gradient boosting model on the NASA 18650 set (37 LCO cells) reached AUC of 0.87--0.90 across $H \in \{10,20,30,50\}$. That work left three gaps open. First, one model on one dataset says nothing about sensitivity to the learner, the hyperparameters, or the calibration method. Second, no cross-chemistry check existed, so nothing stopped a model trained on LCO from being trusted on LFP or NMC cells. Third, no path existed from a Python research prototype to the microcontroller where a battery management system actually runs.
 
-That work left three gaps open. First, one model on one dataset says nothing about sensitivity to the learner, the hyperparameters, or the calibration method. Second, there was no cross-chemistry check, so nothing stopped a model trained on LCO from being trusted on LFP or NMC cells. Third, no path existed from a Python research prototype to the microcontroller where a battery management system actually runs.
+Two adjacent literatures bear on these gaps. Transfer learning for battery state estimation is a growing area: Sahoo et al. \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al. \cite{lu2023deep} pretrained on large-scale degradation data before adapting to new cell types. Both target regression-based SOH estimation rather than classification-based hazard prediction, and the hazard setting adds two complications: the label depends on the chosen horizon $H$, and the calibration of probability outputs, which decisions depend on, may degrade under distribution shift. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid through logistic regression on the model's raw scores, while isotonic regression \cite{zadrozny2002transforming} fits a non-decreasing step function. Niculescu-Mizil and Caruana \cite{niculescu2005predicting} showed that Platt is safer on small datasets and isotonic can overfit, and Huang et al. \cite{huang2020experimental} extended this to imbalanced classification; no prior study has compared the two calibrators under cross-chemistry distribution shift in battery prognostics. On explainability and deployment, TreeSHAP \cite{lundberg2020from} provides consistent feature attributions and has become the standard tool for diagnosing ensemble inputs, while edge inference removes latency, connectivity requirements, and privacy concerns \cite{grzesik2024combining}. Online recalibration methods for shifting score distributions are also being studied \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
 
-This paper closes all three. The contributions are: (i) a four-model benchmark, three tree ensembles (XGBoost, LightGBM, Random Forest) plus a GRU sequence classifier, run on two LCO datasets (NASA 18650, CALCE LCO/CX2) under a unified 5-fold GroupKFold protocol; (ii) a controlled LCO-to-LFP transfer study onto two independent targets, the 5-cell Oxford pouch set and the 141-cell MIT--Stanford Severson set, with and without SOH as a feature, analyzed with DeLong significance tests and SHAP explanations; (iii) a fairness-corrected comparison of isotonic and Platt calibration; and (iv) a complete embedded deployment that packs all three ensembles into one flat binary and runs them on an ESP32-S3 through a hand-written C tree walker.
+\begin{table*}[!t]
+\caption{Comparison of Representative Battery Studies With This Work}
+\label{tab:lit}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllp{0.27\textwidth}}
+\toprule
+\textbf{Study} & \textbf{Family} & \textbf{Data} & \textbf{Position relative to this work}\\
+\midrule
+Meng and Li \cite{meng2019review} & Prognostics review & Various & Groups methods into physics-based, data-driven, and hybrid families\\
+Breiman \cite{breiman2001random}, Chen and Guestrin \cite{chen2016xgboost}, Ke et al. \cite{ke2017lightgbm} & Tree ensembles & Capacity, RUL & Established ensembles for RUL regression, not hazard classification\\
+Sahoo et al. \cite{sahoo2022transfer} & Transfer learning & NASA, CALCE & Transferred SOH regression across chemistries; regression only\\
+Lu et al. \cite{lu2023deep} & Deep learning & Large SOH corpora & Pretraining for SOH estimation; regression only\\
+Platt \cite{platt1999probabilistic}, Zadrozny and Elkan \cite{zadrozny2002transforming}, Niculescu-Mizil and Caruana \cite{niculescu2005predicting}, Huang et al. \cite{huang2020experimental} & Probability calibration & Various & Calibrators compared in-domain; no cross-chemistry setting\\
+Lundberg et al. \cite{lundberg2020from} & Explainability & Various & TreeSHAP attributions for tree ensembles\\
+Grzesik and Mrozek \cite{grzesik2024combining} & Edge computing & Various & Edge inference review without battery hazard use cases\\
+Gupta and Ramdas \cite{gupta2023online} & Calibration & Various & Online Platt scaling under distribution shift\\
+Shikdar and Laaksonen \cite{shikdar2026learning} & Hazard classification & NASA & Single model, single dataset; baseline of this paper\\
+\textbf{This work} & Hazard classification & NASA, CALCE, Oxford, Severson & Multi-model benchmark, LCO-to-LFP transfer, SOH ablation, calibration under shift, embedded deployment\\
+\bottomrule
+\end{tabular}}
+\end{table*}
 
-The second part of the paper focuses on transfer to unseen LFP chemistries. A second, independent result is that calibration methods themselves largely fail to transfer, since isotonic regression bins distribution-shifted scores into degenerate steps. We also quantify a deployment path for hazard prediction on embedded hardware, a topic that remains underexplored: model size, binary size, inference latency, and floating-point accuracy on a microcontroller.
+The objective of this study is to close the three gaps identified above through the following contributions:
+\begin{itemize}
+\item a four-model benchmark, three tree ensembles (XGBoost, LightGBM, and Random Forest) plus a GRU sequence classifier, run on two LCO datasets (NASA 18650 and CALCE LCO/CX2) under a unified 5-fold GroupKFold protocol;
+\item a controlled LCO-to-LFP transfer study onto two independent targets, the 5-cell Oxford pouch set and the 141-cell MIT--Stanford Severson set, evaluated with and without SOH as a feature and analyzed with DeLong significance tests and SHAP explanations;
+\item a fairness-corrected comparison of isotonic and Platt calibration, both within-dataset and under cross-chemistry distribution shift;
+\item a complete embedded deployment that packs all three ensembles into one flat binary and runs them on an ESP32-S3 through a hand-written C tree walker.
+\end{itemize}
 
-\section{Related Work}
-
-\subsection{From RUL regression to hazard classification}
-Data-driven battery prognostics has historically been regression. Meng and Li \cite{meng2019review} group prior methods into physics-based, purely data-driven, and hybrid families. Tree ensembles, such as Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, and LightGBM \cite{ke2017lightgbm}, have been applied to capacity and RUL estimation, but their use for binary hazard classification at multiple horizons is recent \cite{shikdar2026learning}.
-
-\subsection{Cross-chemistry and transfer learning}
-Transfer learning for battery state estimation is picking up. Sahoo et al. \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al. \cite{lu2023deep} pretrained on large-scale degradation data before adapting to new cell types. Both target regression-based SOH estimation rather than classification-based hazard prediction. The hazard setting adds two complications: the label depends on the chosen horizon $H$, and the calibration of probability outputs, which decisions depend on, may degrade under distribution shift.
-
-\subsection{Calibration of classifier outputs}
-Post-hoc calibration maps raw classifier scores to probabilities. Platt scaling \cite{platt1999probabilistic} fits a sigmoid through logistic regression on the model's scores, while isotonic regression \cite{zadrozny2002transforming} fits a non-decreasing step function. Niculescu-Mizil and Caruana \cite{niculescu2005predicting} showed Platt is safer on small datasets and isotonic can overfit, and Huang et al. \cite{huang2020experimental} extended this to imbalanced classification. No prior study, to our knowledge, has compared the two calibrators under cross-chemistry distribution shift in battery prognostics.
-
-\subsection{Explainability and edge deployment}
-TreeSHAP \cite{lundberg2020from} gives consistent feature attributions grounded in Shapley values and has become the standard tool for diagnosing which inputs drive an ensemble. On deployment, moving inference onto a microcontroller removes latency, connectivity requirements, and privacy concerns \cite{grzesik2024combining}. Porting tree ensembles to embedded platforms through model-to-code compilation has been done before \cite{gupta2023online}, but the specific combination of multi-horizon hazard models with a hand-written C tree walker on a \$12 ESP32-S3 has not.
+The remainder of this paper is organized as follows. Section II describes the methodology, including the composite failure label, the datasets, the models, and the calibration, transfer, and deployment protocols. Section III presents the experimental results. Section IV discusses the analysis, implications, and novelty of the findings, and Section V concludes the study with directions for future work.
 
 \section{Methodology}
 
-\subsection{Composite failure label}
+\subsection{Composite Failure Label}
 Following the original protocol \cite{shikdar2026learning}, the State-of-Health of cell $c$ at cycle $k$ is the ratio of the discharge capacity to the mean capacity over the first 10 cycles,
 \begin{equation}\label{eq:soh}
 \begin{aligned}
@@ -87,15 +103,21 @@ p_t^{(c,H)} \;=\; \Pr\!\bigl(T_f \le t{+}H \mid T_f > t,\ \mathbf{x}_t^{(c)}\big
 where $T_f$ is the failure cycle and $\mathbf{x}_t^{(c)}$ is the feature vector measured at cycle $t$. Datasets without voltage data, or where voltage sits at the cutoff as in Oxford's flat LFP plateau, fall back to the SOH criterion alone.
 
 \subsection{Datasets}
-Four public aging datasets are used. NASA 18650 \cite{saha2007battery} has 37 LCO cells aged under randomized charge--discharge profiles at room temperature, roughly 1,000 cycles per cell, with diverse failure modes. CALCE LCO/CX2 \cite{calce2023battery} provides 7 cells (CS2\_33--36, CX2\_36--38) at 1C/1C with per-cycle voltage, current, and capacity. On the LFP side, Oxford \cite{birkl2017oxford} has 5 pouch cells at 1C/1C under controlled temperature with 300--500 cycles each, and MIT--Stanford Severson \cite{severson2019data} has 141 LFP cells under a fast-charging protocol with 534--2,237 cycles each (about 117K total).
+Four public aging datasets are used:
+\begin{itemize}
+\item \textbf{1) NASA 18650} \cite{saha2007battery}: 37 LCO cells aged under randomized charge--discharge profiles at room temperature, roughly 1~000 cycles per cell, with diverse failure modes;
+\item \textbf{2) CALCE LCO/CX2} \cite{calce2023battery}: 7 cells (CS2\_33--36, CX2\_36--38) at 1C/1C with per-cycle voltage, current, and capacity;
+\item \textbf{3) Oxford} \cite{birkl2017oxford}: 5 LFP pouch cells at 1C/1C under controlled temperature, 300--500 cycles each;
+\item \textbf{4) MIT--Stanford Severson} \cite{severson2019data}: 141 LFP cells under a fast-charging protocol, 534--2~237 cycles each (about 117~000 in total).
+\end{itemize}
 
-\subsection{Features and preprocessing}
+\subsection{Features and Preprocessing}
 Each cycle is described by seven scalar features: cycle index, average discharge voltage, minimum discharge voltage, average discharge current, average temperature, discharge duration, and SOH. Trees are scale-invariant, so no standardization is applied to them; the GRU receives per-feature standardization using training-set statistics. Missing CALCE values (temperature and duration are unlogged) are filled with zero.
 
-\subsection{Tree models and hyperparameters}
+\subsection{Tree Models and Hyperparameters}
 Three tree ensembles are benchmarked with hyperparameters matched to the original study \cite{shikdar2026learning}: XGBoost \cite{chen2016xgboost} with max\_depth 4, 300 estimators, learning rate 0.05, subsample 0.8, colsample\_bytree 0.8, and min\_child\_weight 5; LightGBM \cite{ke2017lightgbm} with the same depth, count, and rate; and Random Forest \cite{breiman2001random} with max\_depth 6 and 300 estimators. All use random\_state 42 for deterministic replication.
 
-\subsection{GRU sequence classifier}
+\subsection{GRU Sequence Classifier}
 A compact GRU tests whether sequence-aware representations capture trajectories that transfer across chemistries. It ingests a sliding window of $W{=}10$ consecutive cycles per cell as a $10{\times}f$ tensor and runs one GRU layer with 8 hidden units. At each timestep the standard update equations apply,
 \begin{equation}\label{eq:gru}
 \begin{aligned}
@@ -107,7 +129,7 @@ A compact GRU tests whether sequence-aware representations capture trajectories 
 \end{equation}
 and the final hidden state maps through a linear layer with sigmoid activation, $p=\sigma(\mathbf{w}^{\top}\mathbf{h}_W + b)$, to give the failure probability. Adam with learning rate 0.005 and binary cross-entropy loss are used. The 8-unit width was chosen to match the small number of training cells (7 to 37); wider layers overfit severely. For cross-chemistry runs the feature set is reduced to avoid unit and availability mismatches: average current is dropped (amperes for LCO, milliamperes for LFP), as are temperature and duration. The remaining features, cycle number, average voltage, minimum voltage, and SOH when enabled, are standardized with training-set statistics.
 
-\subsection{Calibration protocol}
+\subsection{Calibration Protocol}
 Two post-hoc calibration schemes are compared under a fairness-corrected protocol. Platt scaling fits a sigmoid to the base model's raw scores $s_i$,
 \begin{equation}\label{eq:platt}
 p_i \;=\; \frac{1}{1+\exp(-\alpha s_i - \beta)},
@@ -118,12 +140,39 @@ g \;=\; \operatorname*{arg\,min}_{g\ \text{non-decreasing}}\ \sum_i \bigl(y_i - 
 \end{equation}
 implemented with scikit-learn's \texttt{IsotonicRegression} and out-of-bounds clipping. Both calibrators are fit on the base model's training-fold scores, so they share identical inputs and any difference in output comes from the calibration function alone, isolating it from the confound of retraining or data splitting.
 
-A reproducibility note is warranted. The original study \cite{shikdar2026learning} reported Brier scores around 0.032; our re-execution of the released code yields Brier values between roughly 0.09 and 0.29, a gap of up to ninefold we could not resolve from the available source. Our AUC values (0.77--0.94) are comparable to the published range, and our qualitative conclusions hold. The Brier gap does not affect the relative comparisons that form the core of this paper.
+A reproducibility note is warranted. The original study \cite{shikdar2026learning} reported Brier scores around 0.032; re-execution of the released code yields Brier values between roughly 0.09 and 0.29, a gap of up to ninefold that could not be resolved from the available source. The AUC values reported here (0.77--0.94) are comparable to the published range, and the qualitative conclusions hold. The Brier gap does not affect the relative comparisons that form the core of this paper.
 
-\subsection{Cross-chemistry transfer protocol}
-Transfer is evaluated by training on LCO cells (NASA alone, CALCE alone, or both) and testing independently on each cell of the two LFP targets. Three configurations are explored: NASA$\to$LFP (37 cells), CALCE$\to$LFP (7 cells), and ALL-LCO$\to$LFP (44 cells). Each is evaluated with and without SOH. Performance is reported as per-cell mean $\pm$ standard deviation rather than one pooled score, since pooling conflates within-cell ranking with between-cell differences and can hide degenerate behavior where a model assigns nearly identical scores to every cell.
+\subsection{Cross-Chemistry Transfer Protocol}
+Transfer is evaluated by training on LCO cells (NASA alone, CALCE alone, or both) and testing independently on each cell of the two LFP targets. Three configurations are explored: NASA$\to$LFP (37 cells), CALCE$\to$LFP (7 cells), and ALL-LCO$\to$LFP (44 cells). Each is evaluated with and without SOH. Performance is reported as per-cell mean $\pm$ standard deviation rather than one pooled score, since pooling conflates within-cell ranking with between-cell differences and can hide degenerate behavior where a model assigns nearly identical scores to every cell. Table~\ref{alg:train} summarizes the protocol.
 
-\subsection{Evaluation and statistical testing}
+\begin{table}[!t]
+\centering
+\small
+\caption{Training, Transfer, and Deployment Protocol}
+\label{alg:train}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}rl@{}}
+\toprule
+\multicolumn{2}{@{}l@{}}{\textbf{Algorithm 1:} Training, transfer, and deployment protocol}\\
+\midrule
+\multicolumn{2}{@{}l@{}}{Require: LCO training cells; targets (Oxford, Severson)}\\
+\multicolumn{2}{@{}l@{}}{Ensure: calibrated hazard models and a validated binary}\\
+1 & Split LCO cells into 5 folds with cells as groups\\
+2 & \textbf{for} each fold and horizon $H \in \{10,20,30,50\}$ \textbf{do}\\
+3 & \quad Train the model; fit both calibrators on fold scores\\
+4 & \quad Record AUC and Brier on the test folds\\
+5 & \textbf{end for}\\
+6 & Retrain on all LCO cells for the transfer runs\\
+7 & \textbf{for} each LFP target cell \textbf{do}\\
+8 & \quad Evaluate with and without SOH as a feature\\
+9 & \quad Apply the DeLong paired test; compute SHAP values\\
+10 & \textbf{end for}\\
+11 & Export the ensembles to a flat binary; validate the C walker\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Evaluation and Statistical Testing}
 \label{sec:eval}
 Within-dataset evaluation applies 5-fold GroupKFold with cells as grouping units, so every cycle from a given cell stays in one fold. This removes the optimistic bias from leaking a cell's cycles into both training and test. Models are retrained from scratch per horizon. The DeLong nonparametric test \cite{delong1988comparing} for paired ROC curves judges whether the AUC difference between with-SOH and without-SOH conditions is significant. The test evaluates the normalized difference of the two areas,
 \begin{equation}\label{eq:delong}
@@ -131,7 +180,7 @@ z \;=\; \frac{A_1 - A_2}{\sqrt{V_{11}+V_{22}-2V_{12}}},
 \end{equation}
 where $A_j$ is the empirical area under the $j$-th ROC curve and $V_{ij}$ are the elements of its covariance matrix estimated nonparametrically from the same test instances.
 
-\subsection{Embedded deployment architecture}
+\subsection{Embedded Deployment Architecture}
 The deployment pipeline exports the three trained models into one flat binary and runs them on an ESP32-S3 through a hand-written C tree walker. The layout is deliberately simple: a 12-byte file header, a $3{\times}4$-byte offset table, and per-model sections holding a 4-byte tree count followed by consecutive per-tree node arrays. Each node stores the split feature index, the split threshold as a 32-bit float, and child indices; leaves store the class-1 probability directly. The walker is one C function of about 70 lines that follows child pointers, sums the leaf contributions per tree, and applies the per-model output transform. Writing $\ell_t$ for the leaf value reached in tree $t$ and $T$ for the number of trees, Random Forest averages and clamps its leaf probabilities,
 \begin{equation}\label{eq:rf}
 p \;=\; \mathrm{clamp}\!\left(\frac{1}{T}\sum_{t=1}^{T}\ell_t,\ 0,\ 1\right),
@@ -151,9 +200,13 @@ where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). 
 
 \section{Results}
 
-\subsection{Within-dataset performance}
-Table~\ref{tab:within} summarizes within-dataset performance across the four horizons for both LCO datasets under Platt calibration. Discrimination is strong throughout. Mean AUC runs from 0.844 (GRU on CALCE) to 0.913 (Random Forest on NASA and XGBoost on CALCE). Every tree-model configuration clears the 0.85 bar; the only two configurations that fall short are both the GRU on CALCE, at H=20 (0.779) and H=30 (0.768), where the sequence model overfits a dataset whose per-cell degradation tails run to nearly 2,000 cycles.
-
+\subsection{Within-Dataset Performance}
+Table~\ref{tab:within} summarizes within-dataset performance across the four horizons for both LCO datasets under Platt calibration. Discrimination is strong throughout:
+\begin{itemize}
+\item mean AUC runs from 0.844 (GRU on CALCE) to 0.913 (Random Forest on NASA and XGBoost on CALCE);
+\item every tree-model configuration clears the 0.85 bar;
+\item the only two configurations that fall short are both the GRU on CALCE, at H=20 (0.779) and H=30 (0.768), where the sequence model overfits a dataset whose per-cell degradation tails run to nearly 2 000 cycles.
+\end{itemize}
 \begin{table*}[!t]
 \caption{Within-Dataset Platt-Calibrated AUC and Brier Scores Across Four Horizons. GroupKFold by Cell; Values Are Fold Means.}
 \label{tab:within}
@@ -182,8 +235,13 @@ GRU & CALCE & 0.944 & 0.779 & 0.768 & 0.885 & 0.844 & 0.124\\
 \label{fig:within}
 \end{figure*}
 % \clearpage (removed: unbalanced column breaks)
-\subsection{Platt versus isotonic calibration}
-Table~\ref{tab:cal} compares the two calibration methods, \eqref{eq:platt} and \eqref{eq:iso}, averaged over models and horizons. Brier scores barely move (NASA: 0.209 isotonic versus 0.212 Platt; CALCE: 0.107 versus 0.105). The AUC picture is different. On NASA, Platt lifts mean AUC from 0.838 to 0.903; on CALCE the gain is much larger, 0.713 to 0.887. The asymmetry comes from CALCE's long-tailed degradation (up to 1,952 cycles per cell), which pushes extreme scores into degenerate isotonic bins, while Platt's sigmoid compresses them smoothly.
+\subsection{Platt Versus Isotonic Calibration}
+Table~\ref{tab:cal} compares the two calibration methods, \eqref{eq:platt} and \eqref{eq:iso}, averaged over models and horizons. Brier scores change by a small margin (NASA: 0.209 isotonic versus 0.212 Platt; CALCE: 0.107 versus 0.105); the AUC picture is different:
+\begin{itemize}
+\item on NASA, Platt lifts mean AUC from 0.838 to 0.903;
+\item on CALCE the gain is much larger, 0.713 to 0.887;
+\item the asymmetry comes from CALCE's long-tailed degradation (up to 1 952 cycles per cell), which pushes extreme scores into degenerate isotonic bins, while Platt's sigmoid compresses them smoothly.
+\end{itemize}
 
 \begin{table*}[!t]
 \caption{Calibration Method Comparison Averaged Over Models and Horizons. Both Methods Operate on Identical Training-Fold Scores.}
@@ -208,9 +266,13 @@ CALCE & 0.713 & 0.887 & 0.107 & 0.105\\
 \label{fig:cal}
 \end{figure*}
 % \clearpage (removed: unbalanced column breaks)
-\subsection{Cross-chemistry transfer with and without SOH}
-Table~\ref{tab:crosswith} reports transfer at H=20 with SOH kept. Tree models reach raw AUC of 0.57--1.00 on Oxford and 0.95--1.00 on Severson across every training configuration, while the GRU struggles: its distributed hidden state entangles SOH with chemistry-specific features under shift.
-
+\subsection{Cross-Chemistry Transfer With and Without SOH}
+Table~\ref{tab:crosswith} reports transfer at H=20 with SOH kept, and Table~\ref{tab:crossno} the same experiments without SOH. Three findings summarize both tables:
+\begin{itemize}
+\item with SOH available, tree models retain raw AUC of 0.57--1.00 on Oxford and 0.95--1.00 on Severson across every training configuration;
+\item removing SOH collapses raw AUC to 0.32--0.61 on Oxford and 0.54--0.88 on Severson;
+\item the GRU struggles even with SOH, because its distributed hidden state entangles SOH with chemistry-specific features under shift.
+\end{itemize}
 The combined evidence points to SOH as a chemistry-specific lookup key rather than a transferable feature. With SOH available, a model learns a mapping such as ``SOH 0.85 means roughly 50 cycles to failure'' from LCO data and applies it unchanged to LFP, where the mapping is numerically similar for unrelated electrochemical reasons. Without SOH, the remaining features carry no chemistry-invariant signal sufficient for cross-chemistry discrimination.
 
 \begin{table*}[!t]
@@ -291,15 +353,21 @@ ALL LCO & Random Forest & Severson & 0.876 & 0.836\\
 \label{fig:crossno}
 \end{figure*}
 % \clearpage (removed: unbalanced column breaks)
-\subsection{GRU entanglement under distribution shift}
+\subsection{GRU Entanglement Under Distribution Shift}
 The GRU shows an architecture-specific failure that differs from the trees. Its 8-dimensional hidden state compresses SOH together with voltage, current, and cycle trends across the 10-step window. Under LCO-to-LFP shift the entangled voltage and cycle components partially corrupt the SOH signal: even with SOH, raw AUC stays near chance on Oxford (0.475--0.515) and Severson (0.480--0.578) at H=20, against 0.57--0.84 for the CALCE-trained trees. Removing SOH deepens the failure into an inversion of Oxford rankings (0.309 for NASA-trained, down to 0.031 and 0.115 for CALCE- and ALL-LCO-trained runs): CALCE's 92\% composite-failure rate saturates the learned decision boundary, which then ranks Oxford's feature distribution backwards.
 
-\subsection{Calibration methods themselves fail to transfer}
-A second, independent failure appears in the cross-chemistry tables when isotonic calibration is applied. Tree models lose up to 0.48 AUC points depending on the configuration (from 0.004 to 0.476 across Table~\ref{tab:crosswith}); the largest losses hit NASA-trained XGBoost and Random Forest on Severson (0.465 and 0.476), while a few configurations are barely affected, most notably NASA LightGBM, which keeps isotonic AUC of 0.969 and 0.988 against raw values of 1.000 and 0.992. The collapse happens because isotonic's step function is fit to the training distribution; when test scores shift, several different scores land in one bin and get identical calibrated probabilities, which drags AUC down through tied predictions.
+\subsection{Failure of Calibration Transfer}
+A second, independent failure mode appears in the cross-chemistry tables when isotonic calibration is applied:
+\begin{itemize}
+\item tree models lose up to 0.48 AUC points depending on the configuration, from 0.004 to 0.476 across Table~\ref{tab:crosswith};
+\item the largest losses hit NASA-trained XGBoost and Random Forest on Severson (0.465 and 0.476);
+\item a few configurations are barely affected, most notably NASA LightGBM, which keeps isotonic AUC of 0.969 and 0.988 against raw values of 1.000 and 0.992.
+\end{itemize}
+The collapse happens because isotonic's step function is fit to the training distribution; when test scores shift, several different scores land in one bin and receive identical calibrated probabilities, which drags AUC down through tied predictions.
 
-\subsection{DeLong test: statistical significance of the SOH ablation}
+\subsection{DeLong Tests for the SOH Ablation}
 \label{sec:delong}
-Table~\ref{tab:delong} reports DeLong $p$-values, computed with \eqref{eq:delong}, for the ALL-LCO$\to$LFP ablation at H=20. On Oxford the values range from $6.5\times10^{-36}$ (Random Forest) down to $2.6\times10^{-64}$ (LightGBM); on Severson all three fall below $10^{-100}$. The test accounts for the correlation between with-SOH and without-SOH AUCs computed on the same instances, so these numbers are decisive rather than a quirk of paired sampling.
+Table~\ref{tab:delong} reports DeLong $p$-values, computed with \eqref{eq:delong}, for the ALL-LCO$\to$LFP ablation at H=20. On Oxford the values range from $6.5\times10^{-36}$ (Random Forest) down to $2.6\times10^{-64}$ (LightGBM); on Severson all three fall below $10^{-100}$. The test accounts for the correlation between with-SOH and without-SOH AUCs computed on the same instances, making the results decisive rather than artifacts of paired sampling.
 
 \begin{table*}[!t]
 \caption{DeLong Test $p$-Values for the SOH Ablation (ALL-LCO $\to$ LFP, H=20). AUCs Are Pooled Across Test Cells (See Table~\ref{tab:crosswith} for Per-Cell Means). All Comparisons Are Significant at $\alpha=0.05$.}
@@ -321,11 +389,17 @@ Severson & Random Forest & 0.889 & 0.746 & $<10^{-100}$\\
 \end{table*}
 % \clearpage (removed: unbalanced column breaks)
 
-\subsection{Labeled LFP recalibration}
+\subsection{Recalibration on Labeled LFP Data}
 \label{sec:recal}
-The transfer experiment also asks whether a small labeled LFP sample can repair a model trained on LCO. We evaluated two update arms at $H=20$. Arm A fits an isotonic, Platt, or temperature calibrator on the labeled sample while leaving the classifier scores unchanged. Arm B continues XGBoost or LightGBM from the LCO model, or refits a Random Forest on the sample. The primary Severson study used five random seeds and $k\in\{5,10,20,40\}$; NASA used all six model--feature combinations, whereas CALCE and ALL-LCO used XGBoost without SOH. Oxford used its five cells exhaustively at $k\in\{1,2\}$ for the no-SOH XGBoost configuration, without redundant seed repetitions. The resumable run produced 1,047 rows from 216 checkpoint entries.
+The transfer experiment also examined whether a small labeled LFP sample can repair a model trained on LCO. Two update arms were evaluated at $H=20$. Arm A fits an isotonic, Platt, or temperature calibrator on the labeled sample while leaving the classifier scores unchanged. Arm B continues XGBoost or LightGBM from the LCO model, or refits a Random Forest on the sample. The primary Severson study used five random seeds and $k\in\{5,10,20,40\}$; NASA used all six model--feature combinations, whereas CALCE and ALL-LCO used XGBoost without SOH. Oxford used its five cells exhaustively at $k\in\{1,2\}$ for the no-SOH XGBoost configuration, without redundant seed repetitions. The resumable run produced 1 047 rows from 216 checkpoint entries.
 
-Arm A improves calibration error but does not reliably preserve discrimination under the chemistry shift. Averaged across the Severson source/model configurations without SOH, zero-shot ECE is 0.817. At $k=5$, isotonic and Platt reduce it to 0.044 and 0.045, respectively, while temperature scaling remains at 0.563. The corresponding mean AUCs are 0.616, 0.599, and 0.669, because the calibrators create ties or reverse score rankings on the shifted target. For $k\geq10$, isotonic and Platt ECE remain near 0.01--0.015, but the AUC penalty remains visible. Table~\ref{tab:rec-r1} and Fig.~\ref{fig:rec-r2} summarize this calibration-only trade-off.
+Arm A improves calibration error but does not reliably preserve discrimination under the chemistry shift. Averaged across the Severson source/model configurations without SOH, zero-shot ECE is 0.817. At $k=5$, isotonic and Platt reduce it to 0.044 and 0.045, respectively, while temperature scaling remains at 0.563. The corresponding mean AUCs are 0.616, 0.599, and 0.669, because the calibrators create ties or reverse score rankings on the shifted target:
+\begin{itemize}
+\item for $k\geq10$, isotonic and Platt ECE remain near 0.01--0.015;
+\item the AUC penalty remains visible at every sample size;
+\item temperature scaling stays poorly calibrated throughout.
+\end{itemize}
+Table~\ref{tab:rec-r1} and Fig.~\ref{fig:rec-r2} summarize this calibration-only trade-off.
 
 \begin{table*}[!t]
 \caption{Arm A Recalibration on Severson Without SOH. Values Average the Three LCO Sources and Available Tree Models at $H=20$; ECE Uses 10 Equal-Width Probability Bins.}
@@ -385,8 +459,8 @@ ALL LCO & XGBoost & 0.768 & 0.704 & -0.44 & 0.017 & 0.690 $\rightarrow$ 0.597\\
 \label{fig:rec-r3}
 \end{figure*}
 % \clearpage (removed: unbalanced column breaks)
-\subsection{SHAP feature importance}
-TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothesis. Figs.~\ref{fig:shap_xgb}--\ref{fig:shap_rf} show the attributions for the three tree models in NASA-to-Oxford transfer at H=20 with SOH kept: SOH dominates by a wide margin, cycle index a distant second, and the voltage, current, temperature, and duration features contribute little. Figs.~\ref{fig:shap_noxgb}--\ref{fig:shap_norf} repeat the same comparisons with SOH removed, and every remaining feature collapses to near-zero SHAP spread. That visual collapse matches the quantitative AUC collapse and reads as a one-glance demonstration of the paper's central negative result.
+\subsection{SHAP Feature Importance}
+TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothesis. Figs.~\ref{fig:shap_xgb}--\ref{fig:shap_rf} show the attributions for the three tree models in NASA-to-Oxford transfer at H=20 with SOH kept: SOH dominates by a wide margin, cycle index a distant second, and the voltage, current, temperature, and duration features contribute little. Figs.~\ref{fig:shap_noxgb}--\ref{fig:shap_norf} repeat the same comparisons with SOH removed, and every remaining feature collapses to near-zero SHAP spread. That visual collapse matches the quantitative AUC collapse and offers a direct visual demonstration of the paper's central negative result.
 
 \begin{figure*}[!t]
 \centering
@@ -431,7 +505,7 @@ TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothe
 \end{figure*}
 % \clearpage (removed: unbalanced column breaks)
 \begin{table*}[!t]
-\caption{Embedded Deployment: Model Size, Accuracy, On-Device Validation Error, and Measured Inference Time. Errors Are Maximum $|$C engine $-$ \texttt{predict\_proba()}$|$ Over All 1,028 Rows, Measured on the ESP32-S3. Timings Measured On-Device at 240 MHz With the Binary in Flash (PROGMEM), PSRAM, or a Single Model in Internal SRAM. The AUC Column Is the 5-Fold GroupKFold Platt Value at H=20 From Table~\ref{tab:within} (Deployed Models Are Retrained on the Full Data).}
+\caption{Embedded Deployment: Model Size, Accuracy, On-Device Validation Error, and Measured Inference Time. Errors Are Maximum $|$C engine $-$ \texttt{predict\_proba()}$|$ Over All 1 028 Rows, Measured on the ESP32-S3. Timings Measured On-Device at 240 MHz With the Binary in Flash (PROGMEM), PSRAM, or a Single Model in Internal SRAM. The AUC Column Is the 5-Fold GroupKFold Platt Value at H=20 From Table~\ref{tab:within} (Deployed Models Are Retrained on the Full Data).}
 \label{tab:deploy}
 \centering
 \resizebox{\textwidth}{!}{%
@@ -439,18 +513,24 @@ TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothe
 \toprule
 \textbf{Model} & \textbf{Nodes} & \textbf{AUC (H=20)} & \textbf{Max Err} & \textbf{Flash} & \textbf{PSRAM} & \textbf{SRAM (1 model)}\\
 \midrule
-XGBoost & 3,272 & 0.899 & $2.4\times10^{-7}$ & 0.76 ms & 0.50 ms & 0.32 ms\\
-LightGBM & 7,000 & 0.909 & $1.1\times10^{-6}$ & 1.55 ms & 0.93 ms & 0.43 ms\\
-Random Forest & 16,064 & 0.901 & $3.0\times10^{-8}$ & 2.36 ms & 1.29 ms & 0.50 ms\\
-All three & 26,336 & --- & --- & 4.7 ms & 2.7 ms & ---\\
+XGBoost & 3 272 & 0.899 & $2.4\times10^{-7}$ & 0.76 ms & 0.50 ms & 0.32 ms\\
+LightGBM & 7 000 & 0.909 & $1.1\times10^{-6}$ & 1.55 ms & 0.93 ms & 0.43 ms\\
+Random Forest & 16 064 & 0.901 & $3.0\times10^{-8}$ & 2.36 ms & 1.29 ms & 0.50 ms\\
+All three & 26 336 & --- & --- & 4.7 ms & 2.7 ms & ---\\
 \bottomrule
 \end{tabular}}
 \end{table*}
 
-\subsection{Embedded deployment validation}
-Three independent validation stages confirm that the C tree engine reproduces the Python training libraries through the output transforms of \eqref{eq:rf} and \eqref{eq:sigmoid}: a Python walker over the extracted trees, the same walker cross-checked on the full 1,028-row set, and the C engine run on-device on an ESP32-S3 against the library's \texttt{predict\_proba()}. Fig.~\ref{fig:pyc} plots every one of the 1,028 on-device predictions against the Python values for all three models; the points sit on the identity line and the residual histograms are pinned to zero. The measured on-device maximum absolute error is $2.4\times10^{-7}$ for XGBoost, $1.1\times10^{-6}$ for LightGBM, and $3.0\times10^{-8}$ for Random Forest, all far inside the $10^{-5}$ tolerance.
+\subsection{Embedded Deployment Validation}
+Three independent validation stages confirm that the C tree engine reproduces the Python training libraries through the output transforms of \eqref{eq:rf} and \eqref{eq:sigmoid}: a Python walker over the extracted trees, the same walker cross-checked on the full 1 028-row set, and the C engine run on-device on an ESP32-S3 against the library's \texttt{predict\_proba()}. Fig.~\ref{fig:pyc} plots every one of the 1 028 on-device predictions against the Python values for all three models; the points fall on the identity line and the residual histograms are centered at zero. The measured on-device maximum absolute error is $2.4\times10^{-7}$ for XGBoost, $1.1\times10^{-6}$ for LightGBM, and $3.0\times10^{-8}$ for Random Forest, all far inside the $10^{-5}$ tolerance.
 
-Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the on-device validation error, and the measured inference time, and Fig.~\ref{fig:deploy} plots the latency, the speed--accuracy trade-off, and the footprint. The three ensembles occupy 372 kB in the flat binary. Measured single-row inference at 240 MHz depends on where the binary sits: 0.76 ms, 1.55 ms, and 2.36 ms for XGBoost, LightGBM, and Random Forest from memory-mapped flash; 0.50 ms, 0.93 ms, and 1.29 ms from PSRAM; and 0.32 ms, 0.43 ms, and 0.50 ms when a single model is placed in internal SRAM. The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 320 kB, but each individual model does (XGBoost is about 46 kB, LightGBM 98 kB, Random Forest 225 kB), and the firmware runs one model at a time, so the SRAM-resident numbers are the realistic per-inference cost. Both flash and PSRAM land well above the 150--250 \textmu s we first projected, because the working set exceeds the ESP32-S3's data cache and nearly every node read misses; PSRAM is about 1.5--1.8\texttimes\ faster than flash for the same reason. The all-three PSRAM path still clears the 100 ms per-cycle budget by roughly 37\texttimes, and a single model from SRAM runs close to the original projection.
+Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the on-device validation error, and the measured inference time, and Fig.~\ref{fig:deploy} plots the latency, the speed--accuracy trade-off, and the footprint. The three ensembles occupy 372 kB in the flat binary. Measured single-row inference at 240 MHz depends on where the binary sits:
+\begin{itemize}
+\item from memory-mapped flash, 0.76 ms, 1.55 ms, and 2.36 ms for XGBoost, LightGBM, and Random Forest;
+\item from PSRAM, 0.50 ms, 0.93 ms, and 1.29 ms;
+\item with a single model held in internal SRAM, 0.32 ms, 0.43 ms, and 0.50 ms.
+\end{itemize}
+The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 320 kB, but each individual model does (XGBoost is about 46 kB, LightGBM 98 kB, Random Forest 225 kB), and the firmware runs one model at a time, so the SRAM-resident numbers are the realistic per-inference cost. Both flash and PSRAM land well above the 150--250 \textmu s range projected at the outset, because the working set exceeds the ESP32-S3's data cache and nearly every node read misses; PSRAM is about 1.5--1.8\texttimes\ faster than flash for the same reason. The all-three PSRAM path still clears the 100 ms per-cycle budget by roughly 37\texttimes, and a single model from SRAM runs close to the original projection.
 
 \begin{figure*}[!t]
 \centering
@@ -462,34 +542,43 @@ Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the o
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.9\textwidth]{fig_py_c_agreement.png}
-\caption{On-device C engine predictions versus Python \texttt{predict\_proba()} over all 1,028 rows and three models (agreement scatter on the identity line, inset residual histogram of C minus Python in units of $10^{-6}$). Maximum absolute errors are $2.4\times10^{-7}$ (XGBoost), $1.1\times10^{-6}$ (LightGBM), and $3.0\times10^{-8}$ (Random Forest).}
+\caption{On-device C engine predictions versus Python \texttt{predict\_proba()} over all 1 028 rows and three models (agreement scatter on the identity line, inset residual histogram of C minus Python in units of $10^{-6}$). Maximum absolute errors are $2.4\times10^{-7}$ (XGBoost), $1.1\times10^{-6}$ (LightGBM), and $3.0\times10^{-8}$ (Random Forest).}
 \label{fig:pyc}
 \end{figure*}
 
 % \clearpage (removed: unbalanced column breaks)
 
-\section{Discussion}
+\section{Discussion, Analysis, and Novelty}
 
-\subsection{The SOH-as-lookup-table mechanism}
+\subsection{The SOH Lookup-Table Mechanism}
 The central negative result reads best as a leakage diagnosis rather than a generic failure of transfer learning. SOH is a capacity ratio, and capacity declines with age in both LCO and LFP cells, so both chemistries traverse SOH values from 1.0 down to 0.8. What differs is the mapping from SOH to remaining cycles: LCO degrades faster per cycle, so a given SOH corresponds to fewer remaining cycles. A model that learned the LCO mapping assigns high failure probability at the appropriate LCO cycle count even on LFP test cells, which produces high AUC, but the prediction rides on a chemistry-specific proxy rather than any real understanding of LFP degradation. SHAP confirms that SOH carries the dominant share of feature importance in every model, and removing it collapses every predictor to near-random performance.
 
-\subsection{Implications for battery management practitioners}
-Three practical points follow. First, within-chemistry hazard models built from standard charge and discharge features (voltage, current, temperature, cycle count) are reliable, reaching AUC of 0.85 and above with Platt calibration, and the deployment results show they run on a \$12 microcontroller. Second, cross-chemistry transfer should not be assumed; without SOH no model class clears chance, and with SOH the GRU's distributed representation still offers no guarantee of generalization. Third, post-hoc calibration, especially isotonic regression, should not be applied blindly under distribution shift; raw scores give a more dependable discriminative signal for cross-chemistry deployment.
+\subsection{Implications for Battery Management Practitioners}
+Three practical points follow from the experiments:
+\begin{itemize}
+\item \textbf{1)} Within-chemistry hazard models built from standard charge and discharge features (voltage, current, temperature, cycle count) are reliable, reaching AUC of 0.85 and above with Platt calibration, and the deployment results show that they run on a \$12 microcontroller.
+\item \textbf{2)} Cross-chemistry transfer should not be assumed; without SOH no model class clears chance, and with SOH the GRU's distributed representation still offers no guarantee of generalization.
+\item \textbf{3)} Post-hoc calibration, especially isotonic regression, should not be applied blindly under distribution shift; raw scores give a more dependable discriminative signal for cross-chemistry deployment.
+\end{itemize}
 
 \subsection{Limitations}
-The Oxford set holds only five cells, too few for a reliable within-dataset evaluation and enough to blunt the precision of the per-cell standard deviation; the 141-cell Severson set is included specifically to offset this and it reproduces every qualitative finding. The analysis runs one direction, LCO to LFP, and bidirectional transfer would round out the picture. The GRU is evaluated with a single seed; the instability across configurations is itself informative, but multi-seed analysis is left to future work.
+The Oxford set holds only five cells, too few for a reliable within-dataset evaluation and enough to blunt the precision of the per-cell standard deviation; the 141-cell Severson set is included specifically to offset this and it reproduces every qualitative finding. The analysis runs in one direction, LCO to LFP, and bidirectional transfer would round out the picture. The GRU is evaluated with a single seed; the instability across configurations is itself informative, but multi-seed analysis is left to future work.
 
 \section{Conclusion}
-This study widens a multi-horizon hazard classification framework, first shown on one model and one dataset, to four model families on two LCO datasets, with cross-chemistry transfer checked on two independent LFP targets and a complete embedded deployment on an ESP32-S3. Three findings stand out. Within-dataset performance is consistent across model classes (mean AUC 0.84--0.91) and Platt calibration beats isotonic throughout. Cross-chemistry transfer fails for every model class once SOH is removed, and the failure comes from SOH acting as a chemistry-specific lookup key rather than a transferable degradation invariant. Post-hoc calibration produces a further, independent failure mode in which isotonic regression destroys cross-chemistry discriminative power under distribution shift.
+This study widened a multi-horizon hazard classification framework, first shown on one model and one dataset, to four model families on two LCO datasets, with cross-chemistry transfer checked on two independent LFP targets and a complete embedded deployment on an ESP32-S3.
 
-The embedded deployment adds a concrete positive result to these cautions. Three ensembles totaling 900 trees and 26,336 nodes fit into 372 kB, run on a \$12 microcontroller in about 2.7 ms for all three models from PSRAM, about 0.5 ms for a single model kept in internal SRAM, and reproduce the Python training libraries to within $1.1\times10^{-6}$ across more than a thousand validation rows. Future work should pursue learned feature representations built for chemistry invariance, bidirectional transfer, and multi-seed GRU evaluation.
+Within-dataset performance is consistent across model classes, with mean AUC of 0.84--0.91, and Platt calibration outperforms isotonic throughout. The largest improvement appears on the long-tailed CALCE set, where Platt raises mean AUC from 0.713 to 0.887.
 
-% \clearpage (removed: unbalanced column breaks)
+Cross-chemistry transfer fails for every model class once SOH is removed, and the failure traces to SOH acting as a chemistry-specific lookup key rather than a transferable degradation invariant. DeLong tests reject the null hypothesis at $p < 10^{-100}$ on Severson and down to $2.6\times10^{-64}$ on Oxford for the SOH ablation.
+
+Post-hoc calibration produces a further, independent failure mode in which isotonic regression destroys cross-chemistry discriminative power under distribution shift, and labeled-LFP recalibration repairs calibration error while recovering only part of the lost discrimination. On the deployment side, three ensembles totaling 900 trees and 26 336 nodes fit into 372 kB, run on a \$12 microcontroller in about 2.7 ms for all three models from PSRAM and about 0.5 ms for a single model held in internal SRAM, and reproduce the Python training libraries to within $1.1\times10^{-6}$ across all 1 028 validation rows.
+
+Future work will focus on learned feature representations built for chemistry invariance, bidirectional transfer, and multi-seed GRU evaluation.
+
 \section*{Acknowledgment}
 This work received no external funding. The authors declare no conflicts of interest. The source code, data, trained models, firmware, and validation pipeline are publicly available at \url{https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction}.
 
 \raggedbottom
-% \clearpage (removed: unbalanced column breaks)
 \begin{thebibliography}{20}
 \bibitem{shikdar2026learning} T. A. Shikdar and H. Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{Int. Trans. Electr. Energy Syst.}, vol. 36, Art. no. 6000810, 2026.
 \bibitem{meng2019review} H. Meng and Y. Li, ``A review on prognostics and health management (PHM) methods of lithium-ion batteries,'' \emph{Renew. Sustain. Energy Rev.}, vol. 116, Art. no. 109405, 2019.
