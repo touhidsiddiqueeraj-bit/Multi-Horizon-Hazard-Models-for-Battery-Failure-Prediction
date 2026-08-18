@@ -62,9 +62,10 @@ def fig_r1(df, out):
             ax.fill_between(ks, np.array(means) - np.array(stds),
                             np.array(means) + np.array(stds),
                             color=COLORS[model], alpha=0.15)
-        zero = d[(d.source == source) & (d.arm == "zeroshot")].auc_pooled.mean()
-        ceil = d[(d.source == source) & (d.arm == "zeroshot")].auc_ceiling_within_lco.mean()
-        full = d[(d.source == source) & (d.arm == "zeroshot")].auc_ceiling_full_lfp.mean()
+        zo = df[(df.target == "severson") & (df.H == 20) & (df.features == "no_soh") & (df.arm == "zeroshot") & (df.source == source)]
+        zero = zo.auc_pooled.mean()
+        ceil = zo.auc_ceiling_within_lco.mean()
+        full = zo.auc_ceiling_full_lfp.mean()
         ax.axhline(zero, ls="--", color="#555", lw=1, label="zero-shot (no update)")
         if not np.isnan(ceil):
             ax.axhline(ceil, ls=":", color="#b51d0a", lw=1.2, label="within-LCO ceiling")
