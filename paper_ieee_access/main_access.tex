@@ -181,7 +181,7 @@ GRU & CALCE & 0.944 & 0.779 & 0.768 & 0.885 & 0.844 & 0.124\\
 \caption{Within-dataset AUC heatmap, mean across horizons, Platt-calibrated.}
 \label{fig:within}
 \end{figure*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \subsection{Platt versus isotonic calibration}
 Table~\ref{tab:cal} compares the two calibration methods, \eqref{eq:platt} and \eqref{eq:iso}, averaged over models and horizons. Brier scores barely move (NASA: 0.209 isotonic versus 0.212 Platt; CALCE: 0.107 versus 0.105). The AUC picture is different. On NASA, Platt lifts mean AUC from 0.838 to 0.903; on CALCE the gain is much larger, 0.713 to 0.887. The asymmetry comes from CALCE's long-tailed degradation (up to 1,952 cycles per cell), which pushes extreme scores into degenerate isotonic bins, while Platt's sigmoid compresses them smoothly.
 
@@ -207,7 +207,7 @@ CALCE & 0.713 & 0.887 & 0.107 & 0.105\\
 \caption{Reliability diagrams for NASA (top) and CALCE (bottom), XGBoost at H=20. Isotonic produces degenerate bins on long-tailed CALCE data.}
 \label{fig:cal}
 \end{figure*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \subsection{Cross-chemistry transfer with and without SOH}
 Table~\ref{tab:crosswith} reports transfer at H=20 with SOH kept. Tree models reach raw AUC of 0.57--1.00 on Oxford and 0.95--1.00 on Severson across every training configuration, while the GRU struggles: its distributed hidden state entangles SOH with chemistry-specific features under shift.
 
@@ -290,7 +290,7 @@ ALL LCO & Random Forest & Severson & 0.876 & 0.836\\
 \caption{Cross-chemistry transfer without SOH, raw AUC. Top: Oxford, bottom: Severson.}
 \label{fig:crossno}
 \end{figure*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \subsection{GRU entanglement under distribution shift}
 The GRU shows an architecture-specific failure that differs from the trees. Its 8-dimensional hidden state compresses SOH together with voltage, current, and cycle trends across the 10-step window. Under LCO-to-LFP shift the entangled voltage and cycle components partially corrupt the SOH signal: even with SOH, raw AUC stays near chance on Oxford (0.475--0.515) and Severson (0.480--0.578) at H=20, against 0.57--0.84 for the CALCE-trained trees. Removing SOH deepens the failure into an inversion of Oxford rankings (0.309 for NASA-trained, down to 0.031 and 0.115 for CALCE- and ALL-LCO-trained runs): CALCE's 92\% composite-failure rate saturates the learned decision boundary, which then ranks Oxford's feature distribution backwards.
 
@@ -319,7 +319,7 @@ Severson & Random Forest & 0.889 & 0.746 & $<10^{-100}$\\
 \bottomrule
 \end{tabular}}
 \end{table*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 
 \subsection{Labeled LFP recalibration}
 \label{sec:recal}
@@ -384,7 +384,7 @@ ALL LCO & XGBoost & 0.768 & 0.704 & -0.44 & 0.017 & 0.690 $\rightarrow$ 0.597\\
 \caption{Arm B AUC heatmap for the Severson recalibration study. Recovery ratios are defined against the feature-matched within-LCO ceiling rather than the full-LFP retraining ceiling.}
 \label{fig:rec-r3}
 \end{figure*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \subsection{SHAP feature importance}
 TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothesis. Figs.~\ref{fig:shap_xgb}--\ref{fig:shap_rf} show the attributions for the three tree models in NASA-to-Oxford transfer at H=20 with SOH kept: SOH dominates by a wide margin, cycle index a distant second, and the voltage, current, temperature, and duration features contribute little. Figs.~\ref{fig:shap_noxgb}--\ref{fig:shap_norf} repeat the same comparisons with SOH removed, and every remaining feature collapses to near-zero SHAP spread. That visual collapse matches the quantitative AUC collapse and reads as a one-glance demonstration of the paper's central negative result.
 
@@ -429,7 +429,7 @@ TreeSHAP \cite{lundberg2020from} gives a direct test of the lookup-table hypothe
 \caption{SHAP feature importance for Random Forest in NASA-to-Oxford transfer at H=20, without SOH. All features collapse to near-zero spread.}
 \label{fig:shap_norf}
 \end{figure*}
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \begin{table*}[!t]
 \caption{Embedded Deployment: Model Size, Accuracy, On-Device Validation Error, and Measured Inference Time. Errors Are Maximum $|$C engine $-$ \texttt{predict\_proba()}$|$ Over All 1,028 Rows, Measured on the ESP32-S3. Timings Measured On-Device at 240 MHz With the Binary in Flash (PROGMEM), PSRAM, or a Single Model in Internal SRAM. The AUC Column Is the 5-Fold GroupKFold Platt Value at H=20 From Table~\ref{tab:within} (Deployed Models Are Retrained on the Full Data).}
 \label{tab:deploy}
@@ -466,7 +466,7 @@ Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the o
 \label{fig:pyc}
 \end{figure*}
 
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 
 \section{Discussion}
 
@@ -484,12 +484,12 @@ This study widens a multi-horizon hazard classification framework, first shown o
 
 The embedded deployment adds a concrete positive result to these cautions. Three ensembles totaling 900 trees and 26,336 nodes fit into 372 kB, run on a \$12 microcontroller in about 2.7 ms for all three models from PSRAM, about 0.5 ms for a single model kept in internal SRAM, and reproduce the Python training libraries to within $1.1\times10^{-6}$ across more than a thousand validation rows. Future work should pursue learned feature representations built for chemistry invariance, bidirectional transfer, and multi-seed GRU evaluation.
 
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \section*{Acknowledgment}
 This work received no external funding. The authors declare no conflicts of interest. The source code, data, trained models, firmware, and validation pipeline are publicly available at \url{https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction}.
 
 \raggedbottom
-\clearpage
+% \clearpage (removed: unbalanced column breaks)
 \begin{thebibliography}{20}
 \bibitem{shikdar2026learning} T. A. Shikdar and H. Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{Int. Trans. Electr. Energy Syst.}, vol. 36, Art. no. 6000810, 2026.
 \bibitem{meng2019review} H. Meng and Y. Li, ``A review on prognostics and health management (PHM) methods of lithium-ion batteries,'' \emph{Renew. Sustain. Energy Rev.}, vol. 116, Art. no. 109405, 2019.
