@@ -9,7 +9,7 @@
 
 Within-dataset reliability, cross-chemistry transferability, and **embedded deployment** of multi-horizon hazard models for battery failure prediction. Extends the framework of [Shikdar & Laaksonen (2026)](https://doi.org/10.1155/etep/6000810).
 
-**Three tree ensemble models** (XGBoost, LightGBM, Random Forest — 300 trees each) trained on NASA battery data and **deployed on an ESP32-S3 microcontroller** (~$12 ESP32-S3 only, ~$25 full system). The C inference engine reproduces Python predictions with **sub‑microsecond precision** (max error < 2×10⁻⁷ across all 1028 data rows).
+**Three tree ensemble models** (XGBoost, LightGBM, Random Forest — 300 trees each) trained on NASA battery data and **deployed on an ESP32-S3 microcontroller** (~$12 ESP32-S3 only, ~$25 full system). The C inference engine reproduces Python predictions with **sub-microsecond numerical precision** (maximum absolute error 1.1×10⁻⁶ across all 1028 data rows).
 
 ---
 
@@ -17,9 +17,9 @@ Within-dataset reliability, cross-chemistry transferability, and **embedded depl
 
 This project spans two tracks:
 
-**Research track.** Evaluates whether hazard-based battery failure models trained on LCO generalize to LFP. Benchmarks four model classes (XGBoost, LightGBM, Random Forest, GRU) across three public datasets (NASA 18650, CALCE LCO/CX2, Oxford LFP). Compares isotonic vs Platt calibration under a fairness-corrected protocol.
+**Research track.** Evaluates whether hazard-based battery failure models trained on LCO generalize to LFP. Benchmarks four model classes (XGBoost, LightGBM, Random Forest, GRU) across four public datasets (NASA 18650, CALCE LCO/CX2, Oxford LFP, and MIT-Stanford Severson LFP). Compares isotonic vs Platt calibration under a fairness-corrected protocol.
 
-**Deployment track.** Exports trained tree models to a compact binary format (372 KB) and deploys them on an ESP32-S3 with four sensors (voltage divider, INA219 current, DS18B20 temperature, DS3231 RTC). A C tree engine walks 900 trees (26,306 nodes) in ~5–8 μs on PC (~200 μs projected on ESP32), with runtime model switching via UART or web dashboard. Two firmware variants are provided: ESP-IDF (production) and Arduino (web dashboard with captive portal).
+**Deployment track.** Exports trained tree models to a compact binary format (372 KB) and deploys them on an ESP32-S3 with four sensors (voltage divider, INA219 current, DS18B20 temperature, DS3231 RTC). A C tree engine walks 900 trees (26,336 nodes), with runtime model switching via UART or web dashboard. Two firmware variants are provided: ESP-IDF (production) and Arduino (web dashboard with captive portal).
 
 ---
 
@@ -110,7 +110,13 @@ Isotonic fits a step function to the training-score distribution. Under shift, m
 
 ### Finding 6: SHAP Comparison — With SOH vs Without SOH
 
-Six SHAP summary plots are generated (Figs. 6a–f, in `data/`). Figs. 6a–c (with SOH) show SOH dominating feature importance across XGBoost, LightGBM, and Random Forest for NASA→Oxford transfer at H=20. Figs. 6d–f (without SOH) show all remaining features collapsing to near-zero SHAP spread — a direct visual confirmation that no other feature carries transferable LCO→LFP signal. The contrast between Fig 6a and 6d (XGBoost), 6b and 6e (LightGBM), and 6c and 6f (Random Forest) provides an intuitive demonstration of the SOH-as-lookup-table mechanism.
+Six SHAP summary plots are generated in `paper_ieee_access/figs/` (Figs. 6a–f). Figs. 6a–c (with SOH) show SOH dominating feature importance across XGBoost, LightGBM, and Random Forest for NASA→Oxford transfer at H=20. Figs. 6d–f (without SOH) show all remaining features collapsing to near-zero SHAP spread — a direct visual confirmation that no other feature carries transferable LCO→LFP signal. The contrast between Fig 6a and 6d (XGBoost), 6b and 6e (LightGBM), and 6c and 6f (Random Forest) provides an intuitive demonstration of the SOH-as-lookup-table mechanism.
+
+### Finding 7: Few-Shot Target-Chemistry Adaptation Is Conditional
+
+The resumable H=20 recalibration experiment uses labeled target cells, not a random percentage of individual rows. Severson uses `k={5,10,20,40}` of 141 cells (3.5%, 7.1%, 14.2%, and 28.4%); Oxford exhaustively uses `k={1,2}` of 5 cells (20% and 40%).
+
+Arm A, calibration only, reduces Severson no-SOH ECE from 0.817 to 0.044 with isotonic and 0.045 with Platt at k=5, but can damage AUC through ties or rank reversals. Arm B, model updating, improves NASA-trained XGBoost from AUC 0.637 to 0.818 and LightGBM from 0.514 to 0.774 at k=5. The effect is source/model dependent: NASA Random Forest falls from 0.744 to 0.726 while LCO retention falls from 0.959 to 0.368. Treat target adaptation as conditional and retain a source-retention guard.
 
 ---
 
@@ -192,7 +198,7 @@ All three models are packed into a single binary with per‑tree node counts for
 
 Each `treenode_t` (14 bytes): `feature_idx (int16)` | `threshold (float32)` | `left_child (int16)` | `right_child (int16)` | `leaf_value (float32)`.
 
-Total: 26,306 nodes across 900 trees ≈ 411 KB in PSRAM.
+Total: 26,336 nodes across 900 trees ≈ 411 KB in PSRAM.
 
 ### Performance
 
@@ -355,6 +361,9 @@ python src/plot_fig02.py
 python src/plot_fig05.py
 python src/plot_shap.py
 
+# Target-chemistry adaptation results (uses the resumable reduced CSV)
+python src/plot_recalibration.py
+
 # 3. Build papers and presentations
 python src/generate_paper.py               # paper/paper.docx
 python src/generate_paper_ieee.py           # paper/paper_ieee.docx
@@ -368,7 +377,8 @@ Outputs:
 - `paper/paper.docx`, `paper/paper_ieee.docx`, `paper/Paper_IEEE.docx`, `paper/paper_methodology_results.docx`
 - `presentation/presentation.pptx` (18 slides, detailed)
 - `presentation/presentation_simple.pptx` (18 slides, simplified)
-- `data/Fig*.png` — all generated figures
+- `data/Fig*.png` — legacy benchmark figures
+- `paper_ieee_access/figs/` — paper-ready figures
 
 ### Deployment Pipeline
 
@@ -411,6 +421,7 @@ Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction/
 │   ├── loader.py                #   NASA dataset loader (.mat)
 │   ├── loader_calce.py          #   CALCE dataset loader (.zip/.xlsx)
 │   ├── loader_oxford.py         #   Oxford dataset loader (.mat)
+│   ├── loader_severson.py       #   MIT-Stanford Severson loader
 │   ├── plot_*.py                #   8 plotting scripts for all figures
 │   └── generate_*.py            #   Paper + presentation generators
 │
@@ -445,12 +456,22 @@ Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction/
 │       ├── battery_predictor.ino   # Single sketch (1055 lines)
 │       └── models_data.h           # Auto-generated PROGMEM model array
 │
-├── data/                        # Cleaned CSVs + generated figures
+├── data/                        # Cleaned CSVs and legacy research assets
 │   ├── nasa_clean_filtered.csv  #   37 LCO cells, 1028 cycles
 │   ├── calce_clean.csv          #   7 LCO cells, ~8700 cycles
 │   ├── oxford_clean.csv         #   5 LFP cells, ~300 cycles
 │   ├── benchmark_results.csv    #   All experiment results
-│   └── Fig*.png                 #   Generated figures (11 panels)
+│   └── Fig*.png                 #   Legacy benchmark figures
+│
+├── results/recalibration/       # Resumable target-chemistry adaptation run
+│   ├── recalibration_reduced.csv
+│   ├── recalibration_reduced.db
+│   └── README.md
+
+├── paper_ieee_access/           # IEEE Access source, PDF, and paper figures
+│   ├── main_access.tex
+│   ├── main_access.pdf
+│   └── figs/
 │
 ├── paper/                       # Generated paper.docx
 ├── presentation/                # Generated PPTX slide decks
@@ -464,7 +485,12 @@ Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction/
 
 ---
 
-## Journal-Ready Outputs
+## Paper and Journal Outputs
+
+- **`paper_ieee_access/main_access.pdf`** — rebuilt IEEE Access paper with organized result plates.
+- **`paper_ieee_access/figs/`** — figures embedded by the IEEE Access source, including recalibration figures.
+- **`results/recalibration/`** — resumable CSV/SQLite state and logs for the 1,047-row reduced run.
+- **`tables_journal/TableR1_ArmA_Recalibration.csv`** and **`TableR2_ArmB_Recovery.csv`** — recalibration tables.
 
 - **`figs_journal_clean/`** — Publication-quality PNGs (16 figures, 600 DPI)
 - **`figs_journal_editable/`** — Source files in SVG, PPTX, and PDF (6 figures, 18 files) for journal submission or revision

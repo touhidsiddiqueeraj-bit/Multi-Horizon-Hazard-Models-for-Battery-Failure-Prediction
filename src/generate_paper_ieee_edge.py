@@ -44,7 +44,7 @@ paper.add_abstract(
     "on Oxford LFP and 0.60\u20130.85 on MIT-Stanford Severson LFP (DeLong p < 10\u207b\u00b3\u2076). "
     "A secondary finding reveals that isotonic calibration itself fails to transfer across chemistries, "
     "systematically destroying 0.15\u20130.48 AUC points under distribution shift. We further "
-    "demonstrate a complete embedded deployment: all three tree ensembles (900 trees, 26,306 nodes) "
+    "demonstrate a complete embedded deployment: all three tree ensembles (900 trees, 26,336 nodes) "
     "are packed into a 372 kB binary and run on an ESP32-S3 microcontroller through a hand-written "
     "C tree walker, reproducing Python training library predictions to sub-microsecond precision "
     "across 1,028 validation rows in under 600 \u00b5s. These results establish a reproducible "
@@ -598,7 +598,7 @@ t5_rows = [
     ["XGBoost", "300", "3,242", "1.80 \u00d7 10\u207b\u2077", "7.6 \u00b5s", "~200 \u00b5s"],
     ["LightGBM", "300", "7,000", "1.25 \u00d7 10\u207b\u2079", "5.1 \u00b5s", "~150 \u00b5s"],
     ["Random Forest", "300", "16,064", "2.04 \u00d7 10\u207b\u2079", "8.1 \u00b5s", "~250 \u00b5s"],
-    ["All three", "900", "26,306", "\u2014", "20.8 \u00b5s", "~600 \u00b5s"],
+    ["All three", "900", "26,336", "\u2014", "20.8 \u00b5s", "~600 \u00b5s"],
 ]
 paper.add_table_title("TABLE V. Embedded deployment validation and inference timing. "
                        "C engine predictions compared against scikit-learn / xgboost / lightgbm "
@@ -610,7 +610,7 @@ paper.make_table(
 paper.add_para("")
 
 paper.add_para(
-    "All three ensembles (900 trees, 26,306 nodes) occupy 372 kB in the flat binary format, "
+    "All three ensembles (900 trees, 26,336 nodes) occupy 372 kB in the flat binary format, "
     "well within the ESP32-S3\u2019s 2 MB flash. Execution on the target microcontroller "
     "completes in under 600 \u00b5s for all 1,028 rows, or roughly 0.58 \u00b5s per row. "
     "No single-row inference exceeds 4 \u00b5s for any model. These results confirm that "
@@ -679,7 +679,7 @@ paper.add_para(
 )
 paper.add_para(
     "The embedded deployment results complement these findings with a practical positive result. "
-    "Three tree ensembles totaling 900 trees and 26,306 nodes fit into 372 kB, run on a $12 "
+    "Three tree ensembles totaling 900 trees and 26,336 nodes fit into 372 kB, run on a $12 "
     "microcontroller in under a millisecond, and reproduce the Python training libraries to "
     "sub-microsecond precision across more than a thousand validation rows. Future work should "
     "explore learned feature representations for chemistry invariance, bidirectional transfer, "

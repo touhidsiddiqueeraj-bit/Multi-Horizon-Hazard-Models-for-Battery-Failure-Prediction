@@ -57,13 +57,14 @@ System design and data flow for the Multi-Horizon Battery Failure Prediction pro
 
 ### Data Loaders
 
-Three loaders normalize disparate battery cycling data into a shared feature space.
+Four loaders normalize disparate battery cycling data into a shared feature space.
 
 | Dataset | Loader | Format | Cells | Chemistry |
 |---------|--------|--------|------:|:---------:|
 | NASA 18650 | `loader.py` | `.mat` (struct arrays) | 37 | LCO |
 | CALCE LCO/CX2 | `loader_calce.py` | `.zip` → `.xlsx` per cell | 7 | LCO |
 | Oxford LFP | `loader_oxford.py` | `.mat` (single file) | 5 | LFP |
+| MIT-Stanford Severson LFP | `loader_severson.py` | `.mat`/processed CSV | 141 | LFP |
 
 Each loader outputs a flat CSV with columns: `cell`, `cycle`, `avg_voltage`, `min_voltage`, `avg_current`, `avg_temp`, `duration`, `SOH`, `RUL`.
 
@@ -85,6 +86,19 @@ Two evaluation modes:
 2. **Cross-chemistry**: Train on all LCO cells (NASA + CALCE, or either alone), test on all Oxford LFP cells (single train/test split).
 
 For each fold, both isotonic and Platt calibrators are fit on training-fold scores (not a held-out set). This is a deliberate fairness choice — `CalibratedClassifierCV(cv=3)` would give an unfair 3-model ensemble advantage.
+
+### Few-Shot Target-Chemistry Recalibration
+
+`src/recalibrate_cross_chem.py` evaluates two target-adaptation arms at `H=20`:
+
+1. Arm A fits isotonic, Platt, or temperature calibration on labeled target cells.
+2. Arm B warm-starts XGBoost/LightGBM or refits Random Forest on the same cells.
+
+The reduced run is resumable through SQLite and writes to `results/recalibration/`.
+Severson uses 5, 10, 20, or 40 of 141 target cells; Oxford exhaustively uses 1
+or 2 of 5 cells. `src/plot_recalibration.py` reads the reduced CSV by default
+and writes paper figures to `paper_ieee_access/figs/` and tables to
+`tables_journal/`.
 
 ### Model Hyperparameters
 
@@ -354,7 +368,7 @@ trained_model.predict_proba()  ←── C tree_engine_predict()
 | Component | Size |
 |-----------|-----:|
 | trees.bin (flash) | 372 KB (371,958 bytes) |
-| In PSRAM (parsed) | ~360 KB (26,306 nodes × 14 B + per-tree headers) |
+| In PSRAM (parsed) | ~360 KB (26,336 nodes × 14 B + per-tree headers) |
 | ESP32-S3 PSRAM | 8 MB octal |
 | Utilization | ~5% |
 

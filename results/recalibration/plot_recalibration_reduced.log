@@ -1,0 +1,15 @@
+[Fig R1] /home/touhid/multi-horizon-battery/paper_ieee_access/figs/fig_recal_auc_vs_k.png
+[Fig R2] /home/touhid/multi-horizon-battery/paper_ieee_access/figs/fig_recal_ece_vs_k.png
+[Fig R3] /home/touhid/multi-horizon-battery/paper_ieee_access/figs/fig_recal_heatmap.png
+[tables] /home/touhid/multi-horizon-battery/tables_journal/TableR1_ArmA_Recalibration.csv
+[tables] /home/touhid/multi-horizon-battery/tables_journal/TableR2_ArmB_Recovery.csv
+
+=== headline (no-SOH, H=20, Severson, seeds: 6) ===
+nasa       xgboost      k=5: zero 0.637 -> armB 0.818 ratio +0.87 p=0.000 lco 1.000->1.000
+nasa       lightgbm     k=5: zero 0.514 -> armB 0.774 ratio +0.69 p=0.000 lco 1.000->0.988
+nasa       random_forest k=5: zero 0.744 -> armB 0.726 ratio -0.24 p=0.000 lco 0.959->0.368
+calce      xgboost      k=5: zero 0.685 -> armB 0.736 ratio +0.24 p=0.000 lco 0.997->0.613
+nasa+calce xgboost      k=5: zero 0.768 -> armB 0.704 ratio -0.44 p=0.017 lco 0.690->0.597
+arm_a iso       k=5: zero 0.816 -> ece 0.044 auc 0.616 tie_delta 0.1377
+arm_a platt     k=5: zero 0.816 -> ece 0.045 auc 0.599 tie_delta 0.4557
+arm_a temp      k=5: zero 0.816 -> ece 0.563 auc 0.669 tie_delta 0.0000
