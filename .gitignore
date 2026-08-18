@@ -48,3 +48,6 @@ data/oxford/*.mat
 !data/oxford/README.md
 # Generated copy (regenerate with bin2c.py)
 arduino_firmware/bench/models_data.h
+
+# OpenCode local tool state
+.opencode/
