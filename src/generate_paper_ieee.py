@@ -109,7 +109,7 @@ paper.add_para(
 )
 paper.add_para(
     "4) We identify that calibration methods themselves fail to transfer across chemistries, "
-    "with isotonic systematically destroying 0.15\u20130.48 AUC points under distribution shift."
+    "with isotonic systematically destroying up to 0.48 AUC points under distribution shift."
 )
 paper.add_para(
     "These findings establish a rigorous baseline for within-dataset battery hazard prediction "
@@ -528,9 +528,10 @@ paper.add_figure(
 paper.add_h2("D. GRU Entanglement Under Distribution Shift")
 paper.add_para(
     "The GRU\u2019s cross-chemistry performance reveals an architecture-specific failure mode beyond "
-    "the SOH-dependence common to all model classes. Even with SOH available, the GRU achieves raw "
-    "AUC of only 0.077 at H=20 for CALCE\u2192Oxford\u2014dramatically below the corresponding tree-based "
-    "values (0.84\u20130.89). This is not simply a capacity limitation: the compact 8-unit hidden state "
+    "the SOH-dependence common to all model classes. Even with SOH available, the GRU stays near "
+    "chance at H=20 for CALCE\u2192Oxford (raw AUC 0.475\u20130.515, and 0.480\u20130.578 on Severson)\u2014well "
+    "below the corresponding tree-based values (0.57\u20130.84). This is not simply a capacity limitation: "
+    "the compact 8-unit hidden state "
     "must distribute its representational capacity across SOH, voltage, and cycle features within "
     "each 10-timestep window. Under distribution shift (LCO training \u2192 LFP testing), the "
     "entanglement of SOH with chemistry-specific voltage and cycle dynamics in the hidden state "
@@ -562,7 +563,8 @@ paper.add_para(
 paper.add_para(
     "The effect is most severe for the GRU, where isotonic collapses nearly all cross-chemistry "
     "scores to a single bin (calibrated AUC = 0.500 for six of nine training\u00d7SOH configurations), "
-    "but tree-based models also lose 0.15\u20130.48 AUC points depending on the setting. This finding "
+    "but tree-based models also lose up to 0.48 AUC points (0.004\u20130.476) depending on the setting. "
+    "This finding "
     "that calibration methods themselves fail to transfer across chemistries is independent "
     "of the SOH-lookup-table mechanism and represents a second, distinct failure mode for cross-chemistry "
     "battery hazard prediction. It implies that even when raw model scores carry transferable signal "
@@ -715,12 +717,12 @@ paper.add_para(
     "(with SOH) to 0.33\u20130.62 (without SOH) for tree-based models, and no model class achieves above-chance AUC once SOH is excluded, demonstrating that SOH "
     "encodes a chemistry-specific capacity-to-RUL mapping, not "
     "a transferable degradation invariant. A secondary finding is that even with SOH available, "
-    "the GRU (raw AUC=0.077 at H=20, with a deliberately compact 8-unit architecture) underperforms tree-based "
+    "the GRU (raw AUC near chance at H=20, 0.475\u20130.578 across targets for CALCE-trained runs) underperforms tree-based "
     "models (raw AUC=0.957\u20131.000), revealing that "
     "sequence models\u2019 distributed hidden representations partially entangle SOH with chemistry-specific "
     "features during distribution shift. We further identify a third failure mode: calibration methods "
     "themselves fail to transfer across chemistries, with isotonic regression systematically collapsing "
-    "AUC by 0.15\u20130.48 points under distribution shift. Future work should explore learned feature "
+    "AUC by up to 0.48 points under distribution shift. Future work should explore learned feature "
     "representations designed explicitly for chemistry invariance, larger multi-chemistry datasets, "
     "and bidirectional transfer evaluations."
 )

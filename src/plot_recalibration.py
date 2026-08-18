@@ -4,8 +4,8 @@ Reads results/recalibration/recalibration_reduced.csv (or RECALIBRATION_CSV) and
   paper_ieee_access/figs/fig_recal_auc_vs_k.png   Fig R1 (Arm B AUC vs k)
   paper_ieee_access/figs/fig_recal_ece_vs_k.png   Fig R2 (Arm A ECE vs k)
   paper_ieee_access/figs/fig_recal_heatmap.png    Fig R3 (AUC heatmap, ceiling_type keyed)
-  tables_journal/TableR1_ArmA_Recalibration.csv   ECE/Brier recovery (zero-shot vs iso/platt/temp)
-  tables_journal/TableR2_ArmB_Recovery.csv        AUC + DeLong + LCO retention
+tables_journal/TableR1_ArmA_Recalibration.csv   ECE/Brier recovery (zero-shot vs iso/platt/temp)
+   tables_journal/TableR2_ArmB_Recovery.csv        AUC + DeLong + LCO retention (per source/model)
 Prints a summary block of headline numbers for the paper text.
 """
 import os
@@ -86,25 +86,41 @@ def fig_r1(df, out):
 def fig_r2(df, out):
     d = df[(df.target == "severson") & (df.H == 20) & (df.features == "no_soh") & (df.arm == "arm_a")]
     ks = sorted(d.k.unique())
-    fig, ax = plt.subplots(figsize=(6.2, 4.2))
-    for method in ARM_A_METHODS:
+    fig, ax = plt.subplots(figsize=(6.6, 4.6))
+    markers = {"iso": "o", "platt": "s", "temp": "^"}
+    hollow = {"iso": True, "platt": False, "temp": False}
+    order = ["platt", "temp", "iso"]
+    for method in order:
         sub = d[d.method == method]
         means, stds = [], []
         for k in ks:
             m, s = mean_std(sub[sub.k == k].ece)
             means.append(m)
             stds.append(s)
-        ax.plot(ks, means, "-o", label=A_METHOD_LABEL[method])
-        ax.fill_between(ks, np.array(means) - np.array(stds),
-                        np.array(means) + np.array(stds), alpha=0.15)
+        ax.semilogy(ks, means, "-", marker=markers[method], markersize=6,
+                    markerfacecolor="none" if hollow[method] else None,
+                    label=A_METHOD_LABEL[method], zorder=5 + order.index(method))
+        lo = np.maximum(np.array(means) - np.array(stds), 1e-4)
+        ax.fill_between(ks, lo, np.array(means) + np.array(stds), alpha=0.15,
+                        zorder=3 + order.index(method))
+    for k in ks:
+        iso_v = d[(d.method == "iso") & (d.k == k)].ece.mean()
+        pla_v = d[(d.method == "platt") & (d.k == k)].ece.mean()
+        ax.annotate(f"I {iso_v:.3f} / P {pla_v:.3f}", xy=(k, max(iso_v, pla_v)),
+                    xytext=(k, max(iso_v, pla_v) * 2.6), ha="center",
+                    fontsize=6.5, color="#333")
     zero = df[(df.target == "severson") & (df.H == 20) & (df.features == "no_soh") & (df.arm == "zeroshot")]
-    m, s = mean_std(zero.ece)
-    ax.axhline(m, ls="--", color="#555", lw=1, label=f"zero-shot ECE ({m:.3f})")
+    m, _ = mean_std(zero.ece)
+    ax.axhline(m, ls="--", color="#555", lw=1.2, label=f"zero-shot ECE ({m:.3f})")
+    ax.annotate(f"zero-shot ECE = {m:.3f}", xy=(ks[-1], m), xytext=(ks[-1] + 1.2, m),
+                fontsize=8, color="#555", va="center")
+    ax.set_yscale("log")
+    ax.set_ylim(0.004, 1.2)
     ax.set_xlabel("recalibration cells k")
-    ax.set_ylabel("ECE (10-bin)")
+    ax.set_ylabel("ECE (10-bin, log scale)")
     ax.set_xticks(ks)
     ax.set_title("Arm A: calibration-only recovery of calibration error", fontsize=11)
-    ax.grid(alpha=0.3)
+    ax.grid(alpha=0.3, which="both")
     ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(out, dpi=300)
@@ -147,27 +163,33 @@ def fig_r3(df, out):
     print(f"[Fig R3] {out}")
 
 
+def cfg_mean(sub, col):
+    """Seed-mean per (source, model) config, then mean over configs."""
+    g = sub.groupby(["source", "model"]).agg(**{col: (col, "mean")})
+    return g[col].mean()
+
+
 def tables(df):
     os.makedirs(TABDIR, exist_ok=True)
     z = df[(df.target == "severson") & (df.arm == "zeroshot")]
     a = df[(df.target == "severson") & (df.arm == "arm_a")]
     b = df[(df.target == "severson") & (df.arm == "arm_b")]
     t1 = []
-    for (features, model, k), g in a.groupby(["features", "model", "k"]):
-        zrow = z[(z.features == features) & (z.model == model) & (z.k == k)]
-        zec, zbr = zrow.ece.mean(), zrow.brier.mean()
-        row = {"features": features, "model": model, "k": k, "zeroshot_ece": round(zec, 4),
-               "zeroshot_brier": round(zbr, 4)}
+    for (features, k), g in a.groupby(["features", "k"]):
+        zrows = z[(z.features == features) & (z.k == k)]
+        row = {"features": features, "k": k,
+               "zeroshot_ece": round(cfg_mean(zrows, "ece"), 4),
+               "zeroshot_brier": round(cfg_mean(zrows, "brier"), 4)}
         for method in ARM_A_METHODS:
             m = g[g.method == method]
-            row[f"{method}_ece"] = round(m.ece.mean(), 4)
-            row[f"{method}_brier"] = round(m.brier.mean(), 4)
-            row[f"{method}_auc"] = round(m.auc_pooled.mean(), 4)
+            row[f"{method}_ece"] = round(cfg_mean(m, "ece"), 4)
+            row[f"{method}_brier"] = round(cfg_mean(m, "brier"), 4)
+            row[f"{method}_auc"] = round(cfg_mean(m, "auc_pooled"), 4)
         t1.append(row)
     t2 = []
-    for (features, model, k), g in b.groupby(["features", "model", "k"]):
-        zrow = z[(z.features == features) & (z.model == model) & (z.k == k)]
-        row = {"features": features, "model": model, "k": k,
+    for (features, source, model, k), g in b.groupby(["features", "source", "model", "k"]):
+        zrow = z[(z.features == features) & (z.source == source) & (z.model == model) & (z.k == k)]
+        row = {"features": features, "source": source, "model": model, "k": k,
                "zeroshot_auc": round(zrow.auc_pooled.mean(), 4),
                "within_lco_ceiling": round(zrow.auc_ceiling_within_lco.mean(), 4),
                "full_lfp_ceiling": round(zrow.auc_ceiling_full_lfp.mean(), 4),
