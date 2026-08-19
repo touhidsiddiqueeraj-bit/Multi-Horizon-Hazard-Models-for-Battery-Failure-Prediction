@@ -51,3 +51,10 @@ arduino_firmware/bench/models_data.h
 
 # OpenCode local tool state
 .opencode/
+
+# LaTeX build artifacts
+paper_ieee_access/*.aux
+paper_ieee_access/*.log
+paper_ieee_access/*.out
+paper_ieee_access/missfont.log
+
