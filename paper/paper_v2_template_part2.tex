@@ -1,0 +1,425 @@
+\section{Results}
+
+\subsection{Within-Dataset Performance}
+Table~\ref{tab:within} summarizes within-dataset performance across the four horizons, reported as fold-mean AUC $\pm$ fold standard deviation under the leakage-clean protocol (leave-one-cell-out on CALCE, 5-fold cell-grouped cross-validation on NASA), together with the Platt Brier score. Discrimination is strong throughout: every tree configuration clears a fold-mean AUC of 0.89, on both datasets, at every horizon. The GRU reaches comparable means but with visibly higher fold-to-fold variance, and the discrete-time hazard model (Section~II-G) lands in the same range as the fixed-horizon XGBoost classifier while covering all horizons with a single fit.
+
+\begin{table*}[!t]
+\caption{Within-Dataset Failure-Risk Performance Across Four Horizons (Fold-Mean AUC $\pm$ Fold SD, Platt-Calibrated; CALCE Uses Leave-One-Cell-Out, NASA 5-Fold Cell-Grouped CV). Brier Is the Platt Pooled Value Averaged Over Horizons.}
+\label{tab:within}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{Model} & \textbf{Dataset} & \textbf{H=10} & \textbf{H=20} & \textbf{H=30} & \textbf{H=50} & \textbf{Mean AUC} & \textbf{Brier}\\
+\midrule
+@@TAB_WITHIN@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.62\textwidth]{Fig01_Within_Dataset_AUC.png}
+\caption{Within-dataset AUC heatmap, mean across horizons, Platt-calibrated.}
+\label{fig:within}
+\end{figure*}
+
+\subsection{Calibration Under Cross-Fitting}
+Table~\ref{tab:cal} compares the three calibrators, averaged over the tree models and horizons, where every calibrator is fitted on cross-fitted out-of-fold scores (Section~II-H). Three observations follow. First, on discrimination the raw scores are effectively unbeatable within dataset: any fitted calibrator is a monotone re mapping and preserves per-fold ranking up to the ties it introduces, and the fold-mean AUC differences between calibrators are correspondingly small. Second, the step function of isotonic regression creates large tied groups whose cost is invisible to fold-mean ROC-AUC but severe for precision--recall: on NASA, raw scores reach a mean PR-AUC of @@NASA_PRAUC_RAW@@ while isotonic collapses to @@NASA_PRAUC_ISO@@. Third, calibration quality proper is best for Platt on CALCE (ECE @@CALCE_PLATT_ECE@@ against @@CALCE_ISO_ECE@@ for isotonic), but the fitted Platt slope on CALCE is only @@CALCE_PLATT_SLOPE@@: on that long-tailed, leave-one-cell-out setting the out-of-fold sigmoid essentially washes confidence out toward the base rate while preserving ranking. Temperature scaling is the most balanced compromise on NASA (slope @@NASA_TEMP_SLOPE@@, Brier @@NASA_TEMP_BRIER@@). We therefore read the comparison as: \emph{Platt preserves discrimination best while achieving calibration error comparable to or better than isotonic}, which is a materially weaker and more defensible claim than ``Platt is the better calibrator,'' and raw scores remain the safest ranking signal whenever the operating context is uncertain.
+
+\begin{table*}[!t]
+\caption{Calibration Quality Averaged Over Tree Models and Horizons. All Calibrators Are Fitted on Cross-Fitted Out-of-Fold Scores. Slope 1 / Intercept 0 Indicate Perfect Probabilistic Calibration.}
+\label{tab:cal}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{Dataset} & \textbf{Method} & \textbf{AUC (fold mean)} & \textbf{Brier} & \textbf{ECE} & \textbf{Log loss} & \textbf{Slope} & \textbf{Intercept}\\
+\midrule
+@@TAB_CAL@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_reliability_v2.png}
+\caption{Reliability diagrams under the cross-fitted protocol. (a) Within CALCE, XGBoost at $H{=}20$: the fitted Platt sigmoid preserves ranking but washes confidence toward the base rate. (b) ALL-LCO $\to$ Severson without SOH at $H{=}20$: no fitted calibrator, whichever source scores it is applied to, repairs calibration on the shifted target.}
+\label{fig:cal}
+\end{figure*}
+
+\subsection{Cross-Dataset Transfer With and Without SOH}
+Table~\ref{tab:crosswith} reports LCO$\to$LFP transfer at $H{=}20$ with SOH kept, and Table~\ref{tab:crossno} the same experiments without SOH; Fig.~\ref{fig:collapse} summarizes both as a map of the AUC drop caused by removing SOH. Every number carries a cell-level bootstrap 95\% confidence interval on the pooled rows, in addition to the per-cell mean and standard deviation. With SOH available, the tree ensembles reach pooled raw AUC of up to @@XFER_WITH_MAX@@ (Oxford) and @@XFER_WITH_SEV@@ (Severson). Removing SOH collapses transfer to at most @@XFER_NO_MAX@@ pooled on Oxford, with Severson between @@XFER_NO_SEV_MIN@@ and @@XFER_NO_SEV_MAX@@ --- and several configurations fall below 0.5, i.e., the remaining sensors do not merely lose signal but rank the target distribution \emph{backwards}.
+
+The GRU behaves no better, and its multi-seed evaluation (three seeds) shows that this is not a training artifact: seed-averaged per-cell AUC on Severson without SOH is @@GRU_SEV_NO_SOH@@$\pm$@@GRU_SEV_NO_SOH_STD@@ across seeds, against @@GRU_SEV_WITH_SOH@@ with SOH. On the identical common feature set the trees retain their table~\ref{tab:crosswith} behavior, so the GRU--tree gap under shift cannot be attributed to the GRU's reduced inputs: the sequence model's distributed hidden state genuinely offers no cross-chemistry generalization advantage here.
+
+\begin{table*}[!t]
+\caption{Cross-Chemistry Transfer at H=20 With SOH. Pooled AUC With Cell-Level Bootstrap 95\% CI; Per-Cell Mean $\pm$ SD Across Test Cells (Oxford Statistics Effectively Cover Four Cells; See Section II-B).}
+\label{tab:crosswith}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{Oxford}} & \multicolumn{2}{c}{\textbf{Severson}}\\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}
+\textbf{Training} & \textbf{Model} & \textbf{Pooled AUC [CI]} & \textbf{Per-cell} & \textbf{Pooled AUC [CI]} & \textbf{Per-cell}\\
+\midrule
+@@TAB_CROSS_WITH@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[!t]
+\caption{Cross-Chemistry Transfer at H=20 Without SOH. Columns as in Table~\ref{tab:crosswith}.}
+\label{tab:crossno}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{Oxford}} & \multicolumn{2}{c}{\textbf{Severson}}\\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}
+\textbf{Training} & \textbf{Model} & \textbf{Pooled AUC [CI]} & \textbf{Per-cell} & \textbf{Pooled AUC [CI]} & \textbf{Per-cell}\\
+\midrule
+@@TAB_CROSS_NO@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_collapse_map.png}
+\caption{Transferability collapse map at $H{=}20$: the AUC drop from removing SOH, per source$\to$target pair and model. Positive values mean SOH removal destroys apparent transfer performance; the near-uniform saturation at the maximum drop is the signature of a single-feature shortcut rather than of distributed degradation knowledge.}
+\label{fig:collapse}
+\end{figure*}
+
+\begin{table}[!t]
+\caption{GRU Transfer at H=20 on the Common Feature Set: Seed-Averaged Per-Cell AUC ($\pm$ SD Over Seeds 42, 1, 7).}
+\label{tab:gru}
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llcc}
+\toprule
+\textbf{Training} & \textbf{Feature set} & \textbf{Oxford} & \textbf{Severson}\\
+\midrule
+@@TAB_GRU@@
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The reading that survives the uncertainty treatment is deliberately modest. SOH appears on both sides of the learning problem --- in the feature vector and inside the label definition --- so high with-SOH transfer is compatible with two mechanisms: a chemistry-dependent mapping from SOH to remaining life, and mere detection of proximity to the SOH $=0.80$ criterion that defines the label. The experiments that follow separate these mechanisms.
+
+\subsection{Minimal Baselines: How Much Is the SOH Shortcut?}
+Table~\ref{tab:baselines} places the tuned ensembles next to trivial baselines. The distance-to-threshold rule $d_t = 0.80 - \mathrm{SOH}_t$, which involves no fitting at all, transfers to Severson at pooled AUC @@BASE_DIST_ALL_SEV@@ [CI] for the ALL-LCO source --- within the confidence range of the tuned ensembles' with-SOH transfer in Table~\ref{tab:crosswith}. An SOH-only logistic regression behaves equivalently (@@BASE_SOH_ALL_SEV@@). By contrast, the sensor-only logistic regression transfers at @@BASE_SENSORS_NASA_SEV@@ on Severson (NASA source): below chance, meaning the remaining sensor features actively invert on the shifted distribution. Within CALCE, the cycle index alone ranks failure at pooled AUC @@BASE_CYCLE_CALCE@@, approaching the tuned ensembles, because CALCE's seven cells span very different cycle lives; on NASA, whose cells age under randomized profiles, the same feature is useless (@@BASE_CYCLE_NASA@@).
+
+Three conclusions follow. First, the apparent cross-chemistry transferability of the tuned models is, to within the honest uncertainty, reproducible by a one-parameter health-threshold proxy: most of what transfers is the SOH coordinate, not degradation knowledge. Second, ``more features'' does not help transfer; the sensor features carry dataset-specific artifacts that can invert. Third, this outcome does not diminish the ensembles' within-dataset value --- there they beat every minimal baseline --- but it does mean the transfer claim must be downgraded from ``models transfer'' to ``the health state transfers, and models can read it.''
+
+\begin{table*}[!t]
+\caption{Minimal Transfer Baselines at H=20: Pooled AUC With Cell-Level Bootstrap 95\% CI. The Distance Rule Is the Unfitted Score $0.80-$SOH.}
+\label{tab:baselines}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Oxford}} & \multicolumn{3}{c}{\textbf{Severson}}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+\textbf{Baseline} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src}\\
+\midrule
+@@TAB_BASELINES@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Factorial Feature Ablation}
+Table~\ref{tab:abl} runs the full $2^3-1$ grid over \{SOH, cycle index, sensors\} at $H{=}20$. Three regularities stand out. SOH-only is the strongest single group on both LFP targets, confirming that the health coordinate dominates whatever transfer exists. Cycle-only is competitive on Oxford --- whose five cells fail at well-separated raw cycle counts, so the cycle index is a between-cell aging proxy --- but the pattern is dataset-specific and does not survive to Severson. No combination without SOH exceeds @@ABL_MAX_NO_SOH@@ on either target, and removing both SOH and the cycle index leaves the sensors with essentially nothing (@@ABL_SENSORS_ONLY@@ with the ALL-LCO source on Severson). The ablation makes the shortcut diagnosis feature-by-feature: it is not that the models fail to use the sensor features; it is that the sensor features themselves carry no cross-dataset signal.
+
+\begin{table*}[!t]
+\caption{Factorial Feature Ablation at H=20 (XGBoost, Pooled AUC With Cell-Level Bootstrap 95\% CI). Feature Groups: SOH; Cycle Index; Sensors = Voltages, Current, Temperature, Duration.}
+\label{tab:abl}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Oxford}} & \multicolumn{3}{c}{\textbf{Severson}}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+\textbf{Feature set} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src}\\
+\midrule
+@@TAB_ABLATION@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Failure-Definition Ablation: Measuring the Label Circularity}
+Table~\ref{tab:faildef} relabels failure by a single endpoint at a time --- SOH $\le 0.80$ only, voltage sag only, or both --- and repeats the transfer experiments with and without SOH as a feature. This is the experiment that quantifies the circularity concern of Section~II-A, and its signature could hardly be cleaner: with-SOH transfer \emph{tracks how much SOH defines the label}. When SOH alone defines failure --- the model is, in effect, reading the label criterion --- transfer to Severson is @@FAILDEF_WITH_SOHLABEL@@, essentially saturating. Under the combined label it is @@FAILDEF_WITH_COMBINED@@. Relabel failure by voltage sag alone, a criterion SOH takes no part in, and with-SOH transfer falls to @@FAILDEF_VOLT_WITH@@ --- a drop of roughly a quarter, with the with-SOH-over-without-SOH gap narrowing from @@FAILDEF_ADV_COMBINED@@ to @@FAILDEF_ADV_VOLT@@. The residual signal under the voltage label (@@FAILDEF_VOLT_WITH@@ versus @@FAILDEF_VOLT_NO@@ without SOH) is consistent with genuine but weak health-state information: cells far below nominal capacity do fail sooner under almost any definition. The within-dataset columns tell the same story from the inside: on NASA, a with-SOH model under the SOH-defined label reaches pooled AUC @@FAILDEF_WITHIN_SOH@@ against @@FAILDEF_WITHIN_NO@@ without SOH --- a gap of @@FAILDEF_WITHIN_GAP@@ born almost entirely of label proximity.
+
+\begin{table*}[!t]
+\caption{Failure-Definition Ablation at H=20 (XGBoost, ALL-LCO Source, Pooled AUC [CI]): Transfer With and Without SOH as a Feature, for Three Label Endpoints.}
+\label{tab:faildef}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Oxford}} & \multicolumn{2}{c}{\textbf{Severson}}\\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+\textbf{Label endpoint} & \textbf{with SOH} & \textbf{no SOH} & \textbf{with SOH} & \textbf{no SOH}\\
+\midrule
+@@TAB_FAILDEF@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Same-Chemistry Cross-Laboratory Controls}
+If the collapse of Section~III-C were a chemistry effect, transfer should survive when chemistry is held constant. Table~\ref{tab:samechem} shows it does not. NASA$\to$CALCE (both LCO, different laboratories and protocols) collapses without SOH just as LCO$\to$LFP does, and Severson$\to$Oxford (both LFP) reproduces the full pattern of the cross-chemistry shifts, including high with-SOH transfer and near-chance sensor-only transfer. The with-SOH numbers are again mirrored by the SOH distance rule. These controls tighten the paper's central attribution: the failure to transfer is a property of \emph{dataset shift} --- different laboratories, protocols, and logging conventions --- that chemistry change adds to but does not uniquely cause. Accordingly, we describe SOH as a \emph{dataset- and chemistry-dependent} health-state signal, not a chemistry-specific one, and we do not claim chemistry is isolated as a causal variable.
+
+\begin{table*}[!t]
+\caption{Same-Chemistry Cross-Laboratory Controls at H=20 (XGBoost, Pooled AUC [CI]). Full Feature Sets Exercise the Zero-Imputation Confound; Common Sets Restrict Both Datasets to the Shared Four-Feature Subset.}
+\label{tab:samechem}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+\textbf{Pair} & \textbf{with SOH (full)} & \textbf{no SOH (full)} & \textbf{no SOH (common)}\\
+\midrule
+@@TAB_SAMECHEM@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Discrete-Time Hazard Model Versus Fixed-Horizon Classifiers}
+Table~\ref{tab:hazard} compares the survival-product model of Section~II-G against the fixed-horizon XGBoost classifier it is meant to complement. Within datasets the two formulations are statistically indistinguishable at every horizon. Under transfer the survival product inherits the same SOH dependence as everything else --- the formulation of a model does not exempt its inputs from dataset shift --- but it behaves differently in one structural respect: by construction $R(t,H)$ is monotone in $H$, whereas the four independent classifiers violate the corresponding requirement $p_{10}\le p_{20}\le p_{30}\le p_{50}$ in @@MONO_RATE_WITHIN@@ of within-dataset rows and @@MONO_RATE_TRANSFER@@ of transferred Severson rows. For a hazard-flavored formulation the violations are not cosmetic: monotone cumulative risk is what makes ``risk within 50 cycles'' a coherent quantity to quote to an operator. The honest summary is that the discrete-time hazard model buys structural coherence and a single fit at no within-dataset accuracy cost, and pays the same SOH shortcut as every other model.
+
+\begin{table*}[!t]
+\caption{Discrete-Time Hazard Model at H=20: Transfer Performance (Pooled AUC [CI]) Compared With the Fixed-Horizon XGBoost Classifier With SOH.}
+\label{tab:hazard}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcc}
+\toprule
+\textbf{Training} & \textbf{Model} & \textbf{Oxford} & \textbf{Severson}\\
+\midrule
+@@TAB_HAZARD@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Failure of Calibration Transfer, and Its Partial Repair}
+A second, independent failure mode appears in the cross-dataset tables when calibrated outputs are required. Isotonic regression is fitted as a step function on the source distribution; when target scores shift, many target scores fall into one bin and receive identical calibrated probabilities, and pooled ranking degrades accordingly --- in Table~\ref{tab:crosswith}, isotonic calibration costs NASA-trained XGBoost up to @@ISO_LOSS_MAX@@ AUC on Severson. Platt's smooth sigmoid degrades more gracefully, which is precisely the sense in which ``Platt better preserves discrimination at comparable calibration error.'' Fig.~\ref{fig:cal}(b) shows the deeper problem: on the shifted target, \emph{no} source-fitted calibrator lands near the diagonal, however it is fitted.
+
+The recalibration arms of the companion study \cite{shikdar2026robustness} ask whether a small labeled target sample repairs this. Arm~A refits a calibrator on $k$ labeled target cells while leaving the classifier's scores untouched; Arm~B continues training the classifier on them. On Severson without SOH, zero-shot ECE is @@ARM_A_ECE0@@; at $k{=}5$ labeled cells, isotonic and Platt reduce it to @@ARM_A_ECE5_ISO@@ and @@ARM_A_ECE5_PLATT@@, while temperature scaling remains poorly calibrated (@@ARM_A_ECE5_TEMP@@). Calibration error is repaired, but discrimination is not: mean pooled AUC at $k{=}5$ stays near @@ARM_A_AUC5@@, because the calibrators create ties or reverse rankings on the shifted target. Arm~B is source-dependent: with NASA-trained XGBoost and $k{=}5$, Severson AUC rises from @@ARMB_NASA_XGB_ZERO@@ to @@ARMB_NASA_XGB_AFTER@@, recovering @@ARMB_NASA_XGB_REC@@ of the within-LCO ceiling, while CALCE-trained and ALL-LCO updates damage the source operating point (LCO-holdout retention falls from @@ARMB_CALCE_RET0@@ to @@ARMB_CALCE_RET1@@ for CALCE-trained XGBoost). Tables~\ref{tab:rec-r1} and~\ref{tab:rec-r2} summarize both arms.
+
+\begin{table*}[!t]
+\caption{Arm A Recalibration on Severson Without SOH ($H{=}20$): Values Average the Three LCO Sources and Available Tree Models; ECE Uses 10 Equal-Width Probability Bins. From the Released Recalibration Study Artifacts.}
+\label{tab:rec-r1}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rccccccc}
+\toprule
+$k$ & Zero ECE & Iso. ECE & Platt ECE & Temp. ECE & Iso. AUC & Platt AUC & Temp. AUC\\
+\midrule
+@@TAB_REC_A@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[!t]
+\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update.}
+\label{tab:rec-r2}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Training} & \textbf{Model} & \textbf{Zero AUC} & \textbf{Arm B AUC} & \textbf{Recovery} & \textbf{DeLong $p$} & \textbf{LCO retention}\\
+\midrule
+@@TAB_REC_B@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Statistical Evidence for the SOH Ablation}
+Table~\ref{tab:sohtests} states the paper's central comparison with the cell as the experimental unit: the paired cell-level bootstrap interval on $\Delta$AUC $=$ AUC(with SOH) $-$ AUC(without SOH), for the ALL-LCO source at every horizon, with the cycle-level DeLong $p$-value attached as secondary evidence. On Severson, $\Delta$AUC reaches @@SOH_DELTA_SEV_XGB@@ (XGBoost, $H{=}20$) with the interval excluding zero by a wide margin; on Oxford the effect is likewise decisively positive for every model. The DeLong values, computed on pooled cycle-level predictions, are astronomically small --- and, as Section~II-J explains, inflated by within-cell correlation, which is exactly why they are demoted here to a consistency check. The scientific claim does not rest on $p<10^{-100}$; it rests on a large effect with a bootstrap interval that stays far from zero under cell-level resampling, on two independent targets, at every horizon, across three model families, and --- decisively --- on the failure-definition and same-chemistry controls of Sections~III-F and~III-G.
+
+\begin{table*}[!t]
+\caption{SOH Ablation Evidence (ALL-LCO Source): Pooled AUC With and Without SOH, Paired Cell-Level Bootstrap 95\% CI on the Difference (Primary), and Cycle-Level DeLong $p$-Value (Secondary; Inflated by Within-Cell Correlation).}
+\label{tab:sohtests}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Target} & \textbf{Model} & \textbf{H} & \textbf{AUC w/ SOH} & \textbf{AUC w/o} & \textbf{$\Delta$AUC [boot 95\% CI]} & \textbf{DeLong $p$}\\
+\midrule
+@@TAB_SOH_TESTS@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\subsection{Operational Cost Analysis}
+AUC treats all errors as equal; a BMS does not. Using the cost $C(\tau) = C_{FN}\,FN(\tau) + C_{FP}\,FP(\tau)$ with a 20:1 miss-to-false-alarm ratio, and selecting the decision threshold on \emph{source} out-of-fold scores --- the operationally honest choice, since no target labels exist at deployment --- Table~\ref{tab:oper} compares the score types on the shifted targets. With SOH available the scores support a usable operating point on both targets. Without SOH, no threshold reproduces the source operating point: expected cost rises @@COST_RATIO_SEV@@$\times$ over the with-SOH case on Severson, and the calibrated scores offer no advantage over raw ones --- under shift, the ranking is the asset, and the ranking is what collapsed. Fig.~\ref{fig:netbenefit} shows the corresponding decision-curve view. Calibration, in other words, is a second-order concern in this regime: first the model must rank the target cells, which --- per Sections~III-C--III-G --- only SOH lets it do.
+
+\begin{table*}[!t]
+\caption{Operational Cost at H=20 (XGBoost, ALL-LCO Source, $C_{FN}{:}C_{FP} = 20{:}1$, Threshold Selected on Source Out-of-Fold Scores). FN Rate Is the Fraction of True Failures Missed.}
+\label{tab:oper}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccccc}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{raw}} & \multicolumn{2}{c}{\textbf{Platt}} & \multicolumn{2}{c}{\textbf{isotonic}} & \multicolumn{2}{c}{\textbf{temperature}}\\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}\cmidrule(l){7-8}\cmidrule(l){9-10}
+\textbf{Target} & \textbf{Features} & \textbf{cost} & \textbf{FN} & \textbf{cost} & \textbf{FN} & \textbf{cost} & \textbf{FN} & \textbf{cost} & \textbf{FN}\\
+\midrule
+@@TAB_OPER@@
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.5\textwidth]{fig_netbenefit.png}
+\caption{Decision-curve analysis (net benefit vs.\ threshold) for ALL-LCO $\to$ Severson without SOH at $H{=}20$: no score type produces a usable operating point once SOH is removed.}
+\label{fig:netbenefit}
+\end{figure*}
+
+\subsection{SHAP: The Shortcut Is Visible in the Model}
+TreeSHAP \cite{lundberg2020from} gives a direct view of the mechanism. Figs.~\ref{fig:shap_xgb}--\ref{fig:shap_rf} show the attributions for the three tree models in NASA-to-Oxford transfer at H=20 with SOH kept: SOH dominates by a wide margin, cycle index a distant second, and the voltage, current, temperature, and duration features contribute little. Figs.~\ref{fig:shap_noxgb}--\ref{fig:shap_norf} repeat the same comparisons with SOH removed, and every remaining feature collapses to near-zero SHAP spread --- matching, in the model's internal accounting, the quantitative collapse of Sections~III-C--III-E and the sensor-inversion of Section~III-D.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06a_XGBoost_SHAP.png}
+\caption{SHAP feature importance for XGBoost in NASA-to-Oxford transfer at H=20, with SOH. SOH dominates by a wide margin.}
+\label{fig:shap_xgb}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06b_LightGBM_SHAP.png}
+\caption{SHAP feature importance for LightGBM in NASA-to-Oxford transfer at H=20, with SOH. SOH dominates by a wide margin.}
+\label{fig:shap_lgbm}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06c_RandomForest_SHAP.png}
+\caption{SHAP feature importance for Random Forest in NASA-to-Oxford transfer at H=20, with SOH. SOH dominates by a wide margin.}
+\label{fig:shap_rf}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06d_XGBoost_SHAP_noSOH.png}
+\caption{SHAP feature importance for XGBoost in NASA-to-Oxford transfer at H=20, without SOH. All features collapse to near-zero spread, so no transferable signal remains.}
+\label{fig:shap_noxgb}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06e_LightGBM_SHAP_noSOH.png}
+\caption{SHAP feature importance for LightGBM in NASA-to-Oxford transfer at H=20, without SOH. All features collapse to near-zero spread.}
+\label{fig:shap_nolgbm}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig06f_RandomForest_SHAP_noSOH.png}
+\caption{SHAP feature importance for Random Forest in NASA-to-Oxford transfer at H=20, without SOH. All features collapse to near-zero spread.}
+\label{fig:shap_norf}
+\end{figure*}
+
+\subsection{Embedded Deployment Validation}
+Three independent validation stages confirm that the C tree engine reproduces the Python training libraries through the output transforms of \eqref{eq:rf} and \eqref{eq:sigmoid}: a Python walker over the extracted trees, the same walker cross-checked on the full 1~028-row set, and the C engine run on-device on an ESP32-S3 against the library's \texttt{predict\_proba()}. Fig.~\ref{fig:pyc} plots every one of the 1~028 on-device predictions against the Python values for all three models; the points fall on the identity line and the residual histograms are centered at zero. The measured on-device maximum absolute error is $2.4\times10^{-7}$ for XGBoost, $1.1\times10^{-6}$ for LightGBM, and $3.0\times10^{-8}$ for Random Forest, all far inside the $10^{-5}$ tolerance.
+
+Table~\ref{tab:deploy} lists the models' sizes, their NASA H=20 Platt AUC, the on-device validation error, and the measured inference time, and Fig.~\ref{fig:deploy} plots the latency, the speed--accuracy trade-off, and the footprint. The three ensembles occupy 372 kB in the flat binary. Measured single-row inference at 240 MHz depends on where the binary sits:
+\begin{itemize}
+\item from memory-mapped flash, 0.76 ms, 1.55 ms, and 2.36 ms for XGBoost, LightGBM, and Random Forest;
+\item from PSRAM, 0.50 ms, 0.93 ms, and 1.29 ms;
+\item with a single model held in internal SRAM, 0.32 ms, 0.43 ms, and 0.50 ms.
+\end{itemize}
+The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 320 kB, but each individual model does (XGBoost is about 46 kB, LightGBM 98 kB, Random Forest 225 kB), and the firmware runs one model at a time, so the SRAM-resident numbers are the realistic per-inference cost. Both flash and PSRAM land well above the 150--250 \textmu s range projected at the outset, because the working set exceeds the ESP32-S3's data cache and nearly every node read misses; PSRAM is about 1.5--1.8\texttimes\ faster than flash for the same reason. The all-three PSRAM path still clears the 100 ms per-cycle budget by roughly 37\texttimes, and a single model from SRAM runs close to the original projection. The deployment result is deliberately independent of the validity question: whatever the models are reading, on this dataset they can read it in under a millisecond on a \$12 microcontroller.
+
+\begin{table*}[!t]
+\caption{Embedded Deployment: Model Size, Accuracy, On-Device Validation Error, and Measured Inference Time. Errors Are Maximum $|$C engine $-$ \texttt{predict\_proba()}$|$ Over All 1 028 Rows. Timings Measured On-Device at 240 MHz With the Binary in Flash (PROGMEM), PSRAM, or a Single Model in Internal SRAM.}
+\label{tab:deploy}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{Nodes} & \textbf{Max Err} & \textbf{Flash} & \textbf{PSRAM} & \textbf{SRAM (1 model)}\\
+\midrule
+XGBoost & 3 272 & $2.4\times10^{-7}$ & 0.76 ms & 0.50 ms & 0.32 ms\\
+LightGBM & 7 000 & $1.1\times10^{-6}$ & 1.55 ms & 0.93 ms & 0.43 ms\\
+Random Forest & 16 064 & $3.0\times10^{-8}$ & 2.36 ms & 1.29 ms & 0.50 ms\\
+All three & 26 336 & --- & 4.7 ms & 2.7 ms & ---\\
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_deploy.png}
+\caption{Deployment trade-offs: (a) measured single-row inference time per model at 240 MHz (PC, and ESP32-S3 with the binary in flash, PSRAM, or a single model in internal SRAM); (b) memory footprint of the 372 kB binary as a share of each tier, exceeding the ESP32-S3's roughly 320 kB of free internal SRAM.}
+\label{fig:deploy}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_py_c_agreement.png}
+\caption{On-device C engine predictions versus Python \texttt{predict\_proba()} over all 1 028 rows and three models (agreement scatter on the identity line, inset residual histogram of C minus Python in units of $10^{-6}$). Maximum absolute errors are $2.4\times10^{-7}$ (XGBoost), $1.1\times10^{-6}$ (LightGBM), and $3.0\times10^{-8}$ (Random Forest).}
+\label{fig:pyc}
+\end{figure*}
+
+\section{Discussion, Analysis, and Novelty}
+
+\subsection{The SOH Shortcut, Precisely Stated}
+The evidence assembled above supports a precise statement --- more precise, and more useful, than the earlier version of this study offered. When a failure-risk model trained on one battery dataset is evaluated on another, its apparent transfer performance is dominated by the SOH coordinate; much of that dominance is definitional rather than learned, because SOH enters the failure label itself, and the failure-definition ablation of Section~III-F measures how much: relabeling failure by voltage sag alone removes @@FAILDEF_ADV_DROP@@ of the with-SOH transfer advantage on Severson. What remains is a weak, real health-state signal --- a cell far below nominal capacity is genuinely closer to failure under any reasonable definition. Everything else the sensors measure is dataset-specific: the same-chemistry controls show the collapse is caused by dataset shift at least as much as by chemistry, and the factorial ablation shows no non-SOH feature group carries usable cross-dataset signal. ``SOH is a chemistry-specific lookup key,'' the earlier framing, claimed more than the design could identify; the defensible claim is that apparent cross-dataset, cross-chemistry transferability is largely a health-state shortcut whose size this paper measures with label-, feature-, and dataset-level controls.
+
+\subsection{Implications for Battery Management Practitioners}
+Four practical points follow:
+\begin{itemize}
+\item \textbf{1)} Within-chemistry, within-laboratory failure-risk models built from standard charge--discharge features are reliable --- fold-mean AUC of 0.89 and above with Platt calibration --- and run on a \$12 microcontroller in under a millisecond. Deploy them where the training distribution holds.
+\item \textbf{2)} Do not transfer models across datasets on the strength of an AUC table. If SOH is available at the target, an unfitted threshold rule is the correct first baseline, and any ensemble that cannot beat it has learned nothing portable; if SOH is unavailable, expect chance-level or inverted performance.
+\item \textbf{3)} Quote risks from a formulation whose horizons are coherent. Four independent classifiers can and do assign ``risk within 10 cycles'' above ``risk within 50 cycles''; the survival-product formulation of Section~II-G removes that incoherence at no measured accuracy cost.
+\item \textbf{4)} Under shift, prefer raw or Platt-scaled scores over isotonic, expect calibration to require labeled target data (5--10 cells suffice for ECE, but they do not restore discrimination), and choose decision thresholds on source data with an explicit cost model --- then verify, because Section~III-K shows the operating point itself does not survive the shift without SOH.
+\end{itemize}
+
+\subsection{Limitations}
+The honesty of this paper has limits of its own. Oxford contributes only five cells --- effectively four for per-cell statistics --- at a 100-cycle logging resolution that makes its labels horizon-invariant, so it functions as a pooled-detection target; every Oxford claim is re-verified on the 141-cell Severson set. CALCE contributes seven cells, so its leave-one-cell-out folds are few and its uncertainty is correspondingly wide. The GRU is small and evaluated at three seeds, not thirty; its instability under shift is itself a finding, but wider sequence models trained on far more cells might behave differently --- nothing in this paper convicts the architecture, only this instance of it. The hazard model uses measured features at scored cycles; a strictly causal deployment reading must remember that post-failure rows are trivially positive for all formulations. The cost analysis fixes a 20:1 ratio and selects thresholds on source data; other ratios shift the operating point but not the conclusion that no usable operating point exists without SOH. Finally, the study is one-directional (LCO$\to$LFP plus within-chemistry controls); a controlled same-laboratory cross-chemistry experiment, which no public dataset currently supports, would be needed to isolate chemistry as a causal variable.
+
+\section{Conclusion}
+This study set out to widen a multi-horizon failure-risk classification framework and found that the widening itself demanded a validity analysis. Within dataset, the framework is sound: fold-mean AUC of @@WITHIN_MIN@@--@@WITHIN_MAX@@ across three tree ensembles under cell-disjoint evaluation with leakage-free calibration, a discrete-time hazard formulation that matches the fixed-horizon classifiers while keeping cumulative risks monotone in the horizon, and a 372~kB embedded deployment that reproduces the training libraries to within $1.1\times10^{-6}$ on a \$12 ESP32-S3.
+
+Across datasets, the apparent transferability is mostly a State-of-Health shortcut. A distance-to-threshold rule on SOH alone reproduces the tuned ensembles' transfer performance to within the cell-level bootstrap intervals; removing SOH collapses every model class toward or below chance, with sensor features sometimes inverting; relabeling failure by voltage sag alone --- a criterion SOH does not define --- removes most of the with-SOH advantage; and same-chemistry cross-laboratory controls show the collapse is caused by dataset shift at least as much as by chemistry. The supported conclusion is deliberately narrower than ``SOH is chemistry-specific'': much of the observed cross-dataset discrimination is attributable to SOH, partly because SOH defines the failure criterion itself, rather than to degradation information in the remaining measured features.
+
+Calibration behaves as the validity story predicts: fitted on leakage-free out-of-fold scores, Platt preserves discrimination best at comparable calibration error, isotonic's tied step function destroys precision--recall and fails outright under shift, labeled-target recalibration repairs calibration error but not discrimination, and no score type yields a usable cost-based operating point on the shifted target without SOH. Statistical evidence is carried by cell-level bootstrap intervals, with cycle-level significance tests demoted to a consistency check under an explicit pseudoreplication caveat.
+
+Future work, in order of directness: an SOH-free failure definition (voltage- or impedance-based endpoints) as the primary target for cross-dataset models; same-laboratory, cross-chemistry aging campaigns that isolate chemistry; learned representations trained for dataset invariance rather than chemistry invariance; cell-level hierarchical calibration that propagates uncertainty from cells to risk statements; and multi-seed, multi-architecture sequence-model studies on the scale where sequence models can plausibly generalize.
+
+\clearpage
+\section*{Acknowledgment}
+This work received no external funding. The authors declare no conflicts of interest. The source code, data, trained models, firmware, and validation pipeline are publicly available at \url{https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction}.
+
+\raggedbottom
+\clearpage
+\begin{thebibliography}{20}
+\bibitem{shikdar2026learning} T. A. Shikdar and H. Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{Int. Trans. Electr. Energy Syst.}, vol. 36, Art. no. 6000810, 2026.
+\bibitem{meng2019review} H. Meng and Y. Li, ``A review on prognostics and health management (PHM) methods of lithium-ion batteries,'' \emph{Renew. Sustain. Energy Rev.}, vol. 116, Art. no. 109405, 2019.
+\bibitem{breiman2001random} L. Breiman, ``Random forests,'' \emph{Mach. Learn.}, vol. 45, no. 1, pp. 5--32, 2001.
+\bibitem{chen2016xgboost} T. Chen and C. Guestrin, ``XGBoost: A scalable tree boosting system,'' in \emph{Proc. ACM SIGKDD}, 2016, pp. 785--794.
+\bibitem{ke2017lightgbm} G. Ke, Q. Meng, T. Finley, et al., ``LightGBM: A highly efficient gradient boosting decision tree,'' in \emph{Proc. NeurIPS}, vol. 30, 2017, pp. 3146--3154.
+\bibitem{saha2007battery} B. Saha and K. Goebel, ``Battery data set,'' NASA Ames Prognostics Data Repository, 2007.
+\bibitem{calce2023battery} CALCE Battery Research Group, ``Battery aging datasets,'' Univ. Maryland, 2023.
+\bibitem{birkl2017oxford} C. R. Birkl and D. A. Howey, ``Oxford battery degradation dataset 1,'' Univ. Oxford, 2017.
+\bibitem{severson2019data} K. A. Severson, P. M. Attia, N. Jin, et al., ``Data-driven prediction of battery cycle life before capacity degradation,'' \emph{Nature Energy}, vol. 4, pp. 383--391, 2019.
+\bibitem{sahoo2022transfer} S. Sahoo, K. S. Hariharan, S. Agarwal, et al., ``Transfer learning based generalized framework for state of health estimation of Li-ion cells,'' \emph{Sci. Rep.}, vol. 12, Art. no. 13173, 2022.
+\bibitem{lu2023deep} J. Lu, R. Xiong, J. Tian, C. Wang, and F. Sun, ``Deep learning to estimate lithium-ion battery state of health without additional degradation experiments,'' \emph{Nat. Commun.}, vol. 14, Art. no. 2760, 2023.
+\bibitem{platt1999probabilistic} J. C. Platt, ``Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods,'' in \emph{Adv. Large Margin Classifiers}, MIT Press, 1999, pp. 61--74.
+\bibitem{zadrozny2002transforming} B. Zadrozny and C. Elkan, ``Transforming classifier scores into accurate multiclass probability estimates,'' in \emph{Proc. ACM SIGKDD}, 2002, pp. 694--699.
+\bibitem{niculescu2005predicting} A. Niculescu-Mizil and R. Caruana, ``Predicting good probabilities with supervised learning,'' in \emph{Proc. ICML}, 2005, pp. 625--632.
+\bibitem{huang2020experimental} L. Huang, J. Zhao, B. Zhu, H. Chen, and S. K. L. M. v. Broucke, ``An experimental investigation of calibration techniques for imbalanced data,'' \emph{IEEE Access}, vol. 8, pp. 127343--127352, 2020.
+\bibitem{lundberg2020from} S. M. Lundberg, G. G. Erion, H. Chen, et al., ``From local explanations to global understanding with explainable AI for trees,'' \emph{Nat. Mach. Intell.}, vol. 2, no. 1, pp. 56--67, 2020.
+\bibitem{grzesik2024combining} P. Grzesik and D. Mrozek, ``Combining machine learning and edge computing: Opportunities, challenges, platforms, frameworks, and use cases,'' \emph{Electronics}, vol. 13, no. 3, Art. no. 640, 2024.
+\bibitem{gupta2023online} C. Gupta and A. Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc. ICML}, PMLR 202, 2023, pp. 12182--12204.
+\bibitem{delong1988comparing} E. R. DeLong, D. M. DeLong, and D. L. Clarke-Pearson, ``Comparing the areas under two or more correlated receiver operating characteristic curves: A nonparametric approach,'' \emph{Biometrics}, vol. 44, no. 3, pp. 837--845, 1988.
+\bibitem{shikdar2026robustness} T. A. Shikdar and H. Laaksonen, ``How far does the model hold? Robustness of multihorizon battery failure intelligence under realistic operating conditions,'' submitted for publication, 2026.
+\end{thebibliography}
+
+\EOD
+
+\end{document}

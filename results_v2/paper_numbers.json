@@ -1,0 +1,418 @@
+{
+ "within_nasa_xgboost": {
+  "per_H": {
+   "10": 0.90298168670827,
+   "20": 0.8989553798325277,
+   "30": 0.9097654214901484,
+   "50": 0.9180798198349304
+  },
+  "mean_AUC": 0.9074455769664691
+ },
+ "within_nasa_lightgbm": {
+  "per_H": {
+   "10": 0.911695031163958,
+   "20": 0.9091700740504244,
+   "30": 0.8920132001177642,
+   "50": 0.901065065651048
+  },
+  "mean_AUC": 0.9034858427457987
+ },
+ "within_nasa_random_forest": {
+  "per_H": {
+   "10": 0.9114687353960153,
+   "20": 0.9013672908766416,
+   "30": 0.9120489030169628,
+   "50": 0.9269236971244178
+  },
+  "mean_AUC": 0.9129521566035094
+ },
+ "within_nasa_gru": {
+  "per_H": {
+   "10": 0.8722406478011056,
+   "20": 0.8933292949282003,
+   "30": 0.8841358199283011,
+   "50": 0.8560018599682829
+  },
+  "mean_AUC": 0.8764269056564725
+ },
+ "within_nasa_hazard_xgb": {
+  "per_H": {
+   "10": 0.9184417658389068,
+   "20": 0.9347342523030048,
+   "30": 0.9366027331588466,
+   "50": 0.9271714482872252
+  },
+  "mean_AUC": 0.9292375498969958
+ },
+ "within_nasa_hazard_logistic": {
+  "per_H": {
+   "10": 0.9020282097248624,
+   "20": 0.8990567248922592,
+   "30": 0.8961364112287551,
+   "50": 0.867360127589713
+  },
+  "mean_AUC": 0.8911453683588975
+ },
+ "within_calce_xgboost": {
+  "per_H": {
+   "10": 0.9654879961648416,
+   "20": 0.9665744582361956,
+   "30": 0.9673905299950288,
+   "50": 0.9433684244945584
+  },
+  "mean_AUC": 0.9607053522226561
+ },
+ "within_calce_lightgbm": {
+  "per_H": {
+   "10": 0.9672153521171186,
+   "20": 0.9677421903879352,
+   "30": 0.9434167351720616,
+   "50": 0.9417256929134818
+  },
+  "mean_AUC": 0.9550249926476493
+ },
+ "within_calce_random_forest": {
+  "per_H": {
+   "10": 0.9338969831758976,
+   "20": 0.932697197241882,
+   "30": 0.9167941797979664,
+   "50": 0.9034137631723652
+  },
+  "mean_AUC": 0.9217005308470279
+ },
+ "within_calce_gru": {
+  "per_H": {
+   "10": 0.9521450374835934,
+   "20": 0.9593705677313622,
+   "30": 0.9354770156905948,
+   "50": 0.9209231302096924
+  },
+  "mean_AUC": 0.9419789377788107
+ },
+ "within_calce_hazard_xgb": {
+  "per_H": {
+   "10": 0.8936994199608804,
+   "20": 0.8930224803406981,
+   "30": 0.9160766944664008,
+   "50": 0.8894368896023588
+  },
+  "mean_AUC": 0.8980588710925845
+ },
+ "within_calce_hazard_logistic": {
+  "per_H": {
+   "10": 0.9790611622475904,
+   "20": 0.9479711766595876,
+   "30": 0.9357779378903824,
+   "50": 0.9451532186334508
+  },
+  "mean_AUC": 0.9519908738577528
+ },
+ "cal_nasa_iso": {
+  "AUC_fold_mean": 0.8539033159220377,
+  "Brier": 0.20690688089941608,
+  "ECE": 0.1509074658642515,
+  "LogLoss": 0.6517253646478064,
+  "Slope": 0.48130900900129187,
+  "Intercept": -0.26030667610513336,
+  "PRAUC": 0.6388641984708815
+ },
+ "cal_nasa_platt": {
+  "AUC_fold_mean": 0.907961192105259,
+  "Brier": 0.19647228004118192,
+  "ECE": 0.13581539146375418,
+  "LogLoss": 0.5749495662085903,
+  "Slope": 0.9023470486866593,
+  "Intercept": -0.13846875829149133,
+  "PRAUC": 0.6540016250077401
+ },
+ "cal_nasa_temp": {
+  "AUC_fold_mean": 0.907961192105259,
+  "Brier": 0.17844206765432435,
+  "ECE": 0.10744644590923574,
+  "LogLoss": 0.5355135978216103,
+  "Slope": 1.2177369714812099,
+  "Intercept": -0.29533710555008585,
+  "PRAUC": 0.7210120857304756
+ },
+ "cal_calce_iso": {
+  "AUC_fold_mean": 0.9146244542120168,
+  "Brier": 0.0667115207552736,
+  "ECE": 0.04931430154624041,
+  "LogLoss": 0.2791967031992331,
+  "Slope": 0.4093813056500693,
+  "Intercept": 1.1705686169085767,
+  "PRAUC": 0.9726965634585761
+ },
+ "cal_calce_platt": {
+  "AUC_fold_mean": 0.9458102919057777,
+  "Brier": 0.07331117964277058,
+  "ECE": 0.028814639440645762,
+  "LogLoss": 0.27994474162700894,
+  "Slope": 0.010577739224865343,
+  "Intercept": 2.543221350609103,
+  "PRAUC": 0.9118955646506851
+ },
+ "cal_calce_temp": {
+  "AUC_fold_mean": 0.9453373827207603,
+  "Brier": 0.08048416084182364,
+  "ECE": 0.06700493034292276,
+  "LogLoss": 0.2839589377212209,
+  "Slope": 0.5307114694538989,
+  "Intercept": 1.4173938055160562,
+  "PRAUC": 0.9579653743428153
+ },
+ "abl_nasa_oxford_full": 0.956967213114754,
+ "abl_nasa_severson_full": 0.8709116451061072,
+ "abl_calce_oxford_full": 0.8498166522864539,
+ "abl_calce_severson_full": 0.85033119627046,
+ "abl_nasa+calce_oxford_full": 0.916576790336497,
+ "abl_nasa+calce_severson_full": 0.8959900617660977,
+ "abl_nasa_oxford_no_soh": 0.5184426229508197,
+ "abl_nasa_severson_no_soh": 0.5949482106609295,
+ "abl_calce_oxford_no_soh": 0.4163071613459879,
+ "abl_calce_severson_no_soh": 0.6823804443056531,
+ "abl_nasa+calce_oxford_no_soh": 0.4285213546160483,
+ "abl_nasa+calce_severson_no_soh": 0.7501329108844753,
+ "abl_nasa_oxford_no_cycle": 0.9651639344262296,
+ "abl_nasa_severson_no_cycle": 0.8541283881476764,
+ "abl_calce_oxford_no_cycle": 0.9672131147540984,
+ "abl_calce_severson_no_cycle": 0.7662060760682918,
+ "abl_nasa+calce_oxford_no_cycle": 0.9930435720448664,
+ "abl_nasa+calce_severson_no_cycle": 0.7738726512846444,
+ "abl_nasa_oxford_no_soh_no_cycle": 0.6577868852459017,
+ "abl_nasa_severson_no_soh_no_cycle": 0.5313803347693812,
+ "abl_calce_oxford_no_soh_no_cycle": 0.4328893442622951,
+ "abl_calce_severson_no_soh_no_cycle": 0.5,
+ "abl_nasa+calce_oxford_no_soh_no_cycle": 0.387888265746333,
+ "abl_nasa+calce_severson_no_soh_no_cycle": 0.5345816361447701,
+ "abl_nasa_oxford_soh_only": 0.9651639344262296,
+ "abl_nasa_severson_soh_only": 0.8341592599282697,
+ "abl_calce_oxford_soh_only": 1.0,
+ "abl_calce_severson_soh_only": 0.7975275428871074,
+ "abl_nasa+calce_oxford_soh_only": 1.0,
+ "abl_nasa+calce_severson_soh_only": 0.8328292209181625,
+ "abl_nasa_oxford_cycle_only": 0.540983606557377,
+ "abl_nasa_severson_cycle_only": 0.709119455938099,
+ "abl_calce_oxford_cycle_only": 0.540983606557377,
+ "abl_calce_severson_cycle_only": 0.694264449475629,
+ "abl_nasa+calce_oxford_cycle_only": 0.540983606557377,
+ "abl_nasa+calce_severson_cycle_only": 0.7192208603325787,
+ "abl_nasa_oxford_sensors_only": 0.6577868852459017,
+ "abl_nasa_severson_sensors_only": 0.5313803347693812,
+ "abl_calce_oxford_sensors_only": 0.4328893442622951,
+ "abl_calce_severson_sensors_only": 0.5,
+ "abl_nasa+calce_oxford_sensors_only": 0.387888265746333,
+ "abl_nasa+calce_severson_sensors_only": 0.5345816361447701,
+ "faildefwithin_combined_nasa_with_soh": 0.778772378516624,
+ "faildefwithin_combined_nasa_no_soh": 0.7151790482079119,
+ "faildefwithin_combined_calce_with_soh": 0.7204514238446241,
+ "faildefwithin_combined_calce_no_soh": 0.6853359660371391,
+ "faildefwithin_soh_only_nasa_with_soh": 0.9461707263550582,
+ "faildefwithin_soh_only_nasa_no_soh": 0.9355332455562868,
+ "faildefwithin_soh_only_calce_with_soh": 0.7204514238446241,
+ "faildefwithin_soh_only_calce_no_soh": 0.6853359660371391,
+ "faildefwithin_volt_only_nasa_with_soh": 0.8255521872896402,
+ "faildefwithin_volt_only_nasa_no_soh": 0.7825043935540125,
+ "faildef_combined_with_soh_oxford": 0.916576790336497,
+ "faildef_combined_with_soh_severson": 0.8959900617660977,
+ "faildef_combined_no_soh_oxford": 0.4285213546160483,
+ "faildef_combined_no_soh_severson": 0.7501329108844753,
+ "faildef_soh_only_with_soh_oxford": 0.9950927523727352,
+ "faildef_soh_only_with_soh_severson": 0.9854288409982004,
+ "faildef_soh_only_no_soh_oxford": 0.4642471958584987,
+ "faildef_soh_only_no_soh_severson": 0.7589693545769347,
+ "faildef_volt_only_with_soh_severson": 0.7225397086608847,
+ "faildef_volt_only_no_soh_severson": 0.6113062335951874,
+ "samechem_nasa_calce_with_soh": 0.8698154617698656,
+ "samechem_nasa_calce_no_soh": 0.8491822418026939,
+ "samechem_nasa_calce_common_no_soh": 0.7811259016607284,
+ "samechem_calce_nasa_with_soh": 0.5426070093589275,
+ "samechem_calce_nasa_no_soh": 0.5655827548410668,
+ "samechem_calce_nasa_common_no_soh": 0.6010471078063332,
+ "samechem_severson_oxford_with_soh": 0.9971958584987058,
+ "samechem_severson_oxford_no_soh": 0.471311475409836,
+ "samechem_severson_oxford_common_no_soh": 0.4282786885245901,
+ "samechem_oxford_severson_with_soh": 0.6875,
+ "samechem_oxford_severson_no_soh": 0.5,
+ "samechem_oxford_severson_common_no_soh": 0.5,
+ "hazard_nasa_oxford_hazard_xgb": 0.971311475409836,
+ "hazard_nasa_severson_hazard_xgb": 0.8840479735279405,
+ "hazard_nasa_oxford_hazard_logistic": 0.5,
+ "hazard_nasa_severson_hazard_logistic": 0.6073289560212436,
+ "hazard_calce_oxford_hazard_xgb": 0.4658110440034512,
+ "hazard_calce_severson_hazard_xgb": 0.737355516441128,
+ "hazard_calce_oxford_hazard_logistic": 0.5,
+ "hazard_calce_severson_hazard_logistic": 0.5,
+ "hazard_nasa+calce_oxford_hazard_xgb": 0.3135785159620362,
+ "hazard_nasa+calce_severson_hazard_xgb": 0.8655142995152566,
+ "hazard_nasa+calce_oxford_hazard_logistic": 0.5,
+ "hazard_nasa+calce_severson_hazard_logistic": 0.9158026156944272,
+ "base_within_nasa_soh_dist": 0.7195536864438887,
+ "base_within_nasa_soh_only": 0.6550617564598015,
+ "base_within_nasa_cycle_only": 0.3741456391604152,
+ "base_within_nasa_soh_cycle": 0.5485034477532772,
+ "base_within_nasa_sensors": 0.6939418049556718,
+ "base_within_nasa_full": 0.8780935060998712,
+ "base_within_calce_soh_dist": 0.8008496925454606,
+ "base_within_calce_soh_only": 0.7167000975524207,
+ "base_within_calce_cycle_only": 0.929847971676915,
+ "base_within_calce_soh_cycle": 0.9272888099700766,
+ "base_within_calce_sensors": 0.6625091797923996,
+ "base_within_calce_full": 0.8794789166200826,
+ "base_nasa_oxford_soh_dist": 1.0,
+ "base_nasa_severson_soh_dist": 0.9124211404041266,
+ "base_calce_oxford_soh_dist": 1.0,
+ "base_calce_severson_soh_dist": 0.9124211404041266,
+ "base_nasa+calce_oxford_soh_dist": 1.0,
+ "base_nasa+calce_severson_soh_dist": 0.9124211404041266,
+ "base_nasa_oxford_soh_only": 1.0,
+ "base_nasa_severson_soh_only": 0.9124211404041266,
+ "base_calce_oxford_soh_only": 1.0,
+ "base_calce_severson_soh_only": 0.9124211404041266,
+ "base_nasa+calce_oxford_soh_only": 1.0,
+ "base_nasa+calce_severson_soh_only": 0.9124211404041266,
+ "base_nasa_oxford_cycle_only": 0.9886755823986196,
+ "base_nasa_severson_cycle_only": 0.7133660806816285,
+ "base_calce_oxford_cycle_only": 0.7561475409836066,
+ "base_calce_severson_cycle_only": 0.7133660806816285,
+ "base_nasa+calce_oxford_cycle_only": 0.7868852459016393,
+ "base_nasa+calce_severson_cycle_only": 0.7133660806816285,
+ "base_nasa_oxford_soh_cycle": 0.9904012079378774,
+ "base_nasa_severson_soh_cycle": 0.8646964184076953,
+ "base_calce_oxford_soh_cycle": 0.7971311475409836,
+ "base_calce_severson_soh_cycle": 0.7643090649542723,
+ "base_nasa+calce_oxford_soh_cycle": 0.8176229508196722,
+ "base_nasa+calce_severson_soh_cycle": 0.7579631296485945,
+ "base_nasa_oxford_sensors": 0.5,
+ "base_nasa_severson_sensors": 0.300592441271521,
+ "base_calce_oxford_sensors": 0.5,
+ "base_calce_severson_sensors": 0.4982487006174682,
+ "base_nasa+calce_oxford_sensors": 0.5,
+ "base_nasa+calce_severson_sensors": 0.3032372220580879,
+ "base_nasa_oxford_full": 0.5,
+ "base_nasa_severson_full": 0.822689399808697,
+ "base_calce_oxford_full": 0.5,
+ "base_calce_severson_full": 0.7123651412606864,
+ "base_nasa+calce_oxford_full": 0.5,
+ "base_nasa+calce_severson_full": 0.674132361601459,
+ "cost_oxford_with_soh": {
+  "raw": 0.7625,
+  "platt": 0.7625,
+  "iso": 0.7625,
+  "temp": 0.7625
+ },
+ "cost_oxford_no_soh": {
+  "raw": 0.7625,
+  "platt": 0.7625,
+  "iso": 0.7625,
+  "temp": 0.7625
+ },
+ "cost_severson_with_soh": {
+  "raw": 0.97920648268481,
+  "platt": 0.97920648268481,
+  "iso": 0.97920648268481,
+  "temp": 0.97920648268481
+ },
+ "cost_severson_no_soh": {
+  "raw": 0.97920648268481,
+  "platt": 0.97920648268481,
+  "iso": 0.97920648268481,
+  "temp": 0.97920648268481
+ },
+ "mono_within_calce_xgboost": 0.4520783236001374,
+ "mono_within_nasa_xgboost": 0.3229571984435798,
+ "mono_transfer_calce_oxford_lightgbm": 0.640625,
+ "mono_transfer_calce_oxford_random_forest": 0.5010416666666667,
+ "mono_transfer_calce_oxford_xgboost": 0.5645833333333333,
+ "mono_transfer_nasa+calce_oxford_lightgbm": 0.2104166666666666,
+ "mono_transfer_nasa+calce_oxford_random_forest": 0.3354166666666666,
+ "mono_transfer_nasa+calce_oxford_xgboost": 0.609375,
+ "mono_transfer_nasa_oxford_lightgbm": 0.5208333333333334,
+ "mono_transfer_nasa_oxford_random_forest": 0.559375,
+ "mono_transfer_nasa_oxford_xgboost": 0.2479166666666666,
+ "mono_transfer_calce_severson_lightgbm": 0.404726108265593,
+ "mono_transfer_calce_severson_xgboost": 0.4203127521681149,
+ "mono_transfer_nasa_severson_lightgbm": 0.5821222185414525,
+ "mono_transfer_nasa_severson_random_forest": 0.7781458547455031,
+ "mono_transfer_nasa_severson_xgboost": 0.9576739800728792,
+ "armA": {
+  "5": {
+   "ece_zero": 0.8173895208377637,
+   "ece_iso": 0.04437528213845675,
+   "ece_platt": 0.0454771004866949,
+   "ece_temp": 0.5627362035740121,
+   "auc_iso": 0.6157234427502755,
+   "auc_platt": 0.5986410844412675,
+   "auc_temp": 0.6693379786216208
+  },
+  "10": {
+   "ece_zero": 0.8173895208377637,
+   "ece_iso": 0.010347688245627389,
+   "ece_platt": 0.009940456831332975,
+   "ece_temp": 0.5610018518720904,
+   "auc_iso": 0.6335690903702433,
+   "auc_platt": 0.6461677902126063,
+   "auc_temp": 0.650617129629023
+  },
+  "20": {
+   "ece_zero": 0.8173895208377637,
+   "ece_iso": 0.013150850538784575,
+   "ece_platt": 0.01273938032946217,
+   "ece_temp": 0.5597595255172159,
+   "auc_iso": 0.6343496662384813,
+   "auc_platt": 0.6545473763867875,
+   "auc_temp": 0.648311038728593
+  },
+  "40": {
+   "ece_zero": 0.8173895208377637,
+   "ece_iso": 0.01501551002710615,
+   "ece_platt": 0.014888456805829016,
+   "ece_temp": 0.5614941088107553,
+   "auc_iso": 0.6374128336047177,
+   "auc_platt": 0.6573129544941311,
+   "auc_temp": 0.6528521185103822
+  }
+ },
+ "armB": {
+  "nasa_xgboost": {
+   "auc_zero": 0.620316173684101,
+   "auc_after": 0.8537091329527214,
+   "recovery": 1.0425025507359609,
+   "retention_before": 1.0,
+   "retention_after": 1.0,
+   "delong_p": 0.0
+  },
+  "nasa_lightgbm": {
+   "auc_zero": 0.4928559720297072,
+   "auc_after": 0.8378458403106642,
+   "recovery": 0.8780655455864435,
+   "retention_before": 1.0,
+   "retention_after": 0.9973856209150328,
+   "delong_p": 0.0
+  },
+  "nasa_random_forest": {
+   "auc_zero": 0.7237935451786365,
+   "auc_after": 0.7506245559433864,
+   "recovery": 0.1877091999935289,
+   "retention_before": 0.9594771241830066,
+   "retention_after": 0.3137254901960784,
+   "delong_p": 5.7892249493488866e-15
+  },
+  "calce_xgboost": {
+   "auc_zero": 0.6862860719761228,
+   "auc_after": 0.7956179152866111,
+   "recovery": 0.5255252570975335,
+   "retention_before": 0.9971308761862724,
+   "retention_after": 0.9961193261237402,
+   "delong_p": 1.2613576310231536e-153
+  },
+  "nasa+calce_xgboost": {
+   "auc_zero": 0.7596011671652825,
+   "auc_after": 0.8281125625602226,
+   "recovery": 0.4663630603855379,
+   "retention_before": 0.6902901785714286,
+   "retention_after": 0.5672034438775511,
+   "delong_p": 5.849255868830492e-62
+  }
+ }
+}

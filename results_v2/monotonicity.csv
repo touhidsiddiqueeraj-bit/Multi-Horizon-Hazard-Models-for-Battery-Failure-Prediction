@@ -1,0 +1,17 @@
+setting,dataset,model,monotonicity_violation_rate,monotonicity_violation_rate_platt
+within,calce,xgboost,0.4520783236001374,0.055841826023894044
+within,nasa,xgboost,0.3229571984435798,0.2600518806744488
+transfer_calce,oxford,lightgbm,0.640625,0.004166666666666667
+transfer_calce,oxford,random_forest,0.5010416666666667,0.5395833333333333
+transfer_calce,oxford,xgboost,0.5645833333333333,0.003125
+transfer_nasa+calce,oxford,lightgbm,0.21041666666666667,0.6479166666666667
+transfer_nasa+calce,oxford,random_forest,0.33541666666666664,0.30520833333333336
+transfer_nasa+calce,oxford,xgboost,0.609375,0.340625
+transfer_nasa,oxford,lightgbm,0.5208333333333334,0.46770833333333334
+transfer_nasa,oxford,random_forest,0.559375,0.37604166666666666
+transfer_nasa,oxford,xgboost,0.24791666666666667,0.12395833333333334
+transfer_calce,severson,lightgbm,0.404726108265593,0.013092214605860351
+transfer_calce,severson,xgboost,0.4203127521681149,0.07160795839031447
+transfer_nasa,severson,lightgbm,0.5821222185414525,0.5373923728789565
+transfer_nasa,severson,random_forest,0.7781458547455031,0.5571807569361273
+transfer_nasa,severson,xgboost,0.9576739800728793,0.9226528722744608
