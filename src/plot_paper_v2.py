@@ -153,7 +153,11 @@ def netbenefit():
 
 
 if __name__ == "__main__":
-    collapse_map()
+    import os as _os
+    if _os.path.exists(os.path.join(_RES, "gru_transfer.csv")):
+        collapse_map()
+    else:
+        print("skip collapse_map: gru_transfer.csv pending")
     reliability()
     prauc_horizon()
     netbenefit()

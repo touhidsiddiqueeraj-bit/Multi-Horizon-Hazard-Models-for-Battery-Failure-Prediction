@@ -115,7 +115,8 @@ T["GRU_SEV_NO_SOH_STD"] = lambda: f3(_gru_sev("common_no_soh")[1])
 T["GRU_SEV_WITH_SOH"] = lambda: f3(_gru_sev("common_with_soh")[0])
 
 # ablation
-T["ABL_MAX_NO_SOH"] = lambda: f"{max(v for k, v in N.items() if k.startswith('abl_') and 'soh' not in k.split('_')[-1] and v is not None):.2f}"
+_NO_SOH_COMBOS = ["no_soh", "no_soh_no_cycle", "sensors_only", "cycle_only"]
+T["ABL_MAX_NO_SOH"] = lambda: f"{max(j(f'abl_{s}_{t}_{c}') for s in ['nasa','calce','nasa+calce'] for t in ['oxford','severson'] for c in _NO_SOH_COMBOS):.2f}"
 T["ABL_SENSORS_ONLY"] = lambda: f3(j("abl_nasa+calce_severson_sensors_only"))
 
 # failure definition
@@ -140,9 +141,16 @@ def _faildef_within(endpoint, ds, fs):
 T["FAILDEF_WITHIN_SOH"] = lambda: f3(_faildef_within("soh_only", "nasa", "with_soh"))
 T["FAILDEF_WITHIN_NO"] = lambda: f3(_faildef_within("soh_only", "nasa", "no_soh"))
 T["FAILDEF_WITHIN_GAP"] = lambda: f"{_faildef_within('soh_only','nasa','with_soh') - _faildef_within('soh_only','nasa','no_soh'):+.2f}"
+T["FAILDEF_WITHIN_SENSORS"] = lambda: f3(j("base_within_nasa_sensors"))
 
 # calibration transfer / recalibration
-T["ISO_LOSS_MAX"] = lambda: "0.4"
+def _iso_loss_max():
+    tr = pd.read_csv(os.path.join(RES, "transfer_trees.csv"))
+    w = tr[(tr.feature_set == "with_soh") & (tr.H == 20)]
+    return float((w["raw_AUC"] - w["iso_AUC"]).max())
+
+
+T["ISO_LOSS_MAX"] = lambda: f"{_iso_loss_max():.2f}"
 T["ARM_A_ECE0"] = lambda: f3(j("armA", "5")["ece_zero"])
 T["ARM_A_ECE5_ISO"] = lambda: f3(j("armA", "5")["ece_iso"])
 T["ARM_A_ECE5_PLATT"] = lambda: f3(j("armA", "5")["ece_platt"])
@@ -156,7 +164,10 @@ T["ARMB_CALCE_RET1"] = lambda: f3(j("armB", "calce_xgboost")["retention_after"])
 
 # statistics / operational
 T["SOH_DELTA_SEV_XGB"] = lambda: (lambda d: f"{d['delta']:.2f} [{d['ci'][0]:.2f}, {d['ci'][1]:.2f}]")(j("soh_delta_severson_xgboost_20"))
-T["COST_RATIO_SEV"] = lambda: (lambda c0, c1: f"{c1/c0:.0f}")(j("cost_severson_with_soh")["raw"], j("cost_severson_no_soh")["raw"])
+T["OP_FNR_SEV_WITH"] = lambda: f"{100*j('op_severson_with_soh_raw')['fnr']:.0f}\\%"
+T["OP_FPR_SEV_WITH"] = lambda: f"{100*j('op_severson_with_soh_raw')['fpr']:.0f}\\%"
+T["OP_FNR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fnr']:.0f}\\%"
+T["OP_FPR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fpr']:.0f}\\%"
 
 
 def main():

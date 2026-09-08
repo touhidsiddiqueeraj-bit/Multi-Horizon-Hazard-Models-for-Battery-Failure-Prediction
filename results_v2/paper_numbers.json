@@ -161,6 +161,594 @@
   "Intercept": 1.4173938055160562,
   "PRAUC": 0.9579653743428153
  },
+ "transfer_oxford_nasa_xgboost_with_soh": {
+  "pooled": 0.956967213114754,
+  "ci": [
+   0.9313725490196078,
+   0.9866071428571428
+  ],
+  "percell": [
+   0.9591210014745268,
+   0.0373459250341653
+  ]
+ },
+ "transfer_severson_nasa_xgboost_with_soh": {
+  "pooled": 0.8709116451061072,
+  "ci": [
+   0.7666774199336489,
+   0.997264108500904
+  ],
+  "percell": [
+   0.9968024653692944,
+   0.010490422624882
+  ]
+ },
+ "transfer_oxford_nasa_lightgbm_with_soh": {
+  "pooled": 1.0,
+  "ci": [
+   1.0,
+   1.0
+  ],
+  "percell": [
+   1.0,
+   0.0
+  ]
+ },
+ "transfer_severson_nasa_lightgbm_with_soh": {
+  "pooled": 0.8486871564695597,
+  "ci": [
+   0.7239648975796927,
+   0.9980348786248828
+  ],
+  "percell": [
+   0.9915831912421876,
+   0.0481124414315652
+  ]
+ },
+ "transfer_oxford_nasa_random_forest_with_soh": {
+  "pooled": 1.0,
+  "ci": [
+   1.0,
+   1.0
+  ],
+  "percell": [
+   1.0,
+   0.0
+  ]
+ },
+ "transfer_severson_nasa_random_forest_with_soh": {
+  "pooled": 0.8611204393408025,
+  "ci": [
+   0.7392776653264754,
+   0.998414977773932
+  ],
+  "percell": [
+   0.9987084133888368,
+   0.006931866767373
+  ]
+ },
+ "transfer_oxford_calce_xgboost_with_soh": {
+  "pooled": 0.8498166522864539,
+  "ci": [
+   0.7638724911452184,
+   0.909516172146485
+  ],
+  "percell": [
+   0.7627492810446868,
+   0.2453738942000501
+  ]
+ },
+ "transfer_severson_calce_xgboost_with_soh": {
+  "pooled": 0.85033119627046,
+  "ci": [
+   0.7489054091341402,
+   0.9670249243258106
+  ],
+  "percell": [
+   0.9572397692767104,
+   0.0538274438963849
+  ]
+ },
+ "transfer_oxford_calce_lightgbm_with_soh": {
+  "pooled": 0.8894521138912855,
+  "ci": [
+   0.8266999867788335,
+   0.9316239316239316
+  ],
+  "percell": [
+   0.8372792225515792,
+   0.1932191077811437
+  ]
+ },
+ "transfer_severson_calce_lightgbm_with_soh": {
+  "pooled": 0.8626164552849068,
+  "ci": [
+   0.7815924621656953,
+   0.9571926951264244
+  ],
+  "percell": [
+   0.9522868218483904,
+   0.0369741949444733
+  ]
+ },
+ "transfer_oxford_calce_random_forest_with_soh": {
+  "pooled": 0.8503019844693701,
+  "ci": [
+   0.7728920409771474,
+   0.8987874575223974
+  ],
+  "percell": [
+   0.7658947187414233,
+   0.1694583556759079
+  ]
+ },
+ "transfer_severson_calce_random_forest_with_soh": {
+  "pooled": 0.9024981948768208,
+  "ci": [
+   0.8337813356600957,
+   0.9836013433281332
+  ],
+  "percell": [
+   0.9956935515747958,
+   0.0222047659360602
+  ]
+ },
+ "transfer_oxford_nasa+calce_xgboost_with_soh": {
+  "pooled": 0.916576790336497,
+  "ci": [
+   0.8777808676307007,
+   0.9651821862348178
+  ],
+  "percell": [
+   0.8260860182112468,
+   0.2654845326054119
+  ]
+ },
+ "transfer_severson_nasa+calce_xgboost_with_soh": {
+  "pooled": 0.8959900617660977,
+  "ci": [
+   0.8122195100083784,
+   0.9946453775891336
+  ],
+  "percell": [
+   0.9949251280130774,
+   0.0149351887677845
+  ]
+ },
+ "transfer_oxford_nasa+calce_lightgbm_with_soh": {
+  "pooled": 0.9712036238136325,
+  "ci": [
+   0.9591816694257947,
+   0.9808322824716268
+  ],
+  "percell": [
+   0.9686839048510508,
+   0.0151272998062432
+  ]
+ },
+ "transfer_severson_nasa+calce_lightgbm_with_soh": {
+  "pooled": 0.8821906211211219,
+  "ci": [
+   0.789202410101662,
+   0.9904506967766183
+  ],
+  "percell": [
+   0.9925622092272612,
+   0.0263607788385618
+  ]
+ },
+ "transfer_oxford_nasa+calce_random_forest_with_soh": {
+  "pooled": 0.989376617773943,
+  "ci": [
+   0.9787779518587096,
+   0.9980525803310614
+  ],
+  "percell": [
+   0.9924848864962804,
+   0.0130722780920931
+  ]
+ },
+ "transfer_severson_nasa+calce_random_forest_with_soh": {
+  "pooled": 0.8892970702505664,
+  "ci": [
+   0.7963720954775376,
+   0.99825579047499
+  ],
+  "percell": [
+   0.9960062870123696,
+   0.0213538712531989
+  ]
+ },
+ "transfer_oxford_nasa_xgboost_no_soh": {
+  "pooled": 0.5184426229508197,
+  "ci": [
+   0.5134099616858238,
+   0.5224215246636772
+  ],
+  "percell": [
+   0.5188299078169981,
+   0.0056600079508288
+  ]
+ },
+ "transfer_severson_nasa_xgboost_no_soh": {
+  "pooled": 0.5949482106609295,
+  "ci": [
+   0.5097073804558034,
+   0.7256666124813232
+  ],
+  "percell": [
+   0.6764388469934122,
+   0.1835470161285901
+  ]
+ },
+ "transfer_oxford_nasa_lightgbm_no_soh": {
+  "pooled": 0.5329216997411561,
+  "ci": [
+   0.4969410456062291,
+   0.5425531914893618
+  ],
+  "percell": [
+   0.4484354969757155,
+   0.2011165240627464
+  ]
+ },
+ "transfer_severson_nasa_lightgbm_no_soh": {
+  "pooled": 0.527019221730613,
+  "ci": [
+   0.4222852765367457,
+   0.6716736779803658
+  ],
+  "percell": [
+   0.5348778334805369,
+   0.1833841215182431
+  ]
+ },
+ "transfer_oxford_nasa_random_forest_no_soh": {
+  "pooled": 0.5208962467644521,
+  "ci": [
+   0.487457627118644,
+   0.5372549019607844
+  ],
+  "percell": [
+   0.4419275604677789,
+   0.1977310600367002
+  ]
+ },
+ "transfer_severson_nasa_random_forest_no_soh": {
+  "pooled": 0.6736664798682026,
+  "ci": [
+   0.560678610374722,
+   0.8264819738000132
+  ],
+  "percell": [
+   0.8361662870811741,
+   0.1759778683949514
+  ]
+ },
+ "transfer_oxford_calce_xgboost_no_soh": {
+  "pooled": 0.4163071613459879,
+  "ci": [
+   0.2638457121933595,
+   0.5544732643230932
+  ],
+  "percell": [
+   0.3596208189216081,
+   0.2081067819103843
+  ]
+ },
+ "transfer_severson_calce_xgboost_no_soh": {
+  "pooled": 0.6823804443056531,
+  "ci": [
+   0.6695810128960987,
+   0.6949983211671952
+  ],
+  "percell": [
+   0.8062152585647459,
+   0.0818307200373141
+  ]
+ },
+ "transfer_oxford_calce_lightgbm_no_soh": {
+  "pooled": 0.4621171268334771,
+  "ci": [
+   0.3068101267146203,
+   0.5788283841964985
+  ],
+  "percell": [
+   0.410257281508366,
+   0.2070623851013298
+  ]
+ },
+ "transfer_severson_calce_lightgbm_no_soh": {
+  "pooled": 0.6430828999365177,
+  "ci": [
+   0.5304193593597839,
+   0.721125889753602
+  ],
+  "percell": [
+   0.8297920576671768,
+   0.0417360927052588
+  ]
+ },
+ "transfer_oxford_calce_random_forest_no_soh": {
+  "pooled": 0.5011863675582398,
+  "ci": [
+   0.3195257611241218,
+   0.640754184311353
+  ],
+  "percell": [
+   0.4351600831092808,
+   0.2434645606782366
+  ]
+ },
+ "transfer_severson_calce_random_forest_no_soh": {
+  "pooled": 0.665477265114574,
+  "ci": [
+   0.5466913882361979,
+   0.7488002912159961
+  ],
+  "percell": [
+   0.8703695364259534,
+   0.0491678794942676
+  ]
+ },
+ "transfer_oxford_nasa+calce_xgboost_no_soh": {
+  "pooled": 0.4285213546160483,
+  "ci": [
+   0.2790544496487119,
+   0.5970627367619848
+  ],
+  "percell": [
+   0.4145944900468499,
+   0.2402403914056388
+  ]
+ },
+ "transfer_severson_nasa+calce_xgboost_no_soh": {
+  "pooled": 0.7501329108844753,
+  "ci": [
+   0.6923700962326295,
+   0.8352133446932636
+  ],
+  "percell": [
+   0.8603658864191853,
+   0.1385497896378695
+  ]
+ },
+ "transfer_oxford_nasa+calce_lightgbm_no_soh": {
+  "pooled": 0.3318593615185505,
+  "ci": [
+   0.1120828454332552,
+   0.5150378787878789
+  ],
+  "percell": [
+   0.3161809320780208,
+   0.2094593930769093
+  ]
+ },
+ "transfer_severson_nasa+calce_lightgbm_no_soh": {
+  "pooled": 0.7181351181792622,
+  "ci": [
+   0.6341723065462361,
+   0.8502826296035922
+  ],
+  "percell": [
+   0.8084805329024001,
+   0.167109465579168
+  ]
+ },
+ "transfer_oxford_nasa+calce_random_forest_no_soh": {
+  "pooled": 0.5808617342536668,
+  "ci": [
+   0.5155031926310709,
+   0.6437057235500973
+  ],
+  "percell": [
+   0.6075368806295478,
+   0.1032865180342481
+  ]
+ },
+ "transfer_severson_nasa+calce_random_forest_no_soh": {
+  "pooled": 0.7460935943080371,
+  "ci": [
+   0.6730844684766742,
+   0.8447072324322811
+  ],
+  "percell": [
+   0.8759678584220356,
+   0.1145588809038997
+  ]
+ },
+ "soh_delta_oxford_xgboost_10": {
+  "delta": 0.5467806298533218,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 7.17750910588904e-54
+ },
+ "soh_delta_oxford_xgboost_20": {
+  "delta": 0.4880554357204486,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 7.22745007322145e-51
+ },
+ "soh_delta_oxford_xgboost_30": {
+  "delta": 0.6140530629853322,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 5.180554225982236e-72
+ },
+ "soh_delta_oxford_xgboost_50": {
+  "delta": 0.3514074633304572,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 3.878277920203368e-33
+ },
+ "soh_delta_oxford_lightgbm_10": {
+  "delta": 0.4489322691975842,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 1.8851155188434677e-36
+ },
+ "soh_delta_oxford_lightgbm_20": {
+  "delta": 0.639344262295082,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 2.582902139674732e-64
+ },
+ "soh_delta_oxford_lightgbm_30": {
+  "delta": 0.2588168679896462,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 9.699699987622352e-13
+ },
+ "soh_delta_oxford_lightgbm_50": {
+  "delta": 0.3838438308886972,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 1.0052353019690092e-27
+ },
+ "soh_delta_oxford_random_forest_10": {
+  "delta": 0.3515962036238137,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 1.9747838079479914e-23
+ },
+ "soh_delta_oxford_random_forest_20": {
+  "delta": 0.4085148835202762,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 6.485612466636595e-36
+ },
+ "soh_delta_oxford_random_forest_30": {
+  "delta": 0.5084663503019845,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 3.5060145059351256e-41
+ },
+ "soh_delta_oxford_random_forest_50": {
+  "delta": 0.4732797670405522,
+  "ci": [
+   null,
+   null
+  ],
+  "delong_p": 2.9209781163979676e-28
+ },
+ "soh_delta_severson_xgboost_10": {
+  "delta": 0.13666389692141,
+  "ci": [
+   0.0792841713842617,
+   0.2485967872350925
+  ],
+  "delong_p": 1.3488371526225156e-245
+ },
+ "soh_delta_severson_xgboost_20": {
+  "delta": 0.1458571508816224,
+  "ci": [
+   0.0972115258709793,
+   0.2332287505242143
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_xgboost_30": {
+  "delta": 0.161694194561759,
+  "ci": [
+   0.1153187132396855,
+   0.2374022670582991
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_xgboost_50": {
+  "delta": 0.1804989749703849,
+  "ci": [
+   0.1336042251437335,
+   0.2502129287170015
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_lightgbm_10": {
+  "delta": 0.1340000118523676,
+  "ci": [
+   0.1045575521035629,
+   0.1995208112494416
+  ],
+  "delong_p": 9.146178587686198e-262
+ },
+ "soh_delta_severson_lightgbm_20": {
+  "delta": 0.1640555029418596,
+  "ci": [
+   0.1268544152495603,
+   0.2267826838552746
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_lightgbm_30": {
+  "delta": 0.101536828436734,
+  "ci": [
+   0.029501813043533,
+   0.2298572289436851
+  ],
+  "delong_p": 2.653833706635011e-153
+ },
+ "soh_delta_severson_lightgbm_50": {
+  "delta": 0.1550601605380572,
+  "ci": [
+   0.1118351238703314,
+   0.2140906386642485
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_random_forest_10": {
+  "delta": 0.1634814321854119,
+  "ci": [
+   0.1325147753313182,
+   0.2252342438174347
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_random_forest_20": {
+  "delta": 0.1432034759425292,
+  "ci": [
+   0.1056827104748285,
+   0.2261430406046284
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_random_forest_30": {
+  "delta": 0.1705231843962814,
+  "ci": [
+   0.1375285681173144,
+   0.2320848603506755
+  ],
+  "delong_p": 0.0
+ },
+ "soh_delta_severson_random_forest_50": {
+  "delta": 0.175030757087877,
+  "ci": [
+   0.113798511972852,
+   0.2643494404066743
+  ],
+  "delong_p": 0.0
+ },
  "abl_nasa_oxford_full": 0.956967213114754,
  "abl_nasa_severson_full": 0.8709116451061072,
  "abl_calce_oxford_full": 0.8498166522864539,
@@ -214,12 +802,12 @@
  "faildefwithin_volt_only_nasa_with_soh": 0.8255521872896402,
  "faildefwithin_volt_only_nasa_no_soh": 0.7825043935540125,
  "faildef_combined_with_soh_oxford": 0.916576790336497,
- "faildef_combined_with_soh_severson": 0.8959900617660977,
  "faildef_combined_no_soh_oxford": 0.4285213546160483,
+ "faildef_combined_with_soh_severson": 0.8959900617660977,
  "faildef_combined_no_soh_severson": 0.7501329108844753,
  "faildef_soh_only_with_soh_oxford": 0.9950927523727352,
- "faildef_soh_only_with_soh_severson": 0.9854288409982004,
  "faildef_soh_only_no_soh_oxford": 0.4642471958584987,
+ "faildef_soh_only_with_soh_severson": 0.9854288409982004,
  "faildef_soh_only_no_soh_severson": 0.7589693545769347,
  "faildef_volt_only_with_soh_severson": 0.7225397086608847,
  "faildef_volt_only_no_soh_severson": 0.6113062335951874,
@@ -247,18 +835,18 @@
  "hazard_nasa+calce_severson_hazard_xgb": 0.8655142995152566,
  "hazard_nasa+calce_oxford_hazard_logistic": 0.5,
  "hazard_nasa+calce_severson_hazard_logistic": 0.9158026156944272,
- "base_within_nasa_soh_dist": 0.7195536864438887,
- "base_within_nasa_soh_only": 0.6550617564598015,
- "base_within_nasa_cycle_only": 0.3741456391604152,
- "base_within_nasa_soh_cycle": 0.5485034477532772,
- "base_within_nasa_sensors": 0.6939418049556718,
- "base_within_nasa_full": 0.8780935060998712,
- "base_within_calce_soh_dist": 0.8008496925454606,
- "base_within_calce_soh_only": 0.7167000975524207,
- "base_within_calce_cycle_only": 0.929847971676915,
- "base_within_calce_soh_cycle": 0.9272888099700766,
- "base_within_calce_sensors": 0.6625091797923996,
- "base_within_calce_full": 0.8794789166200826,
+ "base_within_nasa_soh_dist": 0.6578029204993034,
+ "base_within_nasa_soh_only": 0.5563101494778513,
+ "base_within_nasa_cycle_only": 0.3539931022576255,
+ "base_within_nasa_soh_cycle": 0.4084342767207217,
+ "base_within_nasa_sensors": 0.7971349074746956,
+ "base_within_nasa_full": 0.8623502912870835,
+ "base_within_calce_soh_dist": 0.7974764194526935,
+ "base_within_calce_soh_only": 0.7346321876443157,
+ "base_within_calce_cycle_only": 0.9356334075666038,
+ "base_within_calce_soh_cycle": 0.9352427799641002,
+ "base_within_calce_sensors": 0.6452926042693423,
+ "base_within_calce_full": 0.879426163142778,
  "base_nasa_oxford_soh_dist": 1.0,
  "base_nasa_severson_soh_dist": 0.9124211404041266,
  "base_calce_oxford_soh_dist": 1.0,
@@ -295,29 +883,21 @@
  "base_calce_severson_full": 0.7123651412606864,
  "base_nasa+calce_oxford_full": 0.5,
  "base_nasa+calce_severson_full": 0.674132361601459,
- "cost_oxford_with_soh": {
-  "raw": 0.7625,
-  "platt": 0.7625,
-  "iso": 0.7625,
-  "temp": 0.7625
+ "op_severson_with_soh_raw": {
+  "fnr": 0.323937908496732,
+  "fpr": 0.0397550333532845
  },
- "cost_oxford_no_soh": {
-  "raw": 0.7625,
-  "platt": 0.7625,
-  "iso": 0.7625,
-  "temp": 0.7625
+ "op_severson_with_soh_platt": {
+  "fnr": 0.323937908496732,
+  "fpr": 0.0397550333532845
  },
- "cost_severson_with_soh": {
-  "raw": 0.97920648268481,
-  "platt": 0.97920648268481,
-  "iso": 0.97920648268481,
-  "temp": 0.97920648268481
+ "op_severson_no_soh_raw": {
+  "fnr": 0.6977124183006536,
+  "fpr": 0.1020896765295235
  },
- "cost_severson_no_soh": {
-  "raw": 0.97920648268481,
-  "platt": 0.97920648268481,
-  "iso": 0.97920648268481,
-  "temp": 0.97920648268481
+ "op_severson_no_soh_platt": {
+  "fnr": 0.6977124183006536,
+  "fpr": 0.1020896765295235
  },
  "mono_within_calce_xgboost": 0.4520783236001374,
  "mono_within_nasa_xgboost": 0.3229571984435798,

@@ -181,14 +181,19 @@ def ablation_table():
             for model in TREE_ORDER:
                 dmm = d[(d.target == tgt) & (d.model == model)].sort_values("H")
                 for _, r in dmm.iterrows():
+                    lo, hi = r["delta_lo"], r["delta_hi"]
+                    ci_tex = (f"[{lo:.3f}, {hi:.3f}]"
+                              if np.isfinite(lo) and np.isfinite(hi) else
+                              "(CI undefined: 5 cells)")
                     rows_tex.append(
                         f"{TARGET_LABEL[tgt]} & {MODEL_LABEL[model]} & {int(r['H'])} & "
                         f"{r['auc_with']:.3f} & {r['auc_without']:.3f} & "
-                        f"{r['delta_bootstrap']:+.3f} [{r['delta_lo']:.3f}, {r['delta_hi']:.3f}] & "
-                        f"${r['delong_p_cyclelevel']:.1e}$ \\\\")
+                        f"{r['delta_bootstrap']:+.3f} {ci_tex} & "
+                        f"{'$<10^{-300}$' if r['delong_p_cyclelevel'] == 0 else '$' + format(r['delong_p_cyclelevel'], '.1e') + '$'} \\\\")
                     js[f"soh_delta_{tgt}_{model}_{int(r['H'])}"] = {
                         "delta": float(r["delta_bootstrap"]),
-                        "ci": [float(r["delta_lo"]), float(r["delta_hi"])],
+                        "ci": [float(r["delta_lo"]) if np.isfinite(r["delta_lo"]) else None,
+                               float(r["delta_hi"]) if np.isfinite(r["delta_hi"]) else None],
                         "delong_p": float(r["delong_p_cyclelevel"])}
         save_fragment("tab_soh_tests.tex", "\n".join(rows_tex) + "\n")
     return js
@@ -231,19 +236,22 @@ def faildef_table():
             js[f"faildefwithin_{r['endpoint']}_{r['dataset']}_{r['feature_set']}"] = float(auc)
     d = dtr  # transfer rows only
     rows_tex = []
+    endpoint_label = {"combined": "Combined (SOH or sag)",
+                      "soh_only": "SOH only",
+                      "volt_only": "Voltage sag only"}
     for endpoint in ["combined", "soh_only", "volt_only"]:
-        cells = [endpoint]
-        for fs in ["with_soh", "no_soh"]:
-            for source in ["nasa+calce"]:
-                for tgt in ["oxford", "severson"]:
-                    r = d[(d.endpoint == endpoint) & (d.feature_set == fs) &
-                          (d.source == source) & (d.target == tgt) & (d.H == 20)]
-                    if len(r) == 0:
-                        cells.append("---")
-                        continue
-                    r = r.iloc[0]
-                    cells.append(f"{r['raw_AUC']:.3f} {ci(r['raw_AUC_lo'], r['raw_AUC_hi'])}")
-                    js[f"faildef_{endpoint}_{fs}_{tgt}"] = float(r["raw_AUC"])
+        cells = [endpoint_label[endpoint]]
+        for tgt in ["oxford", "severson"]:
+            for fs in ["with_soh", "no_soh"]:
+                source = "nasa+calce"
+                r = d[(d.endpoint == endpoint) & (d.feature_set == fs) &
+                      (d.source == source) & (d.target == tgt) & (d.H == 20)]
+                if len(r) == 0:
+                    cells.append("---")
+                    continue
+                r = r.iloc[0]
+                cells.append(f"{r['raw_AUC']:.3f} {ci(r['raw_AUC_lo'], r['raw_AUC_hi'])}")
+                js[f"faildef_{endpoint}_{fs}_{tgt}"] = float(r["raw_AUC"])
         rows_tex.append(" & ".join(cells) + r" \\")
     save_fragment("tab_faildef.tex", "\n".join(rows_tex) + "\n")
     return js
@@ -307,6 +315,7 @@ def baselines_table():
     pw = os.path.join(_RES, "baselines_within.csv")
     if os.path.exists(pw):
         dw = pd.read_csv(pw)
+        dw = dw[dw.H == 20]
         for _, r in dw.iterrows():
             js[f"base_within_{r['dataset']}_{r['baseline']}"] = float(r["AUC"])
     rows_tex = []
@@ -334,20 +343,23 @@ def operational_table():
     if not os.path.exists(p):
         return js
     d = pd.read_csv(p)
-    d = d[(d.C_FN == 20.0) & (d.model == "xgboost")]
+    d = d[(d.model == "xgboost")]
     rows_tex = []
     for tgt in ["oxford", "severson"]:
         for fs in ["with_soh", "no_soh"]:
-            r = d[(d.target == tgt) & (d.feature_set == fs)]
-            if len(r) == 0:
-                continue
-            r = r.iloc[0]
             cells = [TARGET_LABEL[tgt], FEATSET_LABEL[fs]]
             for method in ["raw", "platt", "iso", "temp"]:
-                cells.append(f"{r[f'cost_{method}']:.4f}")
-                cells.append(f"{int(round(100*r[f'fnr_{method}']))}\\%")
+                r = d[(d.target == tgt) & (d.feature_set == fs) & (d.method == method)]
+                if len(r) == 0:
+                    cells += ["---", "---"]
+                    continue
+                r = r.iloc[0]
+                cells.append(f"{100*r['tgt_fnr']:.0f}\\%")
+                cells.append(f"{100*r['tgt_fpr']:.0f}\\%")
+                if tgt == "severson" and method in ("raw", "platt"):
+                    js[f"op_{tgt}_{fs}_{method}"] = {"fnr": float(r["tgt_fnr"]),
+                                                     "fpr": float(r["tgt_fpr"])}
             rows_tex.append(" & ".join(cells) + r" \\")
-            js[f"cost_{tgt}_{fs}"] = {m: float(r[f"cost_{m}"]) for m in ["raw", "platt", "iso", "temp"]}
     save_fragment("tab_operational.tex", "\n".join(rows_tex) + "\n")
     return js
 
