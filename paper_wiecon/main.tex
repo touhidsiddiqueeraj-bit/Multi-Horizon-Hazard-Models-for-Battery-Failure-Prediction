@@ -84,30 +84,24 @@ engineering~\cite{tetik2026}. Extensive reviews of RUL prediction are
 available in~\cite{jin2021,li2026,thelen2024}, while LightGBM~\cite{li2026lightgbm},
 GRU-based~\cite{wang2021}, hybrid neural~\cite{rastegarpanah2024}, and
 convolutional architectures~\cite{sun2025} have demonstrated
-competitive lifetime prediction. Survival analysis has recently emerged
-as an alternative paradigm: Ibraheem et al.~\cite{ibraheem2025} employed
-Cox proportional hazards modeling, Li et al.~\cite{li2024} proposed
-early-cycle feature-based prediction, and Yao et al.~\cite{yao2024}
-developed a physics-guided machine-learning framework for capacity
-degradation. Cross-chemistry transfer has received little direct
-attention: Pang et al.~\cite{pang2026} proposed a Transformer--BiLSTM
-framework for multi-chemistry SOH estimation, though their focus was
-SOH rather than failure prediction. Probability calibration is
-similarly underexplored, despite established methods such as Platt
-scaling~\cite{platt1999}, isotonic regression~\cite{zadrozny2002}, and
-survival calibration~\cite{goldstein2020}. Model interpretability using
-SHAP~\cite{lundberg2017} and public benchmark datasets~\cite{dosreis2021,li2025}
-continue to advance the field.
+competitive lifetime prediction. Survival analysis has recently emerged as an alternative
+paradigm~\cite{ibraheem2025,li2024,yao2024}. Cross-chemistry transfer
+has received little direct attention: Pang et al.~\cite{pang2026}
+proposed a Transformer--BiLSTM framework for multi-chemistry SOH
+estimation, though their focus was SOH rather than failure prediction.
+Probability calibration is similarly underexplored, despite established
+methods~\cite{platt1999,zadrozny2002,goldstein2020}. Model
+interpretability using SHAP~\cite{lundberg2017} and public benchmark
+datasets~\cite{dosreis2021,li2025} continue to advance the field.
 
 Nevertheless, a clear research gap remains. Most studies evaluate a
 single dataset, chemistry, horizon, or metric, while cross-dataset
 transfer, calibration, and significance testing are rarely studied
 together. More fundamentally, it is unclear whether apparent transfer
 performance reflects genuine degradation knowledge or a health-state
-shortcut: the composite failure label used in multi-horizon failure
-prediction is defined from SOH, and SOH is also the strongest available
-input feature, so a model can score well by detecting proximity to the
-label threshold itself. The DeLong test~\cite{delong1988} is common for
+shortcut, since the composite failure label is defined from SOH while
+SOH is also the strongest input feature. The DeLong
+test~\cite{delong1988} is common for
 ROC comparison but treats every cycle-level prediction as independent
 even though cycles within a cell are strongly correlated, and while the
 Severson dataset~\cite{severson2019} enables large-scale LFP
@@ -128,6 +122,23 @@ chemistry-dependent health-state shortcut, not a shared degradation
 pattern.
 
 \section{Methodology}
+
+Fig.~\ref{fig:framework} overviews the workflow: LCO training cells and
+LFP transfer targets are represented by per-cycle features and composite
+failure labels, four model families are trained per horizon, calibrated
+with leakage-free cross-fitted functions, and evaluated with
+cell-disjoint reliability checks, transfer experiments, and
+shortcut controls.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.72\columnwidth]{figs/fig_framework.png}
+\caption{Overview of the proposed multi-horizon failure-risk framework:
+datasets, features and labels, model families, per-horizon classifiers,
+cross-fitted calibration, and the reliability, transfer, and
+shortcut-control evaluations.}
+\label{fig:framework}
+\end{figure}
 
 \subsection{Datasets and Feature Representation}
 Four public datasets spanning two battery chemistries are used
@@ -157,14 +168,12 @@ Severson~\cite{severson2019} & 141 & LFP & 101--2{,}237 & Transfer\\
 \end{table}
 
 Two properties of these datasets matter for interpretation. First, the
-Oxford release stores discharge summaries at roughly 100-cycle
-intervals, so after preprocessing only 46--78 usable cycles per cell
-remain and every horizon $H \in \{10,20,30,50\}$ is shorter than the
-sampling interval; Oxford failure labels are therefore identical across
-all four horizons, and Oxford scores measure pooled failure detection
-rather than horizon-resolved prediction (per-cell statistics
-effectively cover four of the five cells, one cell having too few
-positive labels for a within-cell AUC to be defined). Second, because
+Oxford release logs discharge summaries at roughly 100-cycle intervals,
+so after preprocessing only 46--78 usable cycles per cell remain and
+every horizon is shorter than the sampling interval; Oxford failure
+labels are identical across all four horizons, and Oxford scores measure
+pooled failure detection rather than horizon-resolved prediction
+(per-cell statistics effectively cover four of its five cells). Second, because
 chemistry, laboratory, cell manufacturer, cycling protocol, and logging
 resolution all change simultaneously between any source and target, the
 shift evaluated here is cross-\emph{dataset} as well as
@@ -178,7 +187,11 @@ x_t = \{\mathrm{SOH}_t, \bar{V}_t, I_t, T_t, \mathrm{dur}_t, t\},
 \label{eq:features}
 \end{equation}
 used directly by the tree ensembles, while the GRU processes a rolling
-window of $w=10$ cycles. In the CALCE dataset, average temperature and
+window of $w=10$ cycles,
+\begin{equation}
+X_t^{(w)} = \left[x_{t-w+1},\, \ldots,\, x_t\right] \in \mathbb{R}^{w \times d}.
+\label{eq:window}
+\end{equation} In the CALCE dataset, average temperature and
 duration are completely missing and are zero-imputed for the tree
 models; this is harmless within a single dataset but a constant-zero
 column can act as a dataset identifier in pooled training, which
@@ -218,37 +231,44 @@ modeling. Second, the label is \emph{partially defined by SOH itself},
 and SOH is also an input feature in Eq.~(\ref{eq:features}); a with-SOH
 model can therefore detect proximity to the SOH $=0.80$ label threshold
 without learning degradation dynamics. All with-SOH results below are
-upper bounds that include this label-proximity leakage, and
-Section~III-C quantifies it by relabeling failure with a single
+upper bounds that include this label-proximity leakage;
+Section~III-E quantifies it by relabeling failure with a single
 endpoint at a time.
 
 \subsection{Models and Training}
-We evaluate four classifiers: XGBoost (max\_depth 4, learning rate
-0.05, subsample 0.8, colsample 0.8, min\_child\_weight 5), LightGBM
-with matched hyperparameters (min\_child\_samples 20), Random Forest
-(300 trees, max\_depth 6), and a single-layer GRU (8 hidden units,
-10-cycle input window, BCEWithLogits loss, Adam at learning rate 0.005,
-early stopping with patience 10, up to 50 epochs). All tree ensembles
-use 300 estimators to keep the comparison controlled. Within-dataset
-evaluation uses 5-fold cell-grouped cross-validation on NASA (37
-cells) and leave-one-cell-out on CALCE (7 cells): every cycle from a
-given cell stays entirely on one side of every split, models are
-retrained per horizon, and the cell --- not the cycle --- is treated as
-the experimental unit.
+We evaluate XGBoost (max\_depth 4, learning rate 0.05, subsample 0.8,
+colsample 0.8, min\_child\_weight 5), LightGBM with matched
+hyperparameters, Random Forest (300 trees, max\_depth 6), and a
+single-layer GRU (8 hidden units, 10-cycle window, Adam at learning
+rate 0.005, early stopping). Within-dataset evaluation uses 5-fold
+cell-grouped cross-validation on NASA (37 cells) and
+leave-one-cell-out on CALCE (7 cells): every cycle from a given cell
+stays on one side of every split, models are retrained per horizon,
+and the cell --- not the cycle --- is the experimental unit.
 
 \subsection{Probability Calibration}
-Raw predictions are calibrated with Platt scaling~\cite{platt1999} and
-isotonic regression~\cite{zadrozny2002}, with temperature scaling as a
-reference. The protocol is leakage-clean: for every evaluation fold, an
-inner cell-disjoint split of the training cells produces
-out-of-fold scores, and the calibrators are fitted on those
-out-of-fold scores only; the untouched test cells are scored by a model
-trained on all training cells and calibrated with the
-out-of-fold-fitted functions. No calibrator is ever fitted on the
-scores it is applied to, which removes the optimistic bias of
-in-sample fitting (an earlier version of this study fitted calibrators
-directly on training-fold predictions; the absolute calibration numbers
-reported here are accordingly more conservative). Calibration quality
+Raw predictions are calibrated with Platt scaling~\cite{platt1999},
+\begin{equation}
+P_{\mathrm{cal}} = \frac{1}{1 + \exp(A\,s + B)},
+\label{eq:platt}
+\end{equation}
+which fits the logistic parameters $A$ and $B$ on out-of-fold scores
+$s$, and isotonic regression~\cite{zadrozny2002},
+\begin{equation}
+P_{\mathrm{cal}} = g_{\mathrm{iso}}(s), \quad
+g_{\mathrm{iso}} = \operatorname*{arg\,min}_{g\;\mathrm{non\mbox{-}decreasing}}
+\textstyle\sum_i \bigl(y_i - g(s_i)\bigr)^2,
+\label{eq:iso}
+\end{equation}
+a non-decreasing step fit, with temperature scaling ($P_{\mathrm{cal}}
+= \sigma\!\left(\ln\tfrac{s}{1-s}\big/T\right)$) as a reference. The protocol is leakage-clean: calibrators are fitted only on
+out-of-fold scores produced by an inner cell-disjoint split of the
+training cells, and the untouched test cells are scored by a model
+trained on all training cells. No calibrator is ever fitted on the
+scores it is applied to, which removes the optimistic bias of in-sample
+fitting (an earlier version of this study fitted calibrators directly
+on training-fold predictions; the absolute calibration numbers here are
+accordingly more conservative). Calibration quality
 is assessed by the Brier score, expected calibration error (ECE, ten
 equal-width bins), and the slope of a logistic recalibration of the
 predicted probabilities (slope 1 indicates perfect probabilistic
@@ -298,7 +318,7 @@ Model & Dataset & H=10 & H=20 & H=30 & H=50 & Mean & Brier\\
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figs/fig_within_horizons.png}
+\includegraphics[width=0.82\columnwidth]{figs/fig_within_horizons.png}
 \caption{Within-dataset fold-mean Platt AUC across prediction horizons
 (NASA and CALCE, cell-disjoint CV).}
 \label{fig:horizons}
@@ -319,26 +339,23 @@ Dataset & Method & AUC & Brier & ECE & Slope\\
 \end{table}
 
 \subsection{Calibration: Platt Preserves Discrimination Best}
-Table~\ref{tab:calibration} compares the three calibrators. On
-discrimination, raw scores are effectively unbeatable within dataset:
-a fitted calibrator is a monotone re-mapping and preserves per-fold
-ranking up to the ties it introduces, so fold-mean AUC differences
-between calibrators are small. Platt achieves the best calibration
-error on CALCE (ECE 0.029 versus 0.049 for isotonic), but its fitted
-slope on CALCE is only 0.01: under leave-one-cell-out the
-out-of-fold sigmoid essentially washes confidence toward the base rate
-while preserving ranking. Isotonic's step function creates large tied
-groups whose cost is invisible to ROC-AUC but severe for
-precision--recall. We therefore read the comparison as: Platt
-\emph{preserves discrimination best while achieving calibration error
-comparable to or better than isotonic} --- a materially weaker and more
-defensible claim than ``Platt is the better calibrator'' --- and raw
-scores remain the safest ranking signal whenever the operating context
-is uncertain (Fig.~\ref{fig:reliability}).
+Table~\ref{tab:calibration} compares the three calibrators. A fitted
+calibrator is a monotone re-mapping, so per-fold ranking is preserved
+up to the ties it introduces and fold-mean AUC differences are small;
+but isotonic's tied step groups cost precision--recall dearly, and
+Platt's fitted slope on CALCE is only 0.01 --- under
+leave-one-cell-out the out-of-fold sigmoid washes confidence toward
+the base rate while preserving ranking. We therefore read the
+comparison as: Platt \emph{preserves discrimination best while
+achieving calibration error comparable to or better than isotonic} ---
+a materially weaker and more defensible claim than ``Platt is the
+better calibrator'' --- and raw scores remain the safest ranking
+signal whenever the operating context is uncertain
+(Fig.~\ref{fig:reliability}).
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figs/fig_reliability_v2.png}
+\includegraphics[width=0.9\columnwidth]{figs/fig_reliability_v2.png}
 \caption{Reliability diagrams under the cross-fitted protocol. (a)
 Within CALCE (XGBoost, $H{=}20$). (b) ALL-LCO$\to$Severson without SOH
 ($H{=}20$): no source-fitted calibrator lands near the diagonal on the
@@ -379,7 +396,7 @@ Training & Model & Oxford (w/$-$SOH) & Severson (w/$-$SOH)\\
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figs/fig_collapse_map.png}
+\includegraphics[width=0.94\columnwidth]{figs/fig_collapse_map.png}
 \caption{Transferability collapse map at $H{=}20$: AUC drop from
 removing SOH, per source$\to$target pair and model.}
 \label{fig:collapse}
@@ -479,14 +496,23 @@ Setting & Fixed & Hazard & Fixed & Hazard\\
 \end{tabular}
 \end{table}
 
-We therefore also fit an explicit discrete-time hazard model: one pooled
-classifier predicts per-offset hazards $h_\ell(t) = P(T_f = t+\ell
-\mid T_f \ge t+\ell,\, x_t)$ with the offset $\ell$ as an input
-feature, using only the features measured at $t$ (operational), and
-cumulative risk follows the survival product $R(t,H) = 1-\prod_{\ell
-\le H}(1-\hat h_\ell(t))$, which is monotone in $H$ by construction
-and yields all horizons from a single fit
-(Table~\ref{tab:hazard}). Within datasets the survival product matches
+We therefore also fit an explicit discrete-time hazard model. For each
+observed cycle $t$ and offset $\ell \in \{1,\ldots,L\}$ with $L=50$,
+the hazard conditional on the features measured at $t$ (operational: no
+future measurements) is
+\begin{equation}
+h_\ell(t) = P\bigl(T_f = t+\ell \mid T_f \ge t+\ell,\; x_t\bigr),
+\label{eq:hazarddef}
+\end{equation}
+estimated by one pooled classifier on the offset-expanded at-risk
+training rows $(x_t, \ell)$ with $\ell$ as an additional input
+feature. Cumulative failure risk follows the survival product
+\begin{equation}
+R(t, H) = 1 - \prod_{\ell=1}^{H} \bigl(1 - \hat h_\ell(t)\bigr),
+\label{eq:survival}
+\end{equation}
+which is monotone non-decreasing in $H$ by construction and yields all
+four horizons from a single fit (Table~\ref{tab:hazard}). Within datasets the survival product matches
 the fixed-horizon classifier at no cost. Under transfer it inherits the
 same SOH dependence as every other model --- formulating the output
 does not exempt the inputs from dataset shift --- and behaves
@@ -497,17 +523,14 @@ construction.
 \subsection{Operational Cost Analysis}
 AUC treats all errors as equal; a BMS does not. We select the decision
 threshold on source out-of-fold scores with a 10\% false-alarm budget
---- the operationally honest choice, since no target labels exist at
-deployment --- and apply it unchanged to the target
-(Table~\ref{tab:operational}). On Severson with SOH, the transferred
-threshold misses 32\% of target failures while holding false alarms to
-4\%; without SOH the miss rate more than doubles to 70\% with the full
-budget spent, and calibrated scores differ only marginally because
-under shift the ranking is the asset and the ranking is what collapsed.
-On Oxford, nearly every row is positive under the coarse pooled labels,
-so virtually any threshold alerts on almost every cycle --- that target
-offers no room for a discriminating operating point at all
-(Section~II-B).
+and apply it unchanged to the target (Table~\ref{tab:operational}).
+On Severson with SOH, the transferred threshold misses 32\% of target
+failures while holding false alarms to 4\%; without SOH the miss rate
+more than doubles to 70\% with the full budget spent, and calibrated
+scores differ only marginally --- under shift the ranking is the asset
+and the ranking is what collapsed. On Oxford, nearly every row is
+positive under the coarse pooled labels, so no discriminating
+operating point exists at all (Section~II-B).
 
 \begin{table}[!t]
 \caption{Operational Evaluation at $H{=}20$ (XGBoost, ALL-LCO Source):
@@ -571,21 +594,15 @@ least as much as to chemistry. Platt scaling preserves discrimination
 best at comparable calibration error, though no source-fitted
 calibrator repairs calibration on the shifted target.
 
-Several limitations bound these claims. The fixed-horizon formulation
-consists of independent classifiers with no enforced monotonicity
-across horizons; a discrete-time survival formulation that restores
-monotonicity by construction is a natural next step. The Oxford
-dataset's coarse 100-cycle sampling makes its labels horizon-invariant
-and limits it to pooled-detection use; CALCE contributes only seven
-cells. Calibration was analyzed with cross-fitted out-of-fold fits but
-remains in-sample for the GRU transfer setting, and decision-threshold
-analysis under shift was left to the extended version of this study.
-Cross-chemistry evaluation covered LCO and LFP only, and all datasets
-are laboratory-scale. Future work will extend the framework to
-minimal-feature baselines as standard practice, additional chemistries
-and controlled same-laboratory cross-chemistry campaigns, continuous
-time-to-failure modeling, cell-level hierarchical calibration, and
-validation on large-scale industrial datasets.
+Several limitations bound these claims: the fixed-horizon
+classifiers have no enforced monotonicity across horizons; Oxford's
+coarse 100-cycle sampling limits it to pooled-detection use; CALCE
+contributes only seven cells; cross-chemistry evaluation covered LCO
+and LFP only; and all datasets are laboratory-scale. Future work will
+extend the framework to minimal-feature baselines as standard
+practice, controlled same-laboratory cross-chemistry campaigns,
+continuous time-to-failure modeling, and validation on large-scale
+industrial datasets.
 
 \balance
 \begin{thebibliography}{26}
