@@ -40,9 +40,11 @@ for ax, ds, name in [(axes[0], "nasa", "NASA 18650"), (axes[1], "calce", "CALCE 
     ax.set_xticks([10, 20, 30, 50])
     ax.set_ylim(0.82, 1.0)
 axes[0].set_ylabel("fold-mean Platt AUC")
-axes[0].legend(frameon=False, loc="lower left", handlelength=1.4,
-               borderaxespad=0.2, labelspacing=0.25)
-fig.tight_layout(pad=0.4, w_pad=1.0)
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False,
+           fontsize=6.5, handlelength=1.3, columnspacing=1.1,
+           bbox_to_anchor=(0.5, -0.06))
+fig.tight_layout(pad=0.4, w_pad=1.0, rect=(0, 0.09, 1, 1))
 fig.savefig(os.path.join(FIGS, "fig_within_horizons.png"), dpi=300,
             bbox_inches="tight", pad_inches=0.02)
 plt.close(fig)
@@ -65,18 +67,14 @@ for ax, d, title in panels:
                               ("p_iso", "isotonic", "#ff7f0e")]:
         pts = reliability_curve(y, d[col].to_numpy(), 10)
         ax.plot([p[0] for p in pts], [p[1] for p in pts], "o-", ms=2.5,
-                lw=1.0, color=color,
-                label=f"{label} (ECE {ece_fn(y, d[col].to_numpy()):.2f})")
+                lw=1.0, color=color, label=label)
     ax.plot([0, 1], [0, 1], "k--", lw=0.6)
     ax.set_title(title, fontsize=6.8)
     ax.set_xlabel("mean predicted $p$", labelpad=1.5)
     ax.tick_params(labelsize=6)
 axes[0].set_ylabel("observed frequency")
-leg = axes[0].legend(frameon=True, fontsize=5.8, loc="upper left",
-                     borderaxespad=0.3, labelspacing=0.25, handlelength=1.2)
-leg.get_frame().set_facecolor("white")
-leg.get_frame().set_edgecolor("none")
-leg.set_alpha(0.92)
+axes[1].legend(frameon=False, fontsize=6, loc="upper left",
+               borderaxespad=0.2, labelspacing=0.3, handlelength=1.2)
 fig.tight_layout(pad=0.4, w_pad=1.2)
 fig.savefig(os.path.join(FIGS, "fig_reliability_v2.png"), dpi=300,
             bbox_inches="tight", pad_inches=0.02)
