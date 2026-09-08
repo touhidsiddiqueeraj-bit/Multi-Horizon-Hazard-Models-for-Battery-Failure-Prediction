@@ -72,8 +72,11 @@ for ax, d, title in panels:
     ax.set_xlabel("mean predicted $p$", labelpad=1.5)
     ax.tick_params(labelsize=6)
 axes[0].set_ylabel("observed frequency")
-axes[0].legend(frameon=False, fontsize=5.4, loc="upper left",
-               borderaxespad=0.2, labelspacing=0.2, handlelength=1.2)
+leg = axes[0].legend(frameon=True, fontsize=5.8, loc="upper left",
+                     borderaxespad=0.3, labelspacing=0.25, handlelength=1.2)
+leg.get_frame().set_facecolor("white")
+leg.get_frame().set_edgecolor("none")
+leg.set_alpha(0.92)
 fig.tight_layout(pad=0.4, w_pad=1.2)
 fig.savefig(os.path.join(FIGS, "fig_reliability_v2.png"), dpi=300,
             bbox_inches="tight", pad_inches=0.02)
