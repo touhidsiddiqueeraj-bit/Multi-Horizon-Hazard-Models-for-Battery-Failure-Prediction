@@ -22,3 +22,10 @@ SOH label circularity + endpoint framing, Oxford horizon-invariance
 caveat, dataset-shift-vs-chemistry controls, distance-to-threshold
 baseline (0.912 Severson), GRU seed instability, zero-imputation and GRU
 feature-confound notes.
+
+## Figure legibility
+All figures are rendered at their FINAL physical size (IEEE columnwidth
+= 3.5 in) with true-size fonts (>= 6 pt), so text is readable at 100%
+zoom: plot_conf_figs.py (within-horizons, reliability, collapse map) and
+plot_framework.py (framework diagram). If you resize a figure in
+main.tex, regenerate it at the new width instead of scaling.

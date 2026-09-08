@@ -8,6 +8,12 @@
 \usepackage{balance}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
 
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{1pt}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+
 \begin{document}
 
 \title{Multi-Horizon Failure-Risk Models for Battery Failure Prediction: Within-Dataset Reliability, Cross-Chemistry Transferability, and Calibration Analysis}
@@ -132,7 +138,7 @@ shortcut controls.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.72\columnwidth]{figs/fig_framework.png}
+\includegraphics[width=\columnwidth]{figs/fig_framework.png}
 \caption{Overview of the proposed multi-horizon failure-risk framework:
 datasets, features and labels, model families, per-horizon classifiers,
 cross-fitted calibration, and the reliability, transfer, and
@@ -224,16 +230,13 @@ would use the output operationally. Two honesty notes are essential.
 First, (5) is a fixed-horizon \emph{cumulative failure-risk} target:
 each horizon is an independent binary classifier, no cycle-level hazard
 or survival product is estimated, and no monotonicity constraint
-$P_{10}\le P_{20}\le P_{30}\le P_{50}$ is enforced --- we measured such
-violations in up to 46\% of within-dataset rows, which is why we use
-the term \emph{failure-risk classification} rather than hazard
-modeling. Second, the label is \emph{partially defined by SOH itself},
-and SOH is also an input feature in Eq.~(\ref{eq:features}); a with-SOH
-model can therefore detect proximity to the SOH $=0.80$ label threshold
-without learning degradation dynamics. All with-SOH results below are
-upper bounds that include this label-proximity leakage;
-Section~III-E quantifies it by relabeling failure with a single
-endpoint at a time.
+$P_{10}\le P_{20}\le P_{30}\le P_{50}$ is enforced (violations reach
+up to 46\% of within-dataset rows), which is why we say
+\emph{failure-risk classification} rather than hazard modeling.
+Second, the label is \emph{partially defined by SOH itself} and SOH is
+also an input feature (Eq.~\ref{eq:features}); with-SOH results are
+upper bounds that include this label-proximity leakage, and
+Section~III-E quantifies it directly.
 
 \subsection{Models and Training}
 We evaluate XGBoost (max\_depth 4, learning rate 0.05, subsample 0.8,
@@ -318,7 +321,7 @@ Model & Dataset & H=10 & H=20 & H=30 & H=50 & Mean & Brier\\
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.82\columnwidth]{figs/fig_within_horizons.png}
+\includegraphics[width=\columnwidth]{figs/fig_within_horizons.png}
 \caption{Within-dataset fold-mean Platt AUC across prediction horizons
 (NASA and CALCE, cell-disjoint CV).}
 \label{fig:horizons}
@@ -355,7 +358,7 @@ signal whenever the operating context is uncertain
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.9\columnwidth]{figs/fig_reliability_v2.png}
+\includegraphics[width=\columnwidth]{figs/fig_reliability_v2.png}
 \caption{Reliability diagrams under the cross-fitted protocol. (a)
 Within CALCE (XGBoost, $H{=}20$). (b) ALL-LCO$\to$Severson without SOH
 ($H{=}20$): no source-fitted calibrator lands near the diagonal on the
@@ -364,20 +367,18 @@ shifted target.}
 \end{figure}
 
 \subsection{Cross-Dataset Transfer and the SOH Shortcut}
-Table~\ref{tab:transfer} compares transfer at $H{=}20$ with and without
-SOH as a feature, and Fig.~\ref{fig:collapse} summarizes the drop.
-Because calibration parameters are dataset-specific, transfer is
-reported using raw AUC. With SOH included, the tree ensembles reach
-pooled AUC between 0.85 and 1.00 (up to 1.00 on Oxford for
-NASA-trained LightGBM and Random Forest). Removing SOH collapses every
-tree model: on NASA+CALCE$\to$Oxford, XGBoost falls from 0.917 to
-0.429, and no no-SOH configuration exceeds 0.58 on Oxford or 0.77 on
-Severson, with several configurations below chance --- the remaining
-sensors do not merely lose signal, they rank the target distribution
-backwards. The GRU is highly unstable across training seeds under
-shift (per-cell AUC from 0.21 to 1.00 at fixed settings) and offers no
-transfer advantage even though it sees the same common feature set as
-the trees in the matched comparison.
+Table~\ref{tab:transfer} compares transfer at $H{=}20$ with and
+without SOH as a feature; transfer is reported in raw AUC because
+calibration parameters are dataset-specific. With SOH included, the
+tree ensembles reach pooled AUC between 0.85 and 1.00. Removing SOH
+collapses every tree model: on NASA+CALCE$\to$Oxford, XGBoost falls
+from 0.917 to 0.429, no no-SOH configuration exceeds 0.58 on Oxford or
+0.77 on Severson, and several fall below chance --- the remaining
+sensors rank the target distribution backwards. The GRU is highly
+unstable across training seeds under shift (per-cell AUC from 0.21 to
+1.00 at fixed settings) and offers no transfer advantage even though it
+sees the same common feature set as the trees in the matched
+comparison.
 
 \begin{table}[!t]
 \caption{Cross-Dataset Transfer at $H{=}20$: Pooled Raw AUC With and
@@ -396,7 +397,7 @@ Training & Model & Oxford (w/$-$SOH) & Severson (w/$-$SOH)\\
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.94\columnwidth]{figs/fig_collapse_map.png}
+\includegraphics[width=\columnwidth]{figs/fig_collapse_map.png}
 \caption{Transferability collapse map at $H{=}20$: AUC drop from
 removing SOH, per source$\to$target pair and model.}
 \label{fig:collapse}

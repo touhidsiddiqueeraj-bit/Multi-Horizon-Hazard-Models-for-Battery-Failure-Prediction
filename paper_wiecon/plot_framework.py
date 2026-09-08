@@ -4,9 +4,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
-fig, ax = plt.subplots(figsize=(3.5, 3.45))
+fig, ax = plt.subplots(figsize=(3.5, 3.0))
 ax.set_xlim(0, 100)
-ax.set_ylim(0, 117)
+ax.set_ylim(0, 128)
 ax.axis("off")
 ax.set_position([0, 0, 1, 1])
 
@@ -14,7 +14,7 @@ BLUE = "#eef2f7"
 GRAY = "#f7f7f7"
 
 
-def box(cx, cy, w, h, lines, fc=BLUE, fs=6.0, bold_first=False, ec="#333333"):
+def box(cx, cy, w, h, lines, fc=BLUE, fs=6.8, bold_first=False, ec="#333333"):
     ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
                                 boxstyle="round,pad=0.6",
                                 fc=fc, ec=ec, lw=0.9))
@@ -42,8 +42,8 @@ box(50, 96.5, 92, 11,
      "label: SOH $\\leq 0.80$ or voltage sag within horizon $H$"])
 
 # warning band
-ax.text(50, 86.4, "SOH is on both sides of the label: with-SOH results are upper bounds",
-        ha="center", fontsize=5.5, color="#c0392b", style="italic")
+ax.text(50, 96, "SOH is on both sides of the label: with-SOH results are upper bounds",
+        ha="center", fontsize=6.2, color="#c0392b", style="italic")
 
 # Row 3: models
 box(25, 79, 46, 11, ["tree ensembles", "XGBoost + LightGBM + Random Forest",
@@ -69,25 +69,25 @@ box(75, 33, 46, 13, ["transfer evaluation", "per target cell + SOH ablation",
                      "DeLong test (secondary)"], fc=GRAY, bold_first=True)
 
 # Row 7: outcome
-box(50, 15.5, 92, 10.5,
+box(50, 24, 92, 10,
     ["validity verdict",
      "apparent transfer $\\approx$ SOH shortcut, not degradation knowledge"],
     fc="#fbeeea", ec="#c0392b")
 
 # arrows
-arrow(25, 106, 25, 101.3)
-arrow(75, 106, 75, 101.3)
-arrow(50, 89, 50, 83.6)
-arrow(25, 71.5, 38, 68.2)
-arrow(75, 71.5, 62, 68.2)
-arrow(25, 71.5, 50, 68.2)
-arrow(50, 57, 50, 53.6)
-arrow(50, 42.5, 50, 39.2)
-arrow(30, 25, 30, 20.2)
-arrow(70, 25, 70, 20.2)
+arrow(25, 116, 25, 109.7)
+arrow(75, 116, 75, 109.7)
+arrow(50, 98.4, 50, 92)
+arrow(25, 81.4, 38, 76.3)
+arrow(75, 81.4, 62, 76.3)
+arrow(25, 81.4, 50, 76.3)
+arrow(50, 66.9, 50, 62.7)
+arrow(50, 51.9, 50, 46.2)
+arrow(30, 34.9, 30, 29.2)
+arrow(70, 34.9, 70, 29.2)
 # transfer path (dashed): targets feed the transfer-evaluation lane
-arrow(93, 106, 93, 39.2, color="#888888", ls="--")
-ax.text(95.5, 74, "transfer", fontsize=5.5, color="#888888", rotation=90,
+arrow(93, 116, 93, 47.2, color="#888888", ls="--")
+ax.text(95.5, 74, "transfer", fontsize=6, color="#888888", rotation=90,
         va="center", ha="center")
 
 fig.savefig("figs/fig_framework.png", dpi=200, bbox_inches="tight",

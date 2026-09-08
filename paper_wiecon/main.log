@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 02:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 03:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -380,24 +380,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 ) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 11.
-LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
 
 -- Lines per column: 56 (exact).
 (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -431,18 +431,18 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 Package color Info: Driver file: pdftex.def on input line 149.
 
 (/usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx))
-Package hyperref Info: Link coloring ON on input line 11.
+Package hyperref Info: Link coloring ON on input line 17.
  (./main.out)
 (./main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 51.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 57.
 
  (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 51.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 57.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -452,45 +452,45 @@ hare/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-<figs/fig_framework.png, id=124, 257.2812pt x 253.6677pt>
+<figs/fig_framework.png, id=124, 261.25604pt x 221.1462pt>
 File: figs/fig_framework.png Graphic file (type png)
 <use figs/fig_framework.png>
-Package pdftex.def Info: figs/fig_framework.png  used on input line 135.
-(pdftex.def)             Requested size: 181.4403pt x 178.90154pt.
+Package pdftex.def Info: figs/fig_framework.png  used on input line 141.
+(pdftex.def)             Requested size: 252.0pt x 213.31361pt.
  [2 <./figs/fig_framework.png>] (./generated/tab_within.tex)
-Overfull \hbox (10.95563pt too wide) in paragraph at lines 311--317
+Overfull \hbox (10.95563pt too wide) in paragraph at lines 314--320
  [][] 
  []
 
-<figs/fig_within_horizons.png, id=167, 486.618pt x 171.039pt>
+<figs/fig_within_horizons.png, id=167, 248.6088pt x 115.632pt>
 File: figs/fig_within_horizons.png Graphic file (type png)
 <use figs/fig_within_horizons.png>
-Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 321.
-(pdftex.def)             Requested size: 206.64185pt x 72.63188pt.
+Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 324.
+(pdftex.def)             Requested size: 252.0pt x 117.21437pt.
 (./generated/tab_calibration.tex) [3 <./figs/fig_within_horizons.png>]
-<figs/fig_reliability_v2.png, id=181, 515.0442pt x 211.5102pt>
+<figs/fig_reliability_v2.png, id=181, 256.3176pt x 136.8312pt>
 File: figs/fig_reliability_v2.png Graphic file (type png)
 <use figs/fig_reliability_v2.png>
-Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 358.
-(pdftex.def)             Requested size: 226.79846pt x 93.13899pt.
+Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 361.
+(pdftex.def)             Requested size: 252.0pt x 134.52792pt.
 
 (./generated/tab_transfer.tex)
-<figs/fig_collapse_map.png, id=184, 513.5988pt x 168.1482pt>
+<figs/fig_collapse_map.png, id=183, 253.4268pt x 131.7723pt>
 File: figs/fig_collapse_map.png Graphic file (type png)
 <use figs/fig_collapse_map.png>
-Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 399.
-(pdftex.def)             Requested size: 236.88062pt x 77.55179pt.
+Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 400.
+(pdftex.def)             Requested size: 252.0pt x 131.03201pt.
  (./generated/tab_faildef.tex)
 (./generated/tab_samechem.tex) [4 <./figs/fig_reliability_v2.png> <./figs/fig_c
 ollapse_map.png>] (./generated/tab_hazard.tex) (./generated/tab_operational.tex
 ) (./generated/tab_soh.tex) [5]
-Underfull \hbox (badness 3623) in paragraph at lines 616--617
+Underfull \hbox (badness 3623) in paragraph at lines 617--618
 []\OT1/ptm/m/n/8 T. Tetik, ``Fea-ture en-gi-neer-ing and ex-plain-able ar-ti-fi
 -cial in-tel-li-
  []
 
 
-Underfull \hbox (badness 2401) in paragraph at lines 616--617
+Underfull \hbox (badness 2401) in paragraph at lines 617--618
 \OT1/ptm/m/it/8 nal of En-ergy Stor-age\OT1/ptm/m/n/8 , vol. 144, Art. no. 1198
 73, 2026, doi:
  []
@@ -506,10 +506,6 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-
-Overfull \vbox (0.74994pt too high) has occurred while \output is active []
-
-
 [6] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
@@ -521,7 +517,7 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 Here is how much of TeX's memory you used:
  10888 strings out of 469515
  168742 string characters out of 5470808
- 609020 words of memory out of 5000000
+ 607080 words of memory out of 5000000
  39314 multiletter control sequences out of 15000+600000
  668506 words of font info for 119 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -542,10 +538,10 @@ cm/cmsy9.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.
 pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-d
 ist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/ti
 mes/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 502056 bytes).
+Output written on main.pdf (6 pages, 525068 bytes).
 PDF statistics:
- 322 PDF objects out of 1000 (max. 8388607)
- 263 compressed objects within 3 object streams
+ 321 PDF objects out of 1000 (max. 8388607)
+ 262 compressed objects within 3 object streams
  70 named destinations out of 1000 (max. 500000)
  149 words of extra memory for PDF output out of 10000 (max. 10000000)
 
