@@ -1,0 +1,181 @@
+state: /home/touhid/multi-horizon-battery/data/recalibration_reduced.db (73 committed samples)
+
+########## Target: severson (141 cells, 117729 rows)
+
+=== Source: nasa (37 LCO cells, 32 for fit / 5 for retention)
+  [with_soh] xgboost H=20: within_ceiling=0.899 fullLFP=1.000 zeroshot=0.882
+  [with_soh] lightgbm H=20: within_ceiling=0.909 fullLFP=1.000 zeroshot=0.894
+  [with_soh] random_forest H=20: within_ceiling=0.901 fullLFP=0.999 zeroshot=0.863
+    k=40 seed=42 [random_forest warmstart] auc=0.862 (zero 0.819) ratio=0.52 lco_ret 1.000->0.770
+    k=40 seed=123 [random_forest warmstart] auc=0.817 (zero 0.834) ratio=-0.25 lco_ret 1.000->0.860
+    k=40 seed=456 [random_forest warmstart] auc=0.805 (zero 0.842) ratio=-0.62 lco_ret 1.000->0.723
+    k=40 seed=789 [random_forest warmstart] auc=0.988 (zero 0.998) ratio=nan lco_ret 1.000->0.916
+    k=40 seed=101112 [random_forest warmstart] auc=0.847 (zero 0.830) ratio=0.24 lco_ret 1.000->0.677
+  [no_soh] xgboost H=20: within_ceiling=0.844 fullLFP=1.000 zeroshot=0.617
+    k=5 seed=123 [xgboost warmstart] auc=0.820 (zero 0.623) ratio=0.89 lco_ret 1.000->1.000
+    k=5 seed=456 [xgboost warmstart] auc=0.852 (zero 0.611) ratio=1.03 lco_ret 1.000->1.000
+    k=5 seed=789 [xgboost warmstart] auc=0.746 (zero 0.631) ratio=0.54 lco_ret 1.000->1.000
+    k=5 seed=101112 [xgboost warmstart] auc=0.820 (zero 0.698) ratio=0.83 lco_ret 1.000->1.000
+    k=10 seed=42 [xgboost warmstart] auc=0.882 (zero 0.620) ratio=1.17 lco_ret 1.000->1.000
+    k=10 seed=123 [xgboost warmstart] auc=0.855 (zero 0.615) ratio=1.05 lco_ret 1.000->1.000
+    k=10 seed=456 [xgboost warmstart] auc=0.804 (zero 0.605) ratio=0.83 lco_ret 1.000->1.000
+    k=10 seed=789 [xgboost warmstart] auc=0.875 (zero 0.611) ratio=1.13 lco_ret 1.000->1.000
+    k=10 seed=101112 [xgboost warmstart] auc=0.843 (zero 0.614) ratio=1.00 lco_ret 1.000->1.000
+    k=20 seed=123 [xgboost warmstart] auc=0.880 (zero 0.605) ratio=1.15 lco_ret 1.000->1.000
+    k=20 seed=456 [xgboost warmstart] auc=0.891 (zero 0.614) ratio=1.20 lco_ret 1.000->1.000
+    k=20 seed=789 [xgboost warmstart] auc=0.793 (zero 0.606) ratio=0.79 lco_ret 1.000->1.000
+    k=20 seed=101112 [xgboost warmstart] auc=0.670 (zero 0.609) ratio=0.26 lco_ret 1.000->1.000
+    k=40 seed=42 [xgboost warmstart] auc=0.905 (zero 0.603) ratio=1.25 lco_ret 1.000->1.000
+    k=40 seed=123 [xgboost warmstart] auc=0.871 (zero 0.587) ratio=1.10 lco_ret 1.000->1.000
+    k=40 seed=456 [xgboost warmstart] auc=0.816 (zero 0.600) ratio=0.88 lco_ret 1.000->1.000
+    k=40 seed=789 [xgboost warmstart] auc=0.944 (zero 0.702) ratio=1.70 lco_ret 1.000->1.000
+    k=40 seed=101112 [xgboost warmstart] auc=0.802 (zero 0.602) ratio=0.83 lco_ret 1.000->1.000
+  [no_soh] lightgbm H=20: within_ceiling=0.886 fullLFP=1.000 zeroshot=0.489
+    k=5 seed=123 [lightgbm warmstart] auc=0.803 (zero 0.496) ratio=0.79 lco_ret 1.000->0.946
+/home/touhid/multi-horizon-battery/src/recalibrate_cross_chem.py:496: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rank_corr=float(spearmanr(p_zero, p_recal).statistic),
+    k=5 seed=456 [lightgbm warmstart] auc=0.777 (zero 0.484) ratio=0.73 lco_ret 1.000->1.000
+    k=5 seed=789 [lightgbm warmstart] auc=0.677 (zero 0.497) ratio=0.46 lco_ret 1.000->1.000
+    k=5 seed=101112 [lightgbm warmstart] auc=0.775 (zero 0.599) ratio=0.62 lco_ret 1.000->0.997
+    k=10 seed=42 [lightgbm warmstart] auc=0.863 (zero 0.496) ratio=0.94 lco_ret 1.000->0.999
+    k=10 seed=123 [lightgbm warmstart] auc=0.720 (zero 0.487) ratio=0.58 lco_ret 1.000->1.000
+    k=10 seed=456 [lightgbm warmstart] auc=0.812 (zero 0.473) ratio=0.82 lco_ret 1.000->1.000
+    k=10 seed=789 [lightgbm warmstart] auc=0.872 (zero 0.479) ratio=0.97 lco_ret 1.000->1.000
+    k=10 seed=101112 [lightgbm warmstart] auc=0.856 (zero 0.485) ratio=0.93 lco_ret 1.000->1.000
+    k=20 seed=123 [lightgbm warmstart] auc=0.792 (zero 0.468) ratio=0.77 lco_ret 1.000->1.000
+    k=20 seed=456 [lightgbm warmstart] auc=0.814 (zero 0.478) ratio=0.82 lco_ret 1.000->0.995
+    k=20 seed=789 [lightgbm warmstart] auc=0.858 (zero 0.479) ratio=0.93 lco_ret 1.000->1.000
+    k=20 seed=101112 [lightgbm warmstart] auc=0.754 (zero 0.475) ratio=0.68 lco_ret 1.000->0.991
+    k=40 seed=42 [lightgbm warmstart] auc=0.899 (zero 0.468) ratio=1.03 lco_ret 1.000->1.000
+    k=40 seed=123 [lightgbm warmstart] auc=0.826 (zero 0.449) ratio=0.86 lco_ret 1.000->1.000
+    k=40 seed=456 [lightgbm warmstart] auc=0.818 (zero 0.460) ratio=0.84 lco_ret 1.000->1.000
+    k=40 seed=789 [lightgbm warmstart] auc=0.945 (zero 0.604) ratio=1.21 lco_ret 1.000->0.987
+    k=40 seed=101112 [lightgbm warmstart] auc=0.753 (zero 0.463) ratio=0.69 lco_ret 1.000->0.999
+  [no_soh] random_forest H=20: within_ceiling=0.867 fullLFP=0.998 zeroshot=0.720
+    k=5 seed=123 [random_forest warmstart] auc=0.733 (zero 0.716) ratio=0.11 lco_ret 0.959->0.156
+    k=5 seed=456 [random_forest warmstart] auc=0.750 (zero 0.720) ratio=0.20 lco_ret 0.959->0.546
+    k=5 seed=789 [random_forest warmstart] auc=0.590 (zero 0.728) ratio=-0.99 lco_ret 0.959->0.431
+    k=5 seed=101112 [random_forest warmstart] auc=0.806 (zero 0.832) ratio=-0.73 lco_ret 0.959->0.393
+    k=10 seed=42 [random_forest warmstart] auc=0.707 (zero 0.716) ratio=-0.06 lco_ret 0.959->0.678
+    k=10 seed=123 [random_forest warmstart] auc=0.776 (zero 0.722) ratio=0.37 lco_ret 0.959->0.293
+    k=10 seed=456 [random_forest warmstart] auc=0.689 (zero 0.711) ratio=-0.15 lco_ret 0.959->0.352
+    k=10 seed=789 [random_forest warmstart] auc=0.838 (zero 0.722) ratio=0.80 lco_ret 0.959->0.429
+    k=10 seed=101112 [random_forest warmstart] auc=0.723 (zero 0.713) ratio=0.06 lco_ret 0.959->0.535
+    k=20 seed=123 [random_forest warmstart] auc=0.766 (zero 0.716) ratio=0.33 lco_ret 0.959->0.536
+    k=20 seed=456 [random_forest warmstart] auc=0.747 (zero 0.715) ratio=0.21 lco_ret 0.959->0.544
+    k=20 seed=789 [random_forest warmstart] auc=0.700 (zero 0.710) ratio=-0.06 lco_ret 0.959->0.647
+    k=20 seed=101112 [random_forest warmstart] auc=0.706 (zero 0.715) ratio=-0.06 lco_ret 0.959->0.531
+    k=40 seed=42 [random_forest warmstart] auc=0.864 (zero 0.681) ratio=0.98 lco_ret 0.959->0.352
+    k=40 seed=123 [random_forest warmstart] auc=0.819 (zero 0.692) ratio=0.73 lco_ret 0.959->0.522
+    k=40 seed=456 [random_forest warmstart] auc=0.796 (zero 0.700) ratio=0.58 lco_ret 0.959->0.150
+    k=40 seed=789 [random_forest warmstart] auc=0.919 (zero 0.825) ratio=2.27 lco_ret 0.959->0.362
+    k=40 seed=101112 [random_forest warmstart] auc=0.814 (zero 0.692) ratio=0.70 lco_ret 0.959->0.316
+
+=== Source: calce (7 LCO cells, 6 for fit / 1 for retention)
+  [no_soh] xgboost H=20: within_ceiling=0.894 fullLFP=1.000 zeroshot=0.685
+    k=5 seed=123 [xgboost warmstart] auc=0.786 (zero 0.684) ratio=0.48 lco_ret 0.997->0.995
+    k=5 seed=456 [xgboost warmstart] auc=0.752 (zero 0.686) ratio=0.32 lco_ret 0.997->0.042
+    k=5 seed=789 [xgboost warmstart] auc=0.561 (zero 0.685) ratio=-0.60 lco_ret 0.997->0.036
+    k=5 seed=101112 [xgboost warmstart] auc=0.785 (zero 0.684) ratio=0.48 lco_ret 0.997->0.996
+    k=10 seed=42 [xgboost warmstart] auc=0.708 (zero 0.682) ratio=0.12 lco_ret 0.997->0.995
+    k=10 seed=123 [xgboost warmstart] auc=0.656 (zero 0.684) ratio=-0.13 lco_ret 0.997->0.995
+    k=10 seed=456 [xgboost warmstart] auc=0.685 (zero 0.686) ratio=-0.00 lco_ret 0.997->0.997
+    k=10 seed=789 [xgboost warmstart] auc=0.874 (zero 0.686) ratio=0.90 lco_ret 0.997->0.997
+    k=10 seed=101112 [xgboost warmstart] auc=0.724 (zero 0.690) ratio=0.17 lco_ret 0.997->0.050
+    k=20 seed=123 [xgboost warmstart] auc=0.770 (zero 0.686) ratio=0.40 lco_ret 0.997->0.995
+    k=20 seed=456 [xgboost warmstart] auc=0.724 (zero 0.691) ratio=0.16 lco_ret 0.997->0.997
+    k=20 seed=789 [xgboost warmstart] auc=0.696 (zero 0.684) ratio=0.06 lco_ret 0.997->0.091
+    k=20 seed=101112 [xgboost warmstart] auc=0.677 (zero 0.686) ratio=-0.04 lco_ret 0.997->0.078
+    k=40 seed=42 [xgboost warmstart] auc=0.763 (zero 0.681) ratio=0.39 lco_ret 0.997->0.058
+    k=40 seed=123 [xgboost warmstart] auc=0.648 (zero 0.689) ratio=-0.20 lco_ret 0.997->0.059
+    k=40 seed=456 [xgboost warmstart] auc=0.612 (zero 0.682) ratio=-0.33 lco_ret 0.997->0.108
+    k=40 seed=789 [xgboost warmstart] auc=0.939 (zero 0.680) ratio=1.21 lco_ret 0.997->0.682
+    k=40 seed=101112 [xgboost warmstart] auc=0.723 (zero 0.686) ratio=0.18 lco_ret 0.997->0.072
+
+=== Source: nasa+calce (44 LCO cells, 38 for fit / 6 for retention)
+  [no_soh] xgboost H=20: within_ceiling=0.907 fullLFP=1.000 zeroshot=0.755
+    k=5 seed=123 [xgboost warmstart] auc=0.708 (zero 0.759) ratio=-0.34 lco_ret 0.690->0.565
+    k=5 seed=456 [xgboost warmstart] auc=0.692 (zero 0.752) ratio=-0.38 lco_ret 0.690->0.683
+    k=5 seed=789 [xgboost warmstart] auc=0.493 (zero 0.763) ratio=-1.88 lco_ret 0.690->0.605
+    k=5 seed=101112 [xgboost warmstart] auc=0.798 (zero 0.806) ratio=-0.08 lco_ret 0.690->0.564
+    k=10 seed=42 [xgboost warmstart] auc=0.793 (zero 0.755) ratio=0.25 lco_ret 0.690->0.649
+    k=10 seed=123 [xgboost warmstart] auc=0.870 (zero 0.755) ratio=0.76 lco_ret 0.690->0.687
+    k=10 seed=456 [xgboost warmstart] auc=0.639 (zero 0.748) ratio=-0.68 lco_ret 0.690->0.684
+    k=10 seed=789 [xgboost warmstart] auc=0.831 (zero 0.752) ratio=0.51 lco_ret 0.690->0.659
+    k=10 seed=101112 [xgboost warmstart] auc=0.648 (zero 0.757) ratio=-0.73 lco_ret 0.690->0.722
+    k=20 seed=123 [xgboost warmstart] auc=0.705 (zero 0.750) ratio=-0.29 lco_ret 0.690->0.610
+    k=20 seed=456 [xgboost warmstart] auc=0.704 (zero 0.755) ratio=-0.34 lco_ret 0.690->0.639
+    k=20 seed=789 [xgboost warmstart] auc=0.588 (zero 0.745) ratio=-0.97 lco_ret 0.690->0.613
+    k=20 seed=101112 [xgboost warmstart] auc=0.614 (zero 0.750) ratio=-0.87 lco_ret 0.690->0.617
+    k=40 seed=42 [xgboost warmstart] auc=0.698 (zero 0.742) ratio=-0.27 lco_ret 0.690->0.656
+    k=40 seed=123 [xgboost warmstart] auc=0.697 (zero 0.743) ratio=-0.28 lco_ret 0.690->0.630
+    k=40 seed=456 [xgboost warmstart] auc=0.639 (zero 0.743) ratio=-0.64 lco_ret 0.690->0.742
+    k=40 seed=789 [xgboost warmstart] auc=0.950 (zero 0.800) ratio=1.41 lco_ret 0.690->0.475
+    k=40 seed=101112 [xgboost warmstart] auc=0.669 (zero 0.747) ratio=-0.49 lco_ret 0.690->0.640
+
+########## Target: oxford (5 cells, 320 rows)
+
+=== Source: nasa (37 LCO cells, 32 for fit / 5 for retention)
+  [no_soh] xgboost H=20: within_ceiling=0.844 fullLFP=1.000 zeroshot=0.518
+    k=1 seed=0 [xgboost warmstart] auc=0.978 (zero 0.521) ratio=1.41 lco_ret 1.000->1.000
+    k=1 seed=0 [xgboost warmstart] auc=0.984 (zero 0.518) ratio=1.43 lco_ret 1.000->1.000
+    k=1 seed=0 [xgboost warmstart] auc=0.996 (zero 0.519) ratio=1.47 lco_ret 1.000->1.000
+    k=1 seed=0 [xgboost warmstart] auc=0.518 (zero 0.518) ratio=0.00 lco_ret 1.000->1.000
+    k=1 seed=0 [xgboost warmstart] auc=0.518 (zero 0.518) ratio=0.00 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.999 (zero 0.521) ratio=1.48 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.999 (zero 0.522) ratio=1.48 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=1.000 (zero 0.520) ratio=1.48 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.986 (zero 0.521) ratio=1.44 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.999 (zero 0.518) ratio=1.47 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.997 (zero 0.516) ratio=1.47 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.979 (zero 0.516) ratio=1.41 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=1.000 (zero 0.517) ratio=1.48 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.997 (zero 0.518) ratio=1.47 lco_ret 1.000->1.000
+    k=2 seed=0 [xgboost warmstart] auc=0.774 (zero 0.516) ratio=0.79 lco_ret 1.000->1.000
+
+=== Source: calce (7 LCO cells, 6 for fit / 1 for retention)
+  [no_soh] xgboost H=20: within_ceiling=0.894 fullLFP=1.000 zeroshot=0.450
+    k=1 seed=0 [xgboost warmstart] auc=0.353 (zero 0.353) ratio=0.00 lco_ret 0.997->0.997
+    k=1 seed=0 [xgboost warmstart] auc=0.630 (zero 0.630) ratio=0.00 lco_ret 0.997->0.997
+    k=1 seed=0 [xgboost warmstart] auc=0.382 (zero 0.382) ratio=0.00 lco_ret 0.997->0.997
+    k=1 seed=0 [xgboost warmstart] auc=0.448 (zero 0.448) ratio=0.00 lco_ret 0.997->0.997
+    k=1 seed=0 [xgboost warmstart] auc=0.456 (zero 0.456) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.613 (zero 0.613) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.179 (zero 0.179) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.342 (zero 0.342) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.359 (zero 0.359) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.614 (zero 0.614) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.641 (zero 0.641) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.644 (zero 0.644) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.376 (zero 0.376) ratio=0.00 lco_ret 0.997->0.997
+/home/touhid/.local/lib/python3.14/site-packages/sklearn/linear_model/_logistic.py:599: ConvergenceWarning: lbfgs failed to converge after 100 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=100).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+    k=2 seed=0 [xgboost warmstart] auc=0.390 (zero 0.390) ratio=0.00 lco_ret 0.997->0.997
+    k=2 seed=0 [xgboost warmstart] auc=0.456 (zero 0.456) ratio=0.00 lco_ret 0.997->0.997
+
+=== Source: nasa+calce (44 LCO cells, 38 for fit / 6 for retention)
+  [no_soh] xgboost H=20: within_ceiling=0.907 fullLFP=1.000 zeroshot=0.395
+    k=1 seed=0 [xgboost warmstart] auc=0.357 (zero 0.357) ratio=0.00 lco_ret 0.690->0.690
+    k=1 seed=0 [xgboost warmstart] auc=0.508 (zero 0.508) ratio=0.00 lco_ret 0.690->0.690
+    k=1 seed=0 [xgboost warmstart] auc=0.324 (zero 0.324) ratio=0.00 lco_ret 0.690->0.690
+    k=1 seed=0 [xgboost warmstart] auc=0.402 (zero 0.402) ratio=0.00 lco_ret 0.690->0.690
+    k=1 seed=0 [xgboost warmstart] auc=0.398 (zero 0.398) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.537 (zero 0.537) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.214 (zero 0.214) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.365 (zero 0.365) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.364 (zero 0.364) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.451 (zero 0.451) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.524 (zero 0.524) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.516 (zero 0.516) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.324 (zero 0.324) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.320 (zero 0.320) ratio=0.00 lco_ret 0.690->0.690
+    k=2 seed=0 [xgboost warmstart] auc=0.407 (zero 0.407) ratio=0.00 lco_ret 0.690->0.690
+
+Exported: /home/touhid/multi-horizon-battery/data/recalibration_reduced.csv (1047 rows)
