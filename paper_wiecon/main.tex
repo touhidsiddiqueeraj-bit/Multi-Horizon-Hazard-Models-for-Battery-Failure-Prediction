@@ -346,7 +346,7 @@ shifted target.}
 \label{fig:reliability}
 \end{figure}
 
-\subsection{Cross-Dataset Transfer, the SOH Shortcut, and Its Controls}
+\subsection{Cross-Dataset Transfer and the SOH Shortcut}
 Table~\ref{tab:transfer} compares transfer at $H{=}20$ with and without
 SOH as a feature, and Fig.~\ref{fig:collapse} summarizes the drop.
 Because calibration parameters are dataset-specific, transfer is
@@ -385,24 +385,145 @@ removing SOH, per source$\to$target pair and model.}
 \label{fig:collapse}
 \end{figure}
 
-Three controls establish what the collapse means. First, the
-distance-to-threshold rule $0.80-\mathrm{SOH}$, which involves no
-fitting at all, transfers to Severson at pooled AUC 0.912 (95\% CI
-[0.84, 1.00]) for the ALL-LCO source --- within the confidence range of
-the tuned ensembles --- so most of the apparent transfer is the SOH
-coordinate itself. Second, relabeling failure by voltage sag alone, a
-criterion SOH does not define, cuts with-SOH transfer from 0.90 to 0.72
-on Severson, directly measuring the label circularity: with-SOH
-transfer tracks how much SOH defines the label (0.985 under an
-SOH-only label, 0.896 under the combined label, 0.723 under the
-voltage-only label). Third, same-chemistry cross-laboratory controls
-show the pattern is not chemistry-specific: Severson$\to$Oxford (both
-LFP) collapses from 0.998 with SOH to 0.428 without, and
-NASA$\to$CALCE (both LCO) collapses without SOH just as the
-cross-chemistry pairs do. The supported conclusion is deliberately
-narrower than ``SOH is chemistry-specific'': much of the observed
-cross-dataset, cross-chemistry discrimination is attributable to SOH,
-partly because SOH defines the failure criterion itself.
+A first control is the distance-to-threshold rule
+$0.80-\mathrm{SOH}$, which involves no fitting at all: it transfers to
+Severson at pooled AUC 0.912 (95\% CI [0.84, 1.00]) for the ALL-LCO
+source --- within the confidence range of the tuned ensembles --- so
+most of the apparent transfer is the SOH coordinate itself. The
+remaining controls are the subject of the next subsection.
+
+\subsection{Failure-Definition Ablation and Same-Chemistry Controls}
+The ablation of Table~\ref{tab:faildef} relabels failure by a single
+endpoint at a time --- SOH $\le 0.80$ only, voltage sag only, or both
+--- and its signature is clean: with-SOH transfer \emph{tracks how much
+SOH defines the label}. Under an SOH-only label (the model is, in
+effect, reading the label criterion) transfer to Severson saturates at
+0.985; under the combined label it is 0.896; relabeling by voltage sag
+alone, a criterion SOH takes no part in, cuts it to 0.723 --- a drop of
+roughly a quarter. The residual with-SOH advantage under the voltage
+label (0.723 versus 0.611 without SOH) is consistent with genuine but
+weak health-state information: cells far below nominal capacity do fail
+sooner under almost any definition.
+
+\begin{table}[!t]
+\caption{Failure-Definition Ablation at $H{=}20$ (XGBoost, ALL-LCO
+Source): Pooled Raw AUC With and Without SOH as a Feature}
+\label{tab:faildef}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{Oxford} & \multicolumn{2}{c}{Severson}\\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Label endpoint & w/ SOH & no SOH & w/ SOH & no SOH\\
+\midrule
+\input{generated/tab_faildef}
+\end{tabular}}
+\end{table}
+
+\begin{table}[!t]
+\caption{Same-Chemistry Cross-Laboratory Controls at $H{=}20$
+(XGBoost): Pooled Raw AUC With and Without SOH}
+\label{tab:samechem}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Pair & w/ SOH & no SOH\\
+\midrule
+\input{generated/tab_samechem}
+\end{tabular}
+\end{table}
+
+If the collapse were a chemistry effect, transfer should survive when
+chemistry is held constant; Table~\ref{tab:samechem} shows it does
+not. Severson$\to$Oxford (both LFP) reproduces the full pattern of the
+cross-chemistry shifts --- 0.997 with SOH collapsing to 0.471 without,
+an inverted 0.428 on the common feature set --- and NASA$\to$CALCE
+(both LCO) behaves like the cross-chemistry pairs. Conversely,
+CALCE$\to$NASA stays near chance even with SOH, showing that a small,
+heterogeneous source limits transfer in both directions. The supported
+conclusion is deliberately narrower than ``SOH is
+chemistry-specific'': much of the observed cross-dataset,
+cross-chemistry discrimination is attributable to SOH, partly because
+SOH defines the failure criterion itself, and same-chemistry controls
+attribute the collapse to dataset shift at least as much as to
+chemistry.
+
+\subsection{Multi-Horizon Analysis, Monotonicity, and a Discrete-Time Hazard Model}
+Across the fixed-horizon classifiers, fold-mean AUC varies by less than
+0.05 over $H \in \{10,20,30,50\}$ on both training datasets
+(Fig.~\ref{fig:horizons}), with slightly larger variation at short
+horizons due to class imbalance. Because the four horizons are
+independent classifiers, however, cumulative risk coherence is not
+guaranteed: the requirement $P_{10} \le P_{20} \le P_{30} \le P_{50}$
+is violated in 32--45\% of within-dataset rows and up to 96\% of rows
+on the transferred Severson target --- for a hazard-style output, an
+incoherent quantity to quote to an operator.
+
+\begin{table}[!t]
+\caption{Fixed-Horizon XGBoost Versus the Discrete-Time Hazard Model
+(Survival Product), Fold-Mean AUC Within Dataset and Pooled Raw AUC on
+Transfer at $H{=}20$ (Both With SOH)}
+\label{tab:hazard}
+\centering
+\small
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{$H{=}20$} & \multicolumn{2}{c}{$H{=}50$}\\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Setting & Fixed & Hazard & Fixed & Hazard\\
+\midrule
+\input{generated/tab_hazard}
+\end{tabular}
+\end{table}
+
+We therefore also fit an explicit discrete-time hazard model: one pooled
+classifier predicts per-offset hazards $h_\ell(t) = P(T_f = t+\ell
+\mid T_f \ge t+\ell,\, x_t)$ with the offset $\ell$ as an input
+feature, using only the features measured at $t$ (operational), and
+cumulative risk follows the survival product $R(t,H) = 1-\prod_{\ell
+\le H}(1-\hat h_\ell(t))$, which is monotone in $H$ by construction
+and yields all horizons from a single fit
+(Table~\ref{tab:hazard}). Within datasets the survival product matches
+the fixed-horizon classifier at no cost. Under transfer it inherits the
+same SOH dependence as every other model --- formulating the output
+does not exempt the inputs from dataset shift --- and behaves
+source-dependently (0.97 down to 0.31 pooled on Oxford), but it removes
+the monotonicity incoherence entirely: its violation rate is zero by
+construction.
+
+\subsection{Operational Cost Analysis}
+AUC treats all errors as equal; a BMS does not. We select the decision
+threshold on source out-of-fold scores with a 10\% false-alarm budget
+--- the operationally honest choice, since no target labels exist at
+deployment --- and apply it unchanged to the target
+(Table~\ref{tab:operational}). On Severson with SOH, the transferred
+threshold misses 32\% of target failures while holding false alarms to
+4\%; without SOH the miss rate more than doubles to 70\% with the full
+budget spent, and calibrated scores differ only marginally because
+under shift the ranking is the asset and the ranking is what collapsed.
+On Oxford, nearly every row is positive under the coarse pooled labels,
+so virtually any threshold alerts on almost every cycle --- that target
+offers no room for a discriminating operating point at all
+(Section~II-B).
+
+\begin{table}[!t]
+\caption{Operational Evaluation at $H{=}20$ (XGBoost, ALL-LCO Source):
+Threshold Selected on Source Out-of-Fold Scores With a 10\%
+False-Alarm Budget, Then Applied Unchanged to the Target --- Target
+FNR\% / FPR\%}
+\label{tab:operational}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llccc}
+\toprule
+Target & Features & raw & Platt & Isotonic\\
+\midrule
+\input{generated/tab_operational}
+\end{tabular}}
+\end{table}
 
 \begin{table}[!t]
 \caption{SOH Ablation at $H{=}20$ (ALL-LCO Source): Pooled AUC With and

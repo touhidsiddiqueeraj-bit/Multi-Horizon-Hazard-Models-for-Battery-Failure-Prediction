@@ -178,6 +178,98 @@ for ds in ["nasa", "calce"]:
 with open(os.path.join(_OUT, "tab_delong_within.tex"), "w") as f:
     f.write("\n".join(drows) + "\n")
 
+# ------------------------------------------------ failure-definition ablation
+fd = pd.read_csv(os.path.join(_RES, "faildef_ablation.csv"))
+fd = fd[fd.source == "nasa+calce"]
+endpoint_label = {"combined": "Combined (SOH or sag)", "soh_only": "SOH only",
+                  "volt_only": "Voltage sag only"}
+rows = []
+for endpoint in ["combined", "soh_only", "volt_only"]:
+    cells = [endpoint_label[endpoint]]
+    for tgt in ["oxford", "severson"]:
+        for fs in ["with_soh", "no_soh"]:
+            r = fd[(fd.endpoint == endpoint) & (fd.feature_set == fs) &
+                   (fd.target == tgt) & (fd.H == 20)]
+            cells.append(f"{r['raw_AUC'].iloc[0]:.3f}" if len(r) else "---")
+            if len(r):
+                NUM[f"fd_{endpoint}_{tgt}_{fs}"] = round(float(r["raw_AUC"].iloc[0]), 3)
+    rows.append(" & ".join(cells) + r" \\")
+with open(os.path.join(_OUT, "tab_faildef.tex"), "w") as f:
+    f.write("\n".join(rows) + "\n\\bottomrule\n")
+
+# ------------------------------------------------ same-chemistry controls
+sc = pd.read_csv(os.path.join(_RES, "same_chem.csv"))
+pair_label = {("nasa", "calce"): "NASA$\\to$CALCE (LCO$\\to$LCO)",
+              ("calce", "nasa"): "CALCE$\\to$NASA (LCO$\\to$LCO)",
+              ("severson", "oxford"): "Severson$\\to$Oxford (LFP$\\to$LFP)",
+              ("oxford", "severson"): "Oxford$\\to$Severson (LFP$\\to$LFP)"}
+rows = []
+for (src, tgt), label in pair_label.items():
+    cells = [label]
+    for fs in ["with_soh", "no_soh"]:
+        r = sc[(sc.source == src) & (sc.target == tgt) & (sc.feature_set == fs) & (sc.H == 20)]
+        cells.append(f"{r['raw_AUC'].iloc[0]:.3f}" if len(r) else "---")
+        if len(r):
+            NUM[f"sc_{src}_{tgt}_{fs}"] = round(float(r["raw_AUC"].iloc[0]), 3)
+    rows.append(" & ".join(cells) + r" \\")
+with open(os.path.join(_OUT, "tab_samechem.tex"), "w") as f:
+    f.write("\n".join(rows) + "\n\\bottomrule\n")
+
+# ------------------------------------------------ hazard vs fixed-horizon
+haz = pd.read_csv(os.path.join(_RES, "hazard_within.csv"))
+hazt = pd.read_csv(os.path.join(_RES, "hazard_transfer.csv"))
+mono = pd.read_csv(os.path.join(_RES, "monotonicity.csv"))
+rows = []
+# within fold-mean at H=20/50: hazard vs fixed-horizon xgboost
+for ds in ["nasa", "calce"]:
+    hx = haz[(haz.dataset == ds) & (haz.model == "hazard_xgb")]
+    fx = trees[(trees.dataset == ds) & (trees.model == "xgboost") & (trees.method == "platt")]
+    cells = [f"{'NASA' if ds == 'nasa' else 'CALCE'}",
+             f"{fx[fx.H == 20]['AUC_fold_mean'].iloc[0]:.3f}",
+             f"{hx[hx.H == 20]['AUC_fold_mean'].iloc[0]:.3f}",
+             f"{fx[fx.H == 50]['AUC_fold_mean'].iloc[0]:.3f}",
+             f"{hx[hx.H == 50]['AUC_fold_mean'].iloc[0]:.3f}"]
+    rows.append(" & ".join(cells) + r" \\")
+for source in ["nasa", "calce", "nasa+calce"]:
+    for tgt in ["oxford", "severson"]:
+        h = hazt[(hazt.source == source) & (hazt.target == tgt) &
+                 (hazt.model == "hazard_xgb") & (hazt.H == 20)]
+        t = transfer[(transfer.source == source) & (transfer.target == tgt) &
+                     (transfer.model == "xgboost") &
+                     (transfer.feature_set == "with_soh") & (transfer.H == 20)]
+        if len(h) and len(t):
+            rows.append(f"{SOURCE_LABEL[source]}$\\to$\\textit{{{tgt.capitalize()}}} & "
+                        f"{t['raw_AUC'].iloc[0]:.3f} & {h['AUC'].iloc[0]:.3f} \\\\")
+with open(os.path.join(_OUT, "tab_hazard.tex"), "w") as f:
+    f.write("\n".join(rows) + "\n\\bottomrule\n")
+
+# monotonicity violation summary
+m_w = mono[(mono.setting == "within") & (mono.model == "xgboost")]
+m_t = mono[(mono.setting.str.startswith("transfer")) & (mono.dataset == "severson") &
+           (mono.model == "xgboost")]
+NUM["mono_within_xgb"] = round(float(m_w["monotonicity_violation_rate"].max()), 3)
+NUM["mono_transfer_sev_xgb"] = round(float(m_t["monotonicity_violation_rate"].max()), 3)
+
+# ------------------------------------------------ operational (Severson, XGBoost)
+op = pd.read_csv(os.path.join(_RES, "operational_costs.csv"))
+op = op[(op.model == "xgboost")]
+rows = []
+for tgt in ["oxford", "severson"]:
+    for fs in ["with_soh", "no_soh"]:
+        cells = [f"{'Oxford' if tgt == 'oxford' else 'Severson'}",
+                 "with SOH" if fs == "with_soh" else "no SOH"]
+        for method in ["raw", "platt", "iso"]:
+            r = op[(op.target == tgt) & (op.feature_set == fs) & (op.method == method)]
+            if len(r):
+                r = r.iloc[0]
+                cells.append(f"{100*r['tgt_fnr']:.0f} / {100*r['tgt_fpr']:.0f}")
+                NUM[f"op_{tgt}_{fs}_{method}_fnr"] = round(100 * float(r["tgt_fnr"]))
+            else:
+                cells.append("---")
+        rows.append(" & ".join(cells) + r" \\")
+with open(os.path.join(_OUT, "tab_operational.tex"), "w") as f:
+    f.write("\n".join(rows) + "\n\\bottomrule\n")
+
 with open(os.path.join(_OUT, "numbers.json"), "w") as f:
     json.dump(NUM, f, indent=1)
 print(json.dumps(NUM, indent=1))
