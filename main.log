@@ -1,12 +1,16 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 14:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 23:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **main.tex
-(./paper_ieee_access/main.tex
+
+(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
+ion-main/paper_ieee_access/main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
-(./paper_wiecon/IEEEtran.cls
+
+(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
+ion-main/paper_wiecon/IEEEtran.cls
 Document Class: IEEEtran 2015/08/26 V1.8b by Michael Shell
 -- See the "IEEEtran_HOWTO" manual for usage information.
 -- http://www.michaelshell.org/tex/ieeetran/
@@ -250,7 +254,8 @@ Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count306
 )
-(./paper_wiecon/main.aux)
+(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
+ion-main/paper_wiecon/main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
@@ -443,7 +448,8 @@ File: circuit.png Graphic file (type png)
 <use circuit.png>
 Package pdftex.def Info: circuit.png  used on input line 138.
 (pdftex.def)             Requested size: 438.60315pt x 285.09027pt.
-[3] [4 <./paper_ieee_access/figs/circuit.png>]
+[3] [4 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-
+Prediction-main/paper_ieee_access/figs/circuit.png>]
 <Fig01_Within_Dataset_AUC.png, id=34, 246.1998pt x 207.174pt>
 File: Fig01_Within_Dataset_AUC.png Graphic file (type png)
 <use Fig01_Within_Dataset_AUC.png>
@@ -475,9 +481,12 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [5
 
- <./paper_ieee_access/figs/Fig01_Within_Dataset_AUC.png> <./paper_ieee_access/f
-igs/Fig02a_Calibration_NASA.png> <./paper_ieee_access/figs/Fig02b_Calibration_C
-ALCE.png>]
+ </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predic
+tion-main/paper_ieee_access/figs/Fig01_Within_Dataset_AUC.png> </home/touhid/Do
+cuments/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_i
+eee_access/figs/Fig02a_Calibration_NASA.png> </home/touhid/Documents/Multi-Hori
+zon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_ieee_access/figs/Fi
+g02b_Calibration_CALCE.png>]
 <Fig03a_CrossChem_With_SOH_Oxford.png, id=44, 353.1594pt x 172.9662pt>
 File: Fig03a_CrossChem_With_SOH_Oxford.png Graphic file (type png)
 <use Fig03a_CrossChem_With_SOH_Oxford.png>
@@ -516,10 +525,14 @@ LaTeX Warning: Reference `eq:delong' on page 6 undefined on input line 290.
 
 Underfull \vbox (badness 1546) has occurred while \output is active []
 
- [6 <./paper_ieee_access/figs/Fig03a_CrossChem_With_SOH_Oxford.png> <./paper_ie
-ee_access/figs/Fig03b_CrossChem_With_SOH_Severson.png> <./paper_ieee_access/fig
-s/Fig04a_CrossChem_No_SOH_Oxford.png> <./paper_ieee_access/figs/Fig04b_CrossChe
-m_No_SOH_Severson.png>]
+ [6 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
+diction-main/paper_ieee_access/figs/Fig03a_CrossChem_With_SOH_Oxford.png> </hom
+e/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-m
+ain/paper_ieee_access/figs/Fig03b_CrossChem_With_SOH_Severson.png> </home/touhi
+d/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/pap
+er_ieee_access/figs/Fig04a_CrossChem_No_SOH_Oxford.png> </home/touhid/Documents
+/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_ieee_acc
+ess/figs/Fig04b_CrossChem_No_SOH_Severson.png>]
 
 LaTeX Warning: Citation `lundberg2020from' on page 7 undefined on input line 31
 2.
@@ -600,15 +613,22 @@ File: fig_py_c_agreement.png Graphic file (type png)
 <use fig_py_c_agreement.png>
 Package pdftex.def Info: fig_py_c_agreement.png  used on input line 388.
 (pdftex.def)             Requested size: 252.0pt x 175.81693pt.
- [8 <./paper_ieee_access/figs/Fig06a_XGBoost_SHAP.png> <./paper_ieee_access/fig
-s/Fig06b_LightGBM_SHAP.png>]
+ [8 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
+diction-main/paper_ieee_access/figs/Fig06a_XGBoost_SHAP.png> </home/touhid/Docu
+ments/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_iee
+e_access/figs/Fig06b_LightGBM_SHAP.png>]
 
 LaTeX Warning: Text page 9 contains only floats.
 
-[9 <./paper_ieee_access/figs/Fig06c_RandomForest_SHAP.png> <./paper_ieee_access
-/figs/Fig06d_XGBoost_SHAP_noSOH.png> <./paper_ieee_access/figs/Fig06e_LightGBM_
-SHAP_noSOH.png> <./paper_ieee_access/figs/Fig06f_RandomForest_SHAP_noSOH.png> <
-./paper_ieee_access/figs/fig_deploy.png>]
+[9 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pred
+iction-main/paper_ieee_access/figs/Fig06c_RandomForest_SHAP.png> </home/touhid/
+Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper
+_ieee_access/figs/Fig06d_XGBoost_SHAP_noSOH.png> </home/touhid/Documents/Multi-
+Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_ieee_access/fig
+s/Fig06e_LightGBM_SHAP_noSOH.png> </home/touhid/Documents/Multi-Horizon-Hazard-
+Models-for-Battery-Failure-Prediction-main/paper_ieee_access/figs/Fig06f_Random
+Forest_SHAP_noSOH.png> </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-
+Battery-Failure-Prediction-main/paper_ieee_access/figs/fig_deploy.png>]
 Underfull \hbox (badness 1371) in paragraph at lines 411--412
 []\OT1/ptm/m/n/10 This work re-ceived no ex-ter-nal fund-ing. The au-thors
  []
@@ -629,8 +649,10 @@ Overfull \hbox (1.367pt too wide) in paragraph at lines 411--412
 rediction$. 
  []
 
-[10 <./paper_ieee_access/figs/fig_py_c_agreement.png>] (./paper_wiecon/main.aux
-)
+[10 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
+diction-main/paper_ieee_access/figs/fig_py_c_agreement.png>]
+(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
+ion-main/paper_wiecon/main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -642,7 +664,7 @@ LaTeX Warning: There were undefined references.
  ) 
 Here is how much of TeX's memory you used:
  3465 strings out of 469515
- 57928 string characters out of 5470808
+ 58790 string characters out of 5470808
  487494 words of memory out of 5000000
  32085 multiletter control sequences out of 15000+600000
  673282 words of font info for 125 fonts, out of 8000000 for 9000
@@ -665,7 +687,7 @@ public/amsfonts/cm/cmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts
 /fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/
 utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share
 /texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (10 pages, 2383656 bytes).
+Output written on main.pdf (10 pages, 2383344 bytes).
 PDF statistics:
  175 PDF objects out of 1000 (max. 8388607)
  89 compressed objects within 1 object stream
