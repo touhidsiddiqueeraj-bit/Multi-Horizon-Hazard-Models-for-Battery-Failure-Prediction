@@ -1,6 +1,7 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 14:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 21:09
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
 **main.tex
 (./main.tex
@@ -380,24 +381,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 ) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
 
 -- Lines per column: 56 (exact).
 (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -431,18 +432,18 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 Package color Info: Driver file: pdftex.def on input line 149.
 
 (/usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx))
-Package hyperref Info: Link coloring ON on input line 17.
+Package hyperref Info: Link coloring ON on input line 35.
  (./main.out)
 (./main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 57.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 75.
 
  (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 57.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 75.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -455,42 +456,42 @@ hare/texmf-dist/fonts/enc/dvips/base/8r.enc}
 <figs/fig_framework.png, id=125, 252.2223pt x 252.2223pt>
 File: figs/fig_framework.png Graphic file (type png)
 <use figs/fig_framework.png>
-Package pdftex.def Info: figs/fig_framework.png  used on input line 140.
+Package pdftex.def Info: figs/fig_framework.png  used on input line 158.
 (pdftex.def)             Requested size: 252.0pt x 252.0023pt.
  [2 <./figs/fig_framework.png>] (./generated/tab_within.tex)
-Overfull \hbox (10.95563pt too wide) in paragraph at lines 309--315
+Overfull \hbox (10.95563pt too wide) in paragraph at lines 327--333
  [][] 
  []
 
 <figs/fig_within_horizons.png, id=167, 248.6088pt x 123.0999pt>
 File: figs/fig_within_horizons.png Graphic file (type png)
 <use figs/fig_within_horizons.png>
-Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 319.
+Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 337.
 (pdftex.def)             Requested size: 252.0pt x 124.78445pt.
 (./generated/tab_calibration.tex) [3 <./figs/fig_within_horizons.png>]
 <figs/fig_reliability_v2.png, id=181, 256.3176pt x 136.8312pt>
 File: figs/fig_reliability_v2.png Graphic file (type png)
 <use figs/fig_reliability_v2.png>
-Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 354.
+Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 372.
 (pdftex.def)             Requested size: 252.0pt x 134.52792pt.
 
 (./generated/tab_transfer.tex)
 <figs/fig_collapse_map.png, id=183, 253.4268pt x 131.7723pt>
 File: figs/fig_collapse_map.png Graphic file (type png)
 <use figs/fig_collapse_map.png>
-Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 389.
+Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 407.
 (pdftex.def)             Requested size: 252.0pt x 131.03201pt.
  (./generated/tab_faildef.tex)
 (./generated/tab_samechem.tex) [4 <./figs/fig_reliability_v2.png> <./figs/fig_c
 ollapse_map.png>] (./generated/tab_hazard.tex) (./generated/tab_operational.tex
 ) (./generated/tab_soh.tex) [5]
-Underfull \hbox (badness 3623) in paragraph at lines 604--605
+Underfull \hbox (badness 3623) in paragraph at lines 622--623
 []\OT1/ptm/m/n/8 T. Tetik, ``Fea-ture en-gi-neer-ing and ex-plain-able ar-ti-fi
 -cial in-tel-li-
  []
 
 
-Underfull \hbox (badness 2401) in paragraph at lines 604--605
+Underfull \hbox (badness 2401) in paragraph at lines 622--623
 \OT1/ptm/m/it/8 nal of En-ergy Stor-age\OT1/ptm/m/n/8 , vol. 144, Art. no. 1198
 73, 2026, doi:
  []
@@ -517,7 +518,7 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 Here is how much of TeX's memory you used:
  10887 strings out of 469515
  168684 string characters out of 5470808
- 604012 words of memory out of 5000000
+ 604068 words of memory out of 5000000
  39312 multiletter control sequences out of 15000+600000
  668506 words of font info for 119 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
