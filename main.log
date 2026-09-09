@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 03:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.8)  9 SEP 2026 14:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -643,7 +643,7 @@ LaTeX Warning: There were undefined references.
 Here is how much of TeX's memory you used:
  3465 strings out of 469515
  57928 string characters out of 5470808
- 488637 words of memory out of 5000000
+ 487494 words of memory out of 5000000
  32085 multiletter control sequences out of 15000+600000
  673282 words of font info for 125 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
