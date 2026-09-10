@@ -88,48 +88,56 @@ learning, probability calibration, prognostics and health management,
 transfer learning, dataset shift.
 
 \section{Introduction and Related Work}
-Lithium-ion batteries are fundamental to electric vehicles and
-grid-scale energy storage because of their high energy density, fast
-charging capability, and long cycle life. Their degradation is highly
-nonlinear, governed by complex electrochemical processes, which makes
-battery failure prediction challenging. Although failures are
-relatively infrequent, they can cause significant safety hazards and
-economic losses, motivating reliable multi-horizon prognostics for
-advanced battery management systems~\cite{berecibar2016}. Battery
-prognostics has primarily focused on state-of-health (SOH) estimation
-and remaining useful life (RUL) prediction. Berecibar et
-al.~\cite{berecibar2016} reviewed conventional SOH methods, including
-coulomb counting, impedance spectroscopy, Kalman filtering, fuzzy
-logic, and machine learning. Recent studies have adopted deep learning,
-including STL-LSTM with spatio-temporal attention~\cite{xu2024},
+Lithium-ion batteries have become the default choice for electric
+vehicles and grid-scale energy storage, thanks to their high energy
+density, fast charging capability, and long cycle life. The same
+electrochemistry, however, degrades in complicated and highly
+nonlinear ways, which is precisely what makes failure prediction
+difficult. Individual failures may be uncommon, but the safety hazards
+and economic losses they cause are serious enough that battery
+management systems need forecasts they can genuinely rely
+on~\cite{berecibar2016}. Research effort has accordingly concentrated
+on state-of-health (SOH) estimation and remaining useful life (RUL)
+prediction. Reviews of conventional SOH methods, covering everything
+from coulomb counting and impedance spectroscopy to Kalman filtering,
+fuzzy logic, and machine learning, are well established~\cite{berecibar2016}.
+More recently, deep learning has reshaped much of this landscape:
+STL-LSTM models with spatio-temporal attention~\cite{xu2024},
 multilayer perceptrons~\cite{bairwa2025}, and SHAP-assisted feature
-engineering~\cite{tetik2026}. Extensive reviews of RUL prediction are
-available in~\cite{jin2021,li2026,thelen2024}, while LightGBM~\cite{li2026lightgbm},
-GRU-based~\cite{wang2021}, hybrid neural~\cite{rastegarpanah2024}, and
-convolutional architectures~\cite{sun2025} have demonstrated
-competitive lifetime prediction. Survival analysis has recently emerged as an alternative
-paradigm~\cite{ibraheem2025,li2024,yao2024}. Cross-chemistry transfer
-has received little direct attention: Pang et al.~\cite{pang2026}
-proposed a Transformer--BiLSTM framework for multi-chemistry SOH
-estimation, though their focus was SOH rather than failure prediction.
-Probability calibration is similarly underexplored, despite established
-methods~\cite{platt1999,zadrozny2002,goldstein2020}. Model
-interpretability using SHAP~\cite{lundberg2017} and public benchmark
-datasets~\cite{dosreis2021,li2025} continue to advance the field.
+engineering~\cite{tetik2026} are representative examples, and
+comprehensive reviews of RUL prediction are also
+available~\cite{jin2021,li2026,thelen2024}. On the modeling side,
+LightGBM~\cite{li2026lightgbm}, GRU-based~\cite{wang2021}, hybrid
+neural~\cite{rastegarpanah2024}, and convolutional~\cite{sun2025}
+architectures have each reported competitive lifetime prediction, and
+survival analysis is steadily gaining ground as an alternative way to
+frame the problem~\cite{ibraheem2025,li2024,yao2024}. What has
+received surprisingly little attention, by contrast, is what happens
+when a trained model is pointed at a different chemistry. Pang et
+al.~\cite{pang2026} proposed a Transformer--BiLSTM framework for
+multi-chemistry SOH estimation, but their focus remained SOH rather
+than failure prediction. Probability calibration is similarly
+neglected, despite the availability of established
+methods~\cite{platt1999,zadrozny2002,goldstein2020}. In the
+background, SHAP-based interpretability~\cite{lundberg2017} and a
+growing collection of public benchmark datasets~\cite{dosreis2021,li2025}
+continue to advance the field as a whole.
 
-Nevertheless, a clear research gap remains. Most studies evaluate a
-single dataset, chemistry, horizon, or metric, while cross-dataset
-transfer, calibration, and significance testing are rarely studied
-together. More fundamentally, it is unclear whether apparent transfer
-performance reflects genuine degradation knowledge or a health-state
-shortcut, since the composite failure label is defined from SOH while
-SOH is also the strongest input feature. The DeLong
-test~\cite{delong1988} is common for
-ROC comparison but treats every cycle-level prediction as independent
-even though cycles within a cell are strongly correlated, and while the
-Severson dataset~\cite{severson2019} enables large-scale LFP
-validation, it has not been widely paired with cross-chemistry
-experiments.
+Taken together, these threads leave a clear gap. Most studies still
+evaluate a single dataset, chemistry, horizon, or metric, and
+cross-dataset transfer, calibration, and significance testing are
+rarely examined together. There is also a more basic concern that is
+easy to overlook: it is often unclear whether apparent transfer
+performance reflects genuine degradation knowledge or simply a
+health-state shortcut. The composite failure label is defined from
+SOH, and SOH happens to be the strongest input feature, so a model can
+score well on transfer while doing little more than reading the label
+criterion. A further practical issue concerns the DeLong
+test~\cite{delong1988}, the usual tool for comparing ROC curves, which
+treats every cycle-level prediction as independent even though cycles
+within a cell are strongly correlated. Finally, although the Severson
+dataset~\cite{severson2019} makes large-scale LFP validation possible,
+it has rarely been paired with cross-chemistry experiments.
 
 This paper addresses that gap. We train XGBoost, LightGBM, Random
 Forest, and a GRU baseline on the NASA and CALCE LCO datasets under
@@ -146,7 +154,7 @@ pattern.
 
 \section{Methodology}
 
-Fig.~\ref{fig:framework} overviews the workflow: LCO training cells and
+Figure~\ref{fig:framework} overviews the workflow: LCO training cells and
 LFP transfer targets are represented by per-cycle features and composite
 failure labels, four model families are trained per horizon, calibrated
 with leakage-free cross-fitted functions, and evaluated with
@@ -174,16 +182,17 @@ baseline.
 \caption{Summary of the Four Battery Datasets}
 \label{tab:datasets}
 \centering
-\small
+\setlength{\tabcolsep}{3.5pt}
+\fontsize{7}{8}\selectfont
 \begin{tabular}{|l|l|l|l|l|}
 \hline
-Dataset & Cells & Chem. & Cycles/Cell & Role\\
+\fontsize{8}{9}\selectfont\textbf{Dataset} & \textbf{Cells} & \textbf{Chem.} & \textbf{Cycles/Cell} & \textbf{Role}\\
 \hline
-NASA 18650~\cite{saha2007} & 37 & LCO & 1--445 & Training\\
-CALCE CX2~\cite{calce2023} & 7 & LCO & 775--1{,}961 & Training\\
-Oxford LFP~\cite{birkl2017} & 5 & LFP & 46--78 & Transfer\\
-Severson~\cite{severson2019} & 141 & LFP & 101--2{,}237 & Transfer\\
-\hline
+\fontsize{7}{8}\selectfont
+NASA 18650~\cite{saha2007} & 37 & LCO & 1--445 & Training\\ \hline
+CALCE CX2~\cite{calce2023} & 7 & LCO & 775--1{,}961 & Training\\ \hline
+Oxford LFP~\cite{birkl2017} & 5 & LFP & 46--78 & Transfer\\ \hline
+Severson~\cite{severson2019} & 141 & LFP & 101--2{,}237 & Transfer\\ \hline
 \end{tabular}
 \end{table}
 
@@ -245,7 +254,7 @@ First, (5) is a fixed-horizon \emph{cumulative failure-risk} target:
 each horizon is an independent binary classifier, no cycle-level hazard
 or survival product is estimated, and no monotonicity constraint
 $P_{10}\le P_{20}\le P_{30}\le P_{50}$ is enforced (violations reach
-up to 46\% of within-dataset rows), which is why we say
+up to 45\% of within-dataset rows), which is why we say
 \emph{failure-risk classification} rather than hazard modeling.
 Second, the label is \emph{partially defined by SOH itself} and SOH is
 also an input feature (Eq.~\ref{eq:features}); with-SOH results are
@@ -310,10 +319,10 @@ statement.
 \section{Results and Discussion}
 
 \subsection{Within-Dataset Reliability}
-Table~\ref{tab:within} shows fold-mean Platt-calibrated AUC per
-horizon. Every one of the 32 model--horizon--dataset combinations
-reaches a fold-mean AUC of at least 0.85 under the clean protocol
-(Fig.~\ref{fig:horizons}); the GRU shows the largest fold-to-fold
+Table~\ref{tab:within} reports fold-mean Platt-calibrated AUC per
+horizon. All 32 model--horizon--dataset combinations reach a fold-mean
+AUC of at least 0.85 under the clean protocol
+(Figure~\ref{fig:horizons}); the GRU shows the largest fold-to-fold
 variance while the tree ensembles remain stable, and Brier scores stay
 low. Platt calibration preserves these rankings at comparable
 calibration error (Table~\ref{tab:calibration}).
@@ -322,12 +331,12 @@ calibration error (Table~\ref{tab:calibration}).
 \caption{Within-Dataset Platt-Calibrated AUC and Brier Score}
 \label{tab:within}
 \centering
-\small
-\setlength{\tabcolsep}{3.4pt}
+\setlength{\tabcolsep}{2.6pt}
 \begin{tabular}{|l|l|c|c|c|c|c|c|}
 \hline
-Model & Dataset & H=10 & H=20 & H=30 & H=50 & Mean & Brier\\
+\fontsize{8}{9}\selectfont\textbf{Model} & \textbf{Dataset} & \textbf{H=10} & \textbf{H=20} & \textbf{H=30} & \textbf{H=50} & \textbf{Mean} & \textbf{Brier}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_within}
 \end{tabular}
 \end{table}
@@ -343,11 +352,12 @@ Model & Dataset & H=10 & H=20 & H=30 & H=50 & Mean & Brier\\
 \caption{Calibration Method Comparison (Mean Across Tree Models)}
 \label{tab:calibration}
 \centering
-\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|l|c|c|c|c|}
 \hline
-Dataset & Method & AUC & Brier & ECE & Slope\\
+\fontsize{8}{9}\selectfont\textbf{Dataset} & \textbf{Method} & \textbf{AUC} & \textbf{Brier} & \textbf{ECE} & \textbf{Slope}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_calibration}
 \end{tabular}
 \end{table}
@@ -355,17 +365,14 @@ Dataset & Method & AUC & Brier & ECE & Slope\\
 \subsection{Calibration: Platt Preserves Discrimination Best}
 Table~\ref{tab:calibration} compares the three calibrators. A fitted
 calibrator is a monotone re-mapping, so per-fold ranking is preserved
-up to the ties it introduces and fold-mean AUC differences are small;
-but isotonic's tied step groups cost precision--recall dearly, and
-Platt's fitted slope on CALCE is only 0.01: under
-leave-one-cell-out the out-of-fold sigmoid washes confidence toward
-the base rate while preserving ranking. We therefore read the
-comparison as: Platt \emph{preserves discrimination best while
-achieving calibration error comparable to or better than isotonic},
-a materially weaker and more defensible claim than ``Platt is the
-better calibrator'', and raw scores remain the safest ranking signal
-whenever the operating context is uncertain
-(Fig.~\ref{fig:reliability}).
+up to the ties it introduces and fold-mean AUC differences are small.
+Isotonic's tied step groups cost precision--recall, and Platt's fitted
+slope on CALCE is only 0.01: under leave-one-cell-out the out-of-fold
+sigmoid reduces confidence toward the base rate while preserving
+ranking. Platt therefore preserves discrimination best while achieving
+calibration error comparable to or better than isotonic, and raw
+scores remain the safest ranking signal when the operating context is
+uncertain (Figure~\ref{fig:reliability}).
 
 \begin{figure}[!t]
 \centering
@@ -376,30 +383,36 @@ Within CALCE. (b) ALL-LCO$\to$Severson without SOH.}
 \end{figure}
 
 \subsection{Cross-Dataset Transfer and the SOH Shortcut}
-Table~\ref{tab:transfer} compares transfer at $H{=}20$ with and
-without SOH as a feature; transfer is reported in raw AUC because
-calibration parameters are dataset-specific. With SOH included, the
-tree ensembles reach pooled AUC between 0.85 and 1.00. Removing SOH
-collapses every tree model: on NASA+CALCE$\to$Oxford, XGBoost falls
-from 0.917 to 0.429, no no-SOH configuration exceeds 0.58 on Oxford or
-0.77 on Severson, and several fall below chance: the remaining
-sensors rank the target distribution backwards. The GRU is highly
-unstable across training seeds under shift (per-cell AUC from 0.21 to
-1.00 at fixed settings) and offers no transfer advantage even though it
-sees the same common feature set as the trees in the matched
-comparison.
+Table~\ref{tab:transfer} reports transfer at $H{=}20$ with and without
+SOH as a feature; transfer is reported in raw AUC because calibration
+parameters are dataset-specific. With SOH included, the tree ensembles
+reach pooled AUC between 0.85 and 1.00. Removing SOH reduces every
+tree model substantially: on NASA+CALCE$\to$Oxford, XGBoost falls from
+0.917 to 0.429, no no-SOH configuration exceeds 0.59 on Oxford or 0.78
+on Severson, and several configurations fall below 0.5, meaning the
+remaining sensor features rank the target distribution worse than
+chance. The GRU is unstable across training seeds under shift
+(per-cell AUC from 0.21 to 1.00 at fixed settings) and shows no
+transfer advantage despite using the same common feature set as the
+trees in the matched comparison. Figure~\ref{fig:collapse} summarizes
+the AUC drop caused by removing SOH across all source, target, and
+model configurations.
 
 \begin{table}[!t]
-\caption{Cross-Dataset Transfer at $H{=}20$ With and Without SOH}
+\caption{Cross-Dataset Transfer at $H{=}20$ With and Without SOH (Pooled Raw AUC)}
 \label{tab:transfer}
 \centering
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{|l|l|c|c|}
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{|l|l|c|c|c|c|}
 \hline
-Training & Model & Oxford (w/$-$SOH) & Severson (w/$-$SOH)\\
+\fontsize{8}{9}\selectfont
+ & \multicolumn{2}{c|}{\textbf{Oxford}} & \multicolumn{2}{c|}{\textbf{Severson}}\\
+\cline{3-4}\cline{5-6}
+\textbf{Training} & \textbf{Model} & \textbf{w/ SOH} & \textbf{no SOH} & \textbf{w/ SOH} & \textbf{no SOH}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_transfer}
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{figure}[!t]
@@ -410,91 +423,92 @@ Training & Model & Oxford (w/$-$SOH) & Severson (w/$-$SOH)\\
 \end{figure}
 
 A first control is the distance-to-threshold rule
-$0.80-\mathrm{SOH}$, which involves no fitting at all: it transfers to
+$0.80-\mathrm{SOH}$, which involves no fitting: it transfers to
 Severson at pooled AUC 0.912 (95\% CI [0.84, 1.00]) for the ALL-LCO
-source, within the confidence range of the tuned ensembles, so most
-of the apparent transfer is the SOH coordinate itself. The
-remaining controls are the subject of the next subsection.
+source, within the confidence range of the tuned ensembles. Most of
+the apparent transfer is therefore explained by the SOH coordinate
+itself. The remaining controls are the subject of the next
+subsection.
 
 \subsection{Failure-Definition Ablation and Same-Chemistry Controls}
 The ablation of Table~\ref{tab:faildef} relabels failure by a single
-endpoint at a time (SOH $\le 0.80$ only, voltage sag only, or both),
-and its signature is clean: with-SOH transfer \emph{tracks how much
-SOH defines the label}. Under an SOH-only label (the model is, in
-effect, reading the label criterion) transfer to Severson saturates at
-0.985; under the combined label it is 0.896; relabeling by voltage sag
-alone, a criterion SOH takes no part in, cuts it to 0.723, a drop of
-roughly a quarter. The residual with-SOH advantage under the voltage
-label (0.723 versus 0.611 without SOH) is consistent with genuine but
-weak health-state information: cells far below nominal capacity do fail
-sooner under almost any definition.
+endpoint at a time (SOH $\le 0.80$ only, voltage sag only, or both).
+With-SOH transfer increases with the share of SOH in the label
+definition. Under an SOH-only label, transfer to Severson is 0.985;
+under the combined label it is 0.896; under the voltage-sag label,
+which SOH does not enter, it is 0.723. The residual with-SOH advantage
+under the voltage label (0.723 versus 0.611 without SOH) indicates
+genuine but weak health-state information: cells far below nominal
+capacity fail sooner under almost any definition.
 
 \begin{table}[!t]
 \caption{Failure-Definition Ablation at $H{=}20$ (Pooled Raw AUC)}
 \label{tab:faildef}
 \centering
-\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{2.8pt}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
- & \multicolumn{2}{c|}{Oxford} & \multicolumn{2}{c|}{Severson}\\
+\fontsize{8}{9}\selectfont
+ & \multicolumn{2}{c|}{\textbf{Oxford}} & \multicolumn{2}{c|}{\textbf{Severson}}\\
 \cline{2-3}\cline{4-5}
-Label endpoint & w/ SOH & no SOH & w/ SOH & no SOH\\
+\textbf{Label endpoint} & \textbf{w/ SOH} & \textbf{no SOH} & \textbf{w/ SOH} & \textbf{no SOH}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_faildef}
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{table}[!t]
-\caption{Same-Chemistry Controls at $H{=}20$}
+\caption{Same-Chemistry Controls at $H{=}20$ (Pooled Raw AUC)}
 \label{tab:samechem}
 \centering
-\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|c|c|}
 \hline
-Pair & w/ SOH & no SOH\\
+\fontsize{8}{9}\selectfont\textbf{Pair} & \textbf{w/ SOH} & \textbf{no SOH}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_samechem}
 \end{tabular}
 \end{table}
 
 If the collapse were a chemistry effect, transfer should survive when
 chemistry is held constant; Table~\ref{tab:samechem} shows it does
-not. Severson$\to$Oxford (both LFP) reproduces the full pattern of the
-cross-chemistry shifts: 0.997 with SOH collapsing to 0.471 without,
-an inverted 0.428 on the common feature set; NASA$\to$CALCE
-(both LCO) behaves like the cross-chemistry pairs. Conversely,
-CALCE$\to$NASA stays near chance even with SOH, showing that a small,
-heterogeneous source limits transfer in both directions. The supported
-conclusion is deliberately narrower than ``SOH is
-chemistry-specific'': much of the observed cross-dataset,
-cross-chemistry discrimination is attributable to SOH, partly because
-SOH defines the failure criterion itself, and same-chemistry controls
-attribute the collapse to dataset shift at least as much as to
-chemistry.
+not. Severson$\to$Oxford (both LFP) reproduces the pattern of the
+cross-chemistry shifts: 0.997 with SOH falls to 0.471 without.
+NASA$\to$CALCE (both LCO) transfers partially even without SOH
+(0.870 to 0.849), helped by the very different per-cell cycle lives of
+the two datasets. Conversely, CALCE$\to$NASA stays near chance even
+with SOH, showing that a small, heterogeneous source limits transfer
+in both directions. Much of the observed
+cross-dataset, cross-chemistry discrimination is therefore attributable
+to SOH, partly because SOH defines the failure criterion itself, and
+the same-chemistry controls attribute the collapse to dataset shift at
+least as much as to chemistry.
 
 \subsection{Multi-Horizon Analysis, Monotonicity, and a Discrete-Time Hazard Model}
 Across the fixed-horizon classifiers, fold-mean AUC varies by less than
 0.05 over $H \in \{10,20,30,50\}$ on both training datasets
-(Fig.~\ref{fig:horizons}), with slightly larger variation at short
+(Figure~\ref{fig:horizons}), with slightly larger variation at short
 horizons due to class imbalance. Because the four horizons are
-independent classifiers, however, cumulative risk coherence is not
-guaranteed: the requirement $P_{10} \le P_{20} \le P_{30} \le P_{50}$
+independent classifiers, cumulative risk coherence is not guaranteed:
+the requirement $P_{10} \le P_{20} \le P_{30} \le P_{50}$
 is violated in 32--45\% of within-dataset rows and up to 96\% of rows
-on the transferred Severson target: for a hazard-style output, an
-incoherent quantity to quote to an operator.
+on the transferred Severson target.
 
 \begin{table}[!t]
 \caption{Fixed-Horizon Versus Hazard Model AUC}
 \label{tab:hazard}
 \centering
-\small
-\setlength{\tabcolsep}{3.0pt}
+\setlength{\tabcolsep}{2.8pt}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
- & \multicolumn{2}{c|}{$H{=}20$} & \multicolumn{2}{c|}{$H{=}50$}\\
+\fontsize{8}{9}\selectfont
+ & \multicolumn{2}{c|}{\textbf{$H{=}20$}} & \multicolumn{2}{c|}{\textbf{$H{=}50$}}\\
 \cline{2-3}\cline{4-5}
-Setting & Fixed & Hazard & Fixed & Hazard\\
+\textbf{Setting} & \textbf{Fixed} & \textbf{Hazard} & \textbf{Fixed} & \textbf{Hazard}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_hazard}
 \end{tabular}
 \end{table}
@@ -517,56 +531,57 @@ R(t, H) = 1 - \prod_{\ell=1}^{H} \bigl(1 - \hat h_\ell(t)\bigr),
 which is monotone non-decreasing in $H$ by construction and yields all
 four horizons from a single fit (Table~\ref{tab:hazard}). Within datasets the survival product matches
 the fixed-horizon classifier at no cost. Under transfer it inherits the
-same SOH dependence as every other model (formulating the output does
-not exempt the inputs from dataset shift) and behaves
-source-dependently (0.97 down to 0.31 pooled on Oxford), but it removes
-the monotonicity incoherence entirely: its violation rate is zero by
-construction.
+same SOH dependence as every other model, because formulating the
+output does not exempt the inputs from dataset shift, and behaves
+source-dependently (0.97 down to 0.31 pooled on Oxford). Its
+monotonicity violation rate is zero by construction.
 
 \subsection{Operational Cost Analysis}
-AUC treats all errors as equal; a BMS does not. We select the decision
+AUC weights all errors equally, whereas a BMS must trade false
+negatives against false positives. We select the decision
 threshold on source out-of-fold scores with a 10\% false-alarm budget
 and apply it unchanged to the target (Table~\ref{tab:operational}).
 On Severson with SOH, the transferred threshold misses 32\% of target
 failures while holding false alarms to 4\%; without SOH the miss rate
-more than doubles to 70\% with the full budget spent, and calibrated
-scores differ only marginally: under shift the ranking is the asset
-and the ranking is what collapsed. On Oxford, nearly every row is
+rises to 70\% with the full budget spent. The three score types differ
+only marginally in this setting. On Oxford, nearly every row is
 positive under the coarse pooled labels, so no discriminating
-operating point exists at all (Section~II-B).
+operating point exists (Section~II-B).
 
 \begin{table}[!t]
 \caption{Operational Evaluation at $H{=}20$ (Target FNR\% / FPR\%)}
 \label{tab:operational}
 \centering
-\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|l|c|c|c|}
 \hline
-Target & Features & raw & Platt & Isotonic\\
+\fontsize{8}{9}\selectfont\textbf{Target} & \textbf{Features} & \textbf{raw} & \textbf{Platt} & \textbf{Isotonic}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_operational}
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{table}[!t]
 \caption{SOH Ablation at $H{=}20$ With Bootstrap CI and DeLong $p$-Value}
 \label{tab:soh}
 \centering
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{|l|l|c|c|c|l|}
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{|l|l|c|c|l|l|}
 \hline
-Target & Model & w/ SOH & w/o & $\Delta$AUC [CI] & DeLong $p$\\
+\fontsize{8}{9}\selectfont\textbf{Target} & \textbf{Model} & \textbf{w/ SOH} & \textbf{w/o} & \textbf{$\Delta$AUC [CI]} & \textbf{DeLong $p$}\\
 \hline
+\fontsize{7}{8}\selectfont
 \input{generated/tab_soh}
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 Table~\ref{tab:soh} states the central comparison with the cell as the
 experimental unit. On Severson the bootstrap interval on $\Delta$AUC
-excludes zero by a wide margin for every model; on Oxford the
-equivalent interval is uninformative (five cells, effectively four)
-and we say so rather than lean on the astronomically small cycle-level
-DeLong $p$-values, which are inflated by pseudoreplication. Within-dataset
+excludes zero by a wide margin for every model. On Oxford the
+equivalent interval is uninformative (five cells, effectively four),
+so the cycle-level DeLong $p$-values, which are inflated by
+pseudoreplication, are not used as primary evidence. Within-dataset
 model comparisons at $H{=}20$ are mostly not significant after honest
 accounting (DeLong on pooled rows: XGBoost vs.\ LightGBM $1.4\times10^{-2}$
 on NASA, $6.9\times10^{-28}$ on CALCE; XGBoost vs.\ Random Forest

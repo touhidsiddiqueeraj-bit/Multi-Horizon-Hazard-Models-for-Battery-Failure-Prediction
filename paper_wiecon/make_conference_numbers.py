@@ -55,7 +55,7 @@ for ds in ["nasa", "calce"]:
     rows.append(" & ".join(cells) + r" \\")
     NUM[f"within_{ds}_gru_mean"] = round(mean, 3)
 with open(os.path.join(_OUT, "tab_within.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # count of configurations with fold-mean AUC >= 0.85 (trees + GRU, both datasets)
 count = 0
@@ -92,7 +92,7 @@ for ds in ["nasa", "calce"]:
         NUM[f"cal_{ds}_{method}_auc"] = round(float(m["AUC_fold_mean"].mean()), 3)
         NUM[f"cal_{ds}_{method}_ece"] = round(float(m["ECE10"].mean()), 3)
 with open(os.path.join(_OUT, "tab_calibration.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # ------------------------------------------------ Table IV: transfer H=20
 rows = []
@@ -117,14 +117,15 @@ for source in ["nasa", "calce", "nasa+calce"]:
                              (transfer.feature_set == "no_soh") & (transfer.H == 20)]
                 w = float(r["raw_AUC"].iloc[0]) if len(r) else np.nan
                 wo = float(n["raw_AUC"].iloc[0]) if len(n) else np.nan
-            cells.append(f"{w:.3f} / {wo:.3f}")
+            cells.append(f"{w:.3f}")
+            cells.append(f"{wo:.3f}")
             key = f"xfer_{tgt.split('o')[0]}_{source}_{model}".replace("sev", "severson_").replace("ox", "oxford_")
             if tgt == "oxford" and source == "nasa+calce" and model == "xgboost":
                 NUM["xfer_ox_all_xgb_with"] = round(w, 3)
                 NUM["xfer_ox_all_xgb_without"] = round(wo, 3)
         rows.append(" & ".join(cells) + r" \\")
 with open(os.path.join(_OUT, "tab_transfer.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # with-SOH max / no-SOH max across tree configs at H=20
 w_tree = transfer[(transfer.feature_set == "with_soh") & (transfer.H == 20) &
@@ -153,7 +154,7 @@ for tgt in ["oxford", "severson"]:
             f"{'$<10^{-300}$' if r['delong_p_cyclelevel'] == 0 else '$' + format(r['delong_p_cyclelevel'], '.1e') + '$'} \\\\")
         NUM[f"delta_{tgt}_{model}"] = round(float(r["delta_bootstrap"]), 3)
 with open(os.path.join(_OUT, "tab_soh.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # within-dataset model-comparison DeLong at H=20 from saved pooled predictions
 from stats_utils import delong_roc_test
@@ -195,7 +196,7 @@ for endpoint in ["combined", "soh_only", "volt_only"]:
                 NUM[f"fd_{endpoint}_{tgt}_{fs}"] = round(float(r["raw_AUC"].iloc[0]), 3)
     rows.append(" & ".join(cells) + r" \\")
 with open(os.path.join(_OUT, "tab_faildef.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # ------------------------------------------------ same-chemistry controls
 sc = pd.read_csv(os.path.join(_RES, "same_chem.csv"))
@@ -213,7 +214,7 @@ for (src, tgt), label in pair_label.items():
             NUM[f"sc_{src}_{tgt}_{fs}"] = round(float(r["raw_AUC"].iloc[0]), 3)
     rows.append(" & ".join(cells) + r" \\")
 with open(os.path.join(_OUT, "tab_samechem.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # ------------------------------------------------ hazard vs fixed-horizon
 haz = pd.read_csv(os.path.join(_RES, "hazard_within.csv"))
@@ -239,9 +240,9 @@ for source in ["nasa", "calce", "nasa+calce"]:
                      (transfer.feature_set == "with_soh") & (transfer.H == 20)]
         if len(h) and len(t):
             rows.append(f"{SOURCE_LABEL[source]}$\\to$\\textit{{{tgt.capitalize()}}} & "
-                        f"{t['raw_AUC'].iloc[0]:.3f} & {h['AUC'].iloc[0]:.3f} \\\\")
+                        f"{t['raw_AUC'].iloc[0]:.3f} & {h['AUC'].iloc[0]:.3f} & --- & --- \\\\")
 with open(os.path.join(_OUT, "tab_hazard.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 # monotonicity violation summary
 m_w = mono[(mono.setting == "within") & (mono.model == "xgboost")]
@@ -268,7 +269,7 @@ for tgt in ["oxford", "severson"]:
                 cells.append("---")
         rows.append(" & ".join(cells) + r" \\")
 with open(os.path.join(_OUT, "tab_operational.tex"), "w") as f:
-    f.write("\n".join(rows) + "\n\\bottomrule\n")
+    f.write("\n".join(r + r" \hline" for r in rows) + "\n")
 
 with open(os.path.join(_OUT, "numbers.json"), "w") as f:
     json.dump(NUM, f, indent=1)

@@ -31,7 +31,7 @@ REF = {
     "eq:features": "(1)", "eq:window": "(2)", "eq:label": "(3)", "eq:prob": "(4)",
     "eq:platt": "(5)", "eq:iso": "(6)", "eq:hazarddef": "(7)", "eq:survival": "(8)",
 }
-src = src.replace("Fig.~\\ref{", "\\ref{").replace("Table~\\ref{", "\\ref{")
+src = src.replace("Figure~\\ref{", "\\ref{").replace("Fig.~\\ref{", "\\ref{").replace("Table~\\ref{", "\\ref{")
 for k, v in REF.items():
     src = src.replace("\\ref{%s}" % k, v)
 
@@ -63,16 +63,22 @@ def cite_sub(m):
 
 src = re.sub(r"\\cite\{([^}]*)\}", cite_sub, src)
 
-# pandoc mangles multicolumn/cmidrule headers -> flatten for the docx
-src = re.sub(r"\\cmidrule[^\n]*\n", "", src)
+# pandoc mangles multicolumn/cline headers -> flatten for the docx
+src = re.sub(r"\\cline\{[0-9-]+\}(?:\\cline\{[0-9-]+\})*\n", "", src)
 src = src.replace(
-    " & \\multicolumn{2}{c}{\\textbf{Oxford}} & \\multicolumn{2}{c}{\\textbf{Severson}}\\\\\n"
-    "\\textbf{Label endpoint} & \\textbf{with SOH} & \\textbf{no SOH} & \\textbf{with SOH} & \\textbf{no SOH}\\\\",
+    " & \\multicolumn{2}{c|}{\\textbf{Oxford}} & \\multicolumn{2}{c|}{\\textbf{Severson}}\\\\\n"
+    "\\textbf{Label endpoint} & \\textbf{w/ SOH} & \\textbf{no SOH} & \\textbf{w/ SOH} & \\textbf{no SOH}\\\\",
     "\\textbf{Label endpoint} & \\textbf{Oxford w/ SOH} & \\textbf{Oxford no SOH} & \\textbf{Severson w/ SOH} & \\textbf{Severson no SOH}\\\\")
 src = src.replace(
-    " & \\multicolumn{2}{c}{$H{=}20$} & \\multicolumn{2}{c}{$H{=}50$}\\\\\n"
-    "Setting & Fixed & Hazard & Fixed & Hazard\\\\",
-    "Setting & Fixed $H{=}20$ & Hazard $H{=}20$ & Fixed $H{=}50$ & Hazard $H{=}50$\\\\")
+    " & \\multicolumn{2}{c|}{\\textbf{$H{=}20$}} & \\multicolumn{2}{c|}{\\textbf{$H{=}50$}}\\\\\n"
+    "\\textbf{Setting} & \\textbf{Fixed} & \\textbf{Hazard} & \\textbf{Fixed} & \\textbf{Hazard}\\\\",
+    "\\textbf{Setting} & \\textbf{Fixed $H{=}20$} & \\textbf{Hazard $H{=}20$} & \\textbf{Fixed $H{=}50$} & \\textbf{Hazard $H{=}50$}\\\\")
+src = src.replace(
+    " & \\multicolumn{2}{c|}{\\textbf{Oxford}} & \\multicolumn{2}{c|}{\\textbf{Severson}}\\\\\n"
+    "\\textbf{Training} & \\textbf{Model} & \\textbf{w/ SOH} & \\textbf{no SOH} & \\textbf{w/ SOH} & \\textbf{no SOH}\\\\",
+    "\\textbf{Training} & \\textbf{Model} & \\textbf{Oxford w/ SOH} & \\textbf{Oxford no SOH} & \\textbf{Severson w/ SOH} & \\textbf{Severson no SOH}\\\\")
+src = re.sub(r"\\fontsize\{\d+\}\{\d+\}\\selectfont\n?", "", src)
+src = re.sub(r"\\setlength\{\\tabcolsep\}\{[^}]*\}\n?", "", src)
 
 # collapse doubled words created by ref resolution
 src = src.replace(
@@ -80,6 +86,7 @@ src = src.replace(
     "Label endpoint & w/ SOH & no SOH & w/ SOH & no SOH\\\\",
     "Label endpoint & \\textbf{Oxford w/ SOH} & \\textbf{Oxford no SOH} & \\textbf{Severson w/ SOH} & \\textbf{Severson no SOH}\\\\")
 src = src.replace("Fig. Fig.", "Fig.").replace("Table Table", "Table ")
+src = src.replace("Figure Fig.", "Figure")
 
 # pandoc cannot parse \input inside tabular -> inline the fragments
 def inline_frag(m):
