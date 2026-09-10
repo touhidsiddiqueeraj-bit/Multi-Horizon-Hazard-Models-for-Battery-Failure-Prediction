@@ -274,3 +274,29 @@ with open(os.path.join(_OUT, "tab_operational.tex"), "w") as f:
 with open(os.path.join(_OUT, "numbers.json"), "w") as f:
     json.dump(NUM, f, indent=1)
 print(json.dumps(NUM, indent=1))
+
+# ------------------------------------------------ bake rows into main.tex
+# \input{generated/...} inside tabular leaves dangling vertical-rule stubs
+# below the table when the fragment ends with \hline (input-file EOF
+# artifact); inlining the rows renders clean. Marker-wrapped so re-runs
+# rewrite the baked region in place.
+FRAGS = ["tab_within", "tab_calibration", "tab_transfer", "tab_soh",
+         "tab_faildef", "tab_samechem", "tab_hazard", "tab_operational"]
+_mtex = open("main.tex").read()
+_baked = 0
+for _name in FRAGS:
+    _frag = open(os.path.join(_OUT, _name + ".tex")).read().rstrip("\n")
+    _start, _end = "%%BAKE:" + _name, "%%END:" + _name
+    _block = _start + "\n" + _frag + "\n" + _end
+    if _start in _mtex and _end in _mtex:
+        _a = _mtex.index(_start)
+        _b = _mtex.index(_end) + len(_end)
+        _mtex = _mtex[:_a] + _block + _mtex[_b:]
+        _baked += 1
+    elif "\\input{generated/%s}" % _name in _mtex:
+        _mtex = _mtex.replace("\\input{generated/%s}" % _name, _block)
+        _baked += 1
+    else:
+        print("WARNING: no marker or input for %s in main.tex" % _name)
+open("main.tex", "w").write(_mtex)
+print("baked %d fragments into main.tex" % _baked)

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.10)  10 SEP 2026 21:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.10)  10 SEP 2026 22:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -446,13 +446,22 @@ ion-main/paper_wiecon/main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 75.
 
+
+LaTeX Warning: No \author given.
+
+
+LaTeX Warning: No \author given.
+
+
+LaTeX Warning: No \author given.
+
+LaTeX Font Info:    Trying to load font information for U+msa on input line 60.
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 75.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 60.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -462,62 +471,46 @@ hare/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-<figs/fig_framework.png, id=125, 252.2223pt x 252.2223pt>
+<figs/fig_framework.png, id=127, 252.2223pt x 252.2223pt>
 File: figs/fig_framework.png Graphic file (type png)
 <use figs/fig_framework.png>
-Package pdftex.def Info: figs/fig_framework.png  used on input line 166.
+Package pdftex.def Info: figs/fig_framework.png  used on input line 151.
 (pdftex.def)             Requested size: 252.0pt x 252.0023pt.
-
-Underfull \vbox (badness 4072) has occurred while \output is active []
-
  [2 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
 diction-main/paper_wiecon/figs/fig_framework.png>]
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_within.tex)
-<figs/fig_within_horizons.png, id=164, 248.6088pt x 123.0999pt>
+<figs/fig_within_horizons.png, id=167, 248.6088pt x 123.0999pt>
 File: figs/fig_within_horizons.png Graphic file (type png)
 <use figs/fig_within_horizons.png>
-Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 346.
+Package pdftex.def Info: figs/fig_within_horizons.png  used on input line 340.
 (pdftex.def)             Requested size: 252.0pt x 124.78445pt.
-
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_calibration.tex) [3 </home/touhid/Documents
-/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_wiecon/f
-igs/fig_within_horizons.png>]
-<figs/fig_reliability_v2.png, id=181, 256.3176pt x 136.8312pt>
+<figs/fig_reliability_v2.png, id=170, 256.3176pt x 136.8312pt>
 File: figs/fig_reliability_v2.png Graphic file (type png)
 <use figs/fig_reliability_v2.png>
-Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 379.
+Package pdftex.def Info: figs/fig_reliability_v2.png  used on input line 380.
 (pdftex.def)             Requested size: 252.0pt x 134.52792pt.
-
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_transfer.tex)
-<figs/fig_collapse_map.png, id=184, 253.4268pt x 131.7723pt>
+ [3 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
+diction-main/paper_wiecon/figs/fig_within_horizons.png>]
+<figs/fig_collapse_map.png, id=185, 253.4268pt x 131.7723pt>
 File: figs/fig_collapse_map.png Graphic file (type png)
 <use figs/fig_collapse_map.png>
-Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 420.
+Package pdftex.def Info: figs/fig_collapse_map.png  used on input line 434.
 (pdftex.def)             Requested size: 252.0pt x 131.03201pt.
+ [4 </home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Pre
+diction-main/paper_wiecon/figs/fig_reliability_v2.png> </home/touhid/Documents/
+Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_wiecon/fi
+gs/fig_collapse_map.png>]
 
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_faildef.tex)
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_samechem.tex) [4 </home/touhid/Documents/Mu
-lti-Horizon-Hazard-Models-for-Battery-Failure-Prediction-main/paper_wiecon/figs
-/fig_reliability_v2.png> </home/touhid/Documents/Multi-Horizon-Hazard-Models-fo
-r-Battery-Failure-Prediction-main/paper_wiecon/figs/fig_collapse_map.png>]
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_hazard.tex)
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_operational.tex)
-(/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
-ion-main/paper_wiecon/generated/tab_soh.tex) [5]
-Underfull \hbox (badness 3623) in paragraph at lines 637--638
+Package balance Warning: You have called \balance in second column
+(balance)                Columns might not be balanced.
+
+[5]
+Underfull \hbox (badness 3623) in paragraph at lines 681--682
 []\OT1/ptm/m/n/8 T. Tetik, ``Fea-ture en-gi-neer-ing and ex-plain-able ar-ti-fi
 -cial in-tel-li-
  []
 
 
-Underfull \hbox (badness 2401) in paragraph at lines 637--638
+Underfull \hbox (badness 2401) in paragraph at lines 681--682
 \OT1/ptm/m/it/8 nal of En-ergy Stor-age\OT1/ptm/m/n/8 , vol. 144, Art. no. 1198
 73, 2026, doi:
  []
@@ -533,6 +526,10 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
+
+Overfull \vbox (0.55888pt too high) has occurred while \output is active []
+
+
 [6]
 (/home/touhid/Documents/Multi-Horizon-Hazard-Models-for-Battery-Failure-Predict
 ion-main/paper_wiecon/main.aux)
@@ -544,13 +541,13 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: B949AB9F0B26E75522226211D1D0C716;3480.
  ) 
 Here is how much of TeX's memory you used:
- 10890 strings out of 469515
- 171671 string characters out of 5470807
- 608580 words of memory out of 5000000
- 39312 multiletter control sequences out of 15000+600000
- 669584 words of font info for 120 fonts, out of 8000000 for 9000
+ 10823 strings out of 469515
+ 168089 string characters out of 5470807
+ 605102 words of memory out of 5000000
+ 39272 multiletter control sequences out of 15000+600000
+ 668506 words of font info for 119 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,11n,79p,473b,452s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,473b,586s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fon
 ts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-dist/fonts/type1/public
@@ -567,7 +564,7 @@ symbols/msbm10.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></us
 r/share/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fon
 ts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr
 i8a.pfb>
-Output written on main.pdf (6 pages, 540843 bytes).
+Output written on main.pdf (6 pages, 540286 bytes).
 PDF statistics:
  318 PDF objects out of 1000 (max. 8388607)
  261 compressed objects within 3 object streams
