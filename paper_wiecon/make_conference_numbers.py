@@ -146,7 +146,7 @@ for tgt in ["oxford", "severson"]:
         r = r.iloc[0]
         lo, hi = r["delta_lo"], r["delta_hi"]
         ci = (f" [{lo:.2f}, {hi:.2f}]" if np.isfinite(lo) and np.isfinite(hi)
-              else " (5 cells)")
+              else " [NA; n=5]")
         rows.append(
             f"{'Oxford' if tgt == 'oxford' else 'Severson'} & {MODEL_LABEL[model]} & "
             f"{r['auc_with']:.3f} & {r['auc_without']:.3f} & "

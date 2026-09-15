@@ -8,7 +8,7 @@
 \usepackage{balance}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
 
-\setlength{\abovecaptionskip}{3pt}
+\setlength{\abovecaptionskip}{2pt}
 \setlength{\belowcaptionskip}{1pt}
 \setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
 \setlength{\floatsep}{7pt plus 2pt minus 2pt}
@@ -18,7 +18,7 @@
 % force table/figure captions to exactly 8pt (class default is 9pt here)
 \long\def\@makecaption#1#2{%
 \ifx\@captype\@IEEEtablestring%
-\fontsize{8}{9}\selectfont\bgroup\par\centering\@IEEEtabletopskipstrut{\normalfont\fontsize{8}{9}\selectfont #1}\\{\normalfont\fontsize{8}{9}\selectfont\scshape #2}\par\addvspace{0.5\baselineskip}\egroup%
+\fontsize{8}{9}\selectfont\bgroup\par\centering\@IEEEtabletopskipstrut{\normalfont\fontsize{8}{9}\selectfont #1.~}{\normalfont\fontsize{8}{9}\selectfont\scshape #2}\par\addvspace{0.5\baselineskip}\egroup%
 \@IEEEtablecaptionsepspace
 \else
 \@IEEEfigurecaptionsepspace
@@ -34,7 +34,7 @@
 
 \begin{document}
 
-\title{Multi-Horizon Failure-Risk Models for Battery Failure Prediction: Within-Dataset Reliability, Cross-Chemistry Transferability, and Calibration Analysis}
+\title{When Battery Failure Models Appear to Transfer: Exposing Health-State Shortcuts Under Dataset and Chemistry Shift}
 
 \maketitle
 
@@ -68,9 +68,9 @@ health-state shortcut rather than a chemistry-specific transferable
 signal.
 \end{abstract}
 
-\noindent\textit{Keywords---}battery management systems, machine
-learning, probability calibration, prognostics and health management,
-transfer learning, dataset shift.
+\noindent\textbf{\textit{Keywords---}}\textit{battery management
+systems, machine learning, probability calibration, prognostics and
+health management, transfer learning, dataset shift.}
 
 \section{Introduction and Related Work}
 Lithium-ion batteries have become the default choice for electric
@@ -169,7 +169,7 @@ baseline.
 \centering
 \setlength{\tabcolsep}{3.5pt}
 \fontsize{7}{8}\selectfont
-\begin{tabular}{|l|l|l|l|l|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|l|l|l|}
 \hline
 \fontsize{8}{9}\selectfont\textbf{Dataset} & \textbf{Cells} & \textbf{Chem.} & \textbf{Cycles/Cell} & \textbf{Role}\\
 \hline
@@ -178,7 +178,7 @@ NASA 18650~\cite{saha2007} & 37 & LCO & 1--445 & Training\\ \hline
 CALCE CX2~\cite{calce2023} & 7 & LCO & 775--1{,}961 & Training\\ \hline
 Oxford LFP~\cite{birkl2017} & 5 & LFP & 46--78 & Transfer\\ \hline
 Severson~\cite{severson2019} & 141 & LFP & 101--2{,}237 & Transfer\\ \hline
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 Two properties of these datasets matter for interpretation. First, the
@@ -296,10 +296,10 @@ distance-to-threshold baseline that scores each cycle by the unfitted
 rule $0.80-\mathrm{SOH}$, which is the correct first baseline if the
 health state itself is what transfers. Significance is assessed with
 the DeLong test~\cite{delong1988} as secondary evidence only: the test
-treats every cycle-level prediction as independent, so within-cell
-correlation inflates its $p$-values (pseudoreplication), and we read it
-as a directional consistency check, never as a precise significance
-statement.
+treats cycle-level predictions as independent despite within-cell
+correlation, which can produce anti-conservative inference and
+artificially small $p$-values (pseudoreplication). We therefore use
+DeLong only as a directional consistency check.
 
 \section{Results and Discussion}
 
@@ -313,11 +313,11 @@ low. Platt calibration preserves these rankings at comparable
 calibration error (Table~\ref{tab:calibration}).
 
 \begin{table}[!t]
-\caption{Within-Dataset Platt-Calibrated AUC and Brier Score}
+\caption{Within-Dataset AUC and Brier Score}
 \label{tab:within}
 \centering
 \setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{|l|l|c|c|c|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|c|c|c|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont\textbf{Model} & \textbf{Dataset} & \textbf{H=10} & \textbf{H=20} & \textbf{H=30} & \textbf{H=50} & \textbf{Mean} & \textbf{Brier}\\
 \hline
@@ -332,7 +332,7 @@ Random Forest & CALCE & 0.934 & 0.933 & 0.917 & 0.903 & 0.922 & 0.070 \\ \hline
 GRU & NASA & 0.872 & 0.893 & 0.884 & 0.856 & 0.876 & 0.307 \\ \hline
 GRU & CALCE & 0.952 & 0.959 & 0.935 & 0.921 & 0.942 & 0.130 \\ \hline
 %%END:tab_within
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{figure}[!t]
@@ -343,11 +343,11 @@ GRU & CALCE & 0.952 & 0.959 & 0.935 & 0.921 & 0.942 & 0.130 \\ \hline
 \end{figure}
 
 \begin{table}[!t]
-\caption{Calibration Method Comparison (Mean Across Tree Models)}
+\caption{Calibration Method Comparison}
 \label{tab:calibration}
 \centering
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{|l|l|c|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|c|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont\textbf{Dataset} & \textbf{Method} & \textbf{AUC} & \textbf{Brier} & \textbf{ECE} & \textbf{Slope}\\
 \hline
@@ -360,7 +360,7 @@ CALCE & Isotonic & 0.915 & 0.067 & 0.049 & 0.41 \\ \hline
 CALCE & Platt & 0.946 & 0.073 & 0.029 & 0.01 \\ \hline
 CALCE & Temperature & 0.945 & 0.080 & 0.067 & 0.53 \\ \hline
 %%END:tab_calibration
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \subsection{Calibration: Platt Preserves Discrimination Best}
@@ -400,11 +400,11 @@ the AUC drop caused by removing SOH across all source, target, and
 model configurations.
 
 \begin{table}[!t]
-\caption{Cross-Dataset Transfer at $H{=}20$ With and Without SOH (Pooled Raw AUC)}
+\caption{Cross-Dataset Transfer at $H{=}20$ (Pooled Raw AUC)}
 \label{tab:transfer}
 \centering
 \setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{|l|l|c|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|c|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont
  & \multicolumn{2}{c|}{\textbf{Oxford}} & \multicolumn{2}{c|}{\textbf{Severson}}\\
@@ -426,7 +426,7 @@ NASA+CALCE & LightGBM & 0.971 & 0.332 & 0.882 & 0.718 \\ \hline
 NASA+CALCE & Random Forest & 0.989 & 0.581 & 0.889 & 0.746 \\ \hline
 NASA+CALCE & GRU & 0.053 & 0.015 & 0.799 & 0.748 \\ \hline
 %%END:tab_transfer
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{figure}[!t]
@@ -451,16 +451,16 @@ With-SOH transfer increases with the share of SOH in the label
 definition. Under an SOH-only label, transfer to Severson is 0.985;
 under the combined label it is 0.896; under the voltage-sag label,
 which SOH does not enter, it is 0.723. The residual with-SOH advantage
-under the voltage label (0.723 versus 0.611 without SOH) indicates
-genuine but weak health-state information: cells far below nominal
-capacity fail sooner under almost any definition.
+under the voltage-sag endpoint (0.723 versus 0.611 without SOH) is
+consistent with SOH retaining some genuine health-state information
+even when it does not directly define the endpoint.
 
 \begin{table}[!t]
-\caption{Failure-Definition Ablation at $H{=}20$ (Pooled Raw AUC)}
+\caption{Failure-Definition Ablation at $H{=}20$}
 \label{tab:faildef}
 \centering
 \setlength{\tabcolsep}{2.8pt}
-\begin{tabular}{|l|c|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|c|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont
  & \multicolumn{2}{c|}{\textbf{Oxford}} & \multicolumn{2}{c|}{\textbf{Severson}}\\
@@ -473,15 +473,15 @@ Combined (SOH or sag) & 0.917 & 0.429 & 0.896 & 0.750 \\ \hline
 SOH only & 0.995 & 0.464 & 0.985 & 0.759 \\ \hline
 Voltage sag only & --- & --- & 0.723 & 0.611 \\ \hline
 %%END:tab_faildef
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{table}[!t]
-\caption{Same-Chemistry Controls at $H{=}20$ (Pooled Raw AUC)}
+\caption{Same-Chemistry Controls at $H{=}20$}
 \label{tab:samechem}
 \centering
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{|l|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|c|c|}
 \hline
 \fontsize{8}{9}\selectfont\textbf{Pair} & \textbf{w/ SOH} & \textbf{no SOH}\\
 \hline
@@ -492,7 +492,7 @@ CALCE$\to$NASA (LCO$\to$LCO) & 0.543 & 0.566 \\ \hline
 Severson$\to$Oxford (LFP$\to$LFP) & 0.997 & 0.471 \\ \hline
 Oxford$\to$Severson (LFP$\to$LFP) & 0.688 & 0.500 \\ \hline
 %%END:tab_samechem
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 If the collapse were a chemistry effect, transfer should survive when
@@ -524,7 +524,7 @@ on the transferred Severson target.
 \label{tab:hazard}
 \centering
 \setlength{\tabcolsep}{2.8pt}
-\begin{tabular}{|l|c|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|c|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont
  & \multicolumn{2}{c|}{\textbf{$H{=}20$}} & \multicolumn{2}{c|}{\textbf{$H{=}50$}}\\
@@ -542,7 +542,7 @@ CALCE$\to$\textit{Severson} & 0.850 & 0.737 & --- & --- \\ \hline
 NASA+CALCE$\to$\textit{Oxford} & 0.917 & 0.314 & --- & --- \\ \hline
 NASA+CALCE$\to$\textit{Severson} & 0.896 & 0.866 & --- & --- \\ \hline
 %%END:tab_hazard
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 We therefore also fit an explicit discrete-time hazard model. For each
@@ -568,7 +568,7 @@ output does not exempt the inputs from dataset shift, and behaves
 source-dependently (0.97 down to 0.31 pooled on Oxford). Its
 monotonicity violation rate is zero by construction.
 
-\subsection{Operational Cost Analysis}
+\subsection{Operational Threshold Evaluation}
 AUC weights all errors equally, whereas a BMS must trade false
 negatives against false positives. We select the decision
 threshold on source out-of-fold scores with a 10\% false-alarm budget
@@ -581,11 +581,11 @@ positive under the coarse pooled labels, so no discriminating
 operating point exists (Section~II-B).
 
 \begin{table}[!t]
-\caption{Operational Evaluation at $H{=}20$ (Target FNR\% / FPR\%)}
+\caption{Operational Evaluation at $H{=}20$ (FNR\% / FPR\%)}
 \label{tab:operational}
 \centering
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{|l|l|c|c|c|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|c|c|c|}
 \hline
 \fontsize{8}{9}\selectfont\textbf{Target} & \textbf{Features} & \textbf{raw} & \textbf{Platt} & \textbf{Isotonic}\\
 \hline
@@ -596,35 +596,36 @@ Oxford & no SOH & 0 / 92 & 0 / 92 & 0 / 92 \\ \hline
 Severson & with SOH & 32 / 4 & 32 / 4 & 31 / 6 \\ \hline
 Severson & no SOH & 70 / 10 & 70 / 10 & 67 / 12 \\ \hline
 %%END:tab_operational
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{table}[!t]
-\caption{SOH Ablation at $H{=}20$ With Bootstrap CI and DeLong $p$-Value}
+\caption{SOH Ablation at $H{=}20$ (Bootstrap CI, DeLong $p$)}
 \label{tab:soh}
 \centering
 \setlength{\tabcolsep}{2.4pt}
-\begin{tabular}{|l|l|c|c|l|l|}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}|l|l|c|c|l|l|}
 \hline
-\fontsize{8}{9}\selectfont\textbf{Target} & \textbf{Model} & \textbf{w/ SOH} & \textbf{w/o} & \textbf{$\Delta$AUC [CI]} & \textbf{DeLong $p$}\\
+\fontsize{8}{9}\selectfont\textbf{Target} & \textbf{Model} & \textbf{w/ SOH} & \textbf{w/o} & \textbf{$\Delta$AUC [95\% CI]} & \textbf{DeLong $p$}\\
 \hline
 \fontsize{7}{8}\selectfont
 %%BAKE:tab_soh
-Oxford & XGBoost & 0.917 & 0.429 & +0.488 (5 cells) & $7.2e-51$ \\ \hline
-Oxford & LightGBM & 0.971 & 0.332 & +0.639 (5 cells) & $2.6e-64$ \\ \hline
-Oxford & Random Forest & 0.989 & 0.581 & +0.409 (5 cells) & $6.5e-36$ \\ \hline
+Oxford & XGBoost & 0.917 & 0.429 & +0.488 [NA; n=5] & $7.2e-51$ \\ \hline
+Oxford & LightGBM & 0.971 & 0.332 & +0.639 [NA; n=5] & $2.6e-64$ \\ \hline
+Oxford & Random Forest & 0.989 & 0.581 & +0.409 [NA; n=5] & $6.5e-36$ \\ \hline
 Severson & XGBoost & 0.896 & 0.750 & +0.146 [0.10, 0.23] & $<10^{-300}$ \\ \hline
 Severson & LightGBM & 0.882 & 0.718 & +0.164 [0.13, 0.23] & $<10^{-300}$ \\ \hline
 Severson & Random Forest & 0.889 & 0.746 & +0.143 [0.11, 0.23] & $<10^{-300}$ \\ \hline
 %%END:tab_soh
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 Table~\ref{tab:soh} states the central comparison with the cell as the
 experimental unit. On Severson the bootstrap interval on $\Delta$AUC
 excludes zero by a wide margin for every model. On Oxford the
 equivalent interval is uninformative (five cells, effectively four),
-so the cycle-level DeLong $p$-values, which are inflated by
+so the cycle-level DeLong $p$-values, which treat correlated cycles
+as independent and can therefore be anti-conservatively small under
 pseudoreplication, are not used as primary evidence. Within-dataset
 model comparisons at $H{=}20$ are mostly not significant after honest
 accounting (DeLong on pooled rows: XGBoost vs.\ LightGBM $1.4\times10^{-2}$

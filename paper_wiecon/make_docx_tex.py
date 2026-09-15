@@ -101,6 +101,10 @@ src = src.replace("\\end{IEEEkeywords}", "\n")
 src = src.replace("\\IEEEkeywords", "")
 
 # tables: strip resizebox + booktabs rules stay (pandoc reads tabular)
+# tabular* full-width form -> plain tabular (pandoc-safe)
+src = src.replace("\\begin{tabular*}{\\columnwidth}{@{\\extracolsep{\\fill}}",
+                  "\\begin{tabular}{")
+src = src.replace("\\end{tabular*}", "\\end{tabular}")
 src = src.replace("\\resizebox{\\columnwidth}{!}{%\n", "")
 src = src.replace("\\end{tabular}}", "\\end{tabular}")
 

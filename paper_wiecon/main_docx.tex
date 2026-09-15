@@ -8,12 +8,13 @@
 \usepackage{balance}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
 
+\setlength{\abovecaptionskip}{2pt}
 
 \makeatletter
 % force table/figure captions to exactly 8pt (class default is 9pt here)
 \long\def\@makecaption#1#2{%
 \ifx\@captype\@IEEEtablestring%
-\bgroup\par\centering\@IEEEtabletopskipstrut{\normalfont #1}\\{\normalfont\scshape #2}\par\addvspace{0.5\baselineskip}\egroup%
+\bgroup\par\centering\@IEEEtabletopskipstrut{\normalfont #1.~}{\normalfont\scshape #2}\par\addvspace{0.5\baselineskip}\egroup%
 \@IEEEtablecaptionsepspace
 \else
 \@IEEEfigurecaptionsepspace
@@ -29,7 +30,7 @@
 
 \begin{document}
 
-\title{Multi-Horizon Failure-Risk Models for Battery Failure Prediction: Within-Dataset Reliability, Cross-Chemistry Transferability, and Calibration Analysis}
+\title{When Battery Failure Models Appear to Transfer: Exposing Health-State Shortcuts Under Dataset and Chemistry Shift}
 
 \maketitle
 
@@ -64,9 +65,9 @@ signal.
 
 
 
-\noindent\textit{Keywords---}battery management systems, machine
-learning, probability calibration, prognostics and health management,
-transfer learning, dataset shift.
+\noindent\textbf{\textit{Keywords---}}\textit{battery management
+systems, machine learning, probability calibration, prognostics and
+health management, transfer learning, dataset shift.}
 
 \section{I. Introduction and Related Work}
 Lithium-ion batteries have become the default choice for electric
@@ -289,10 +290,10 @@ distance-to-threshold baseline that scores each cycle by the unfitted
 rule $0.80-\mathrm{SOH}$, which is the correct first baseline if the
 health state itself is what transfers. Significance is assessed with
 the DeLong test~[22] as secondary evidence only: the test
-treats every cycle-level prediction as independent, so within-cell
-correlation inflates its $p$-values (pseudoreplication), and we read it
-as a directional consistency check, never as a precise significance
-statement.
+treats cycle-level predictions as independent despite within-cell
+correlation, which can produce anti-conservative inference and
+artificially small $p$-values (pseudoreplication). We therefore use
+DeLong only as a directional consistency check.
 
 \section{III. Results and Discussion}
 
@@ -306,7 +307,7 @@ low. Platt calibration preserves these rankings at comparable
 calibration error (Table III).
 
 \begin{table}[!t]
-\caption{Within-Dataset Platt-Calibrated AUC and Brier Score}
+\caption{Within-Dataset AUC and Brier Score}
 \label{tab:within}
 \centering
 \begin{tabular}{|l|l|c|c|c|c|c|c|}
@@ -334,7 +335,7 @@ GRU & CALCE & 0.952 & 0.959 & 0.935 & 0.921 & 0.942 & 0.130 \\ \hline
 \end{figure}
 
 \begin{table}[!t]
-\caption{Calibration Method Comparison (Mean Across Tree Models)}
+\caption{Calibration Method Comparison}
 \label{tab:calibration}
 \centering
 \begin{tabular}{|l|l|c|c|c|c|}
@@ -389,7 +390,7 @@ the AUC drop caused by removing SOH across all source, target, and
 model configurations.
 
 \begin{table}[!t]
-\caption{Cross-Dataset Transfer at $H{=}20$ With and Without SOH (Pooled Raw AUC)}
+\caption{Cross-Dataset Transfer at $H{=}20$ (Pooled Raw AUC)}
 \label{tab:transfer}
 \centering
 \begin{tabular}{|l|l|c|c|c|c|}
@@ -435,12 +436,12 @@ With-SOH transfer increases with the share of SOH in the label
 definition. Under an SOH-only label, transfer to Severson is 0.985;
 under the combined label it is 0.896; under the voltage-sag label,
 which SOH does not enter, it is 0.723. The residual with-SOH advantage
-under the voltage label (0.723 versus 0.611 without SOH) indicates
-genuine but weak health-state information: cells far below nominal
-capacity fail sooner under almost any definition.
+under the voltage-sag endpoint (0.723 versus 0.611 without SOH) is
+consistent with SOH retaining some genuine health-state information
+even when it does not directly define the endpoint.
 
 \begin{table}[!t]
-\caption{Failure-Definition Ablation at $H{=}20$ (Pooled Raw AUC)}
+\caption{Failure-Definition Ablation at $H{=}20$}
 \label{tab:faildef}
 \centering
 \begin{tabular}{|l|c|c|c|c|}
@@ -456,7 +457,7 @@ Voltage sag only & --- & --- & 0.723 & 0.611 \\ \hline
 \end{table}
 
 \begin{table}[!t]
-\caption{Same-Chemistry Controls at $H{=}20$ (Pooled Raw AUC)}
+\caption{Same-Chemistry Controls at $H{=}20$}
 \label{tab:samechem}
 \centering
 \begin{tabular}{|l|c|c|}
@@ -540,7 +541,7 @@ output does not exempt the inputs from dataset shift, and behaves
 source-dependently (0.97 down to 0.31 pooled on Oxford). Its
 monotonicity violation rate is zero by construction.
 
-\subsection{III-F Operational Cost Analysis}
+\subsection{III-F Operational Threshold Evaluation}
 AUC weights all errors equally, whereas a BMS must trade false
 negatives against false positives. We select the decision
 threshold on source out-of-fold scores with a 10\% false-alarm budget
@@ -553,7 +554,7 @@ positive under the coarse pooled labels, so no discriminating
 operating point exists (Section~II-B).
 
 \begin{table}[!t]
-\caption{Operational Evaluation at $H{=}20$ (Target FNR\% / FPR\%)}
+\caption{Operational Evaluation at $H{=}20$ (FNR\% / FPR\%)}
 \label{tab:operational}
 \centering
 \begin{tabular}{|l|l|c|c|c|}
@@ -570,17 +571,17 @@ Severson & no SOH & 70 / 10 & 70 / 10 & 67 / 12 \\ \hline
 \end{table}
 
 \begin{table}[!t]
-\caption{SOH Ablation at $H{=}20$ With Bootstrap CI and DeLong $p$-Value}
+\caption{SOH Ablation at $H{=}20$ (Bootstrap CI, DeLong $p$)}
 \label{tab:soh}
 \centering
 \begin{tabular}{|l|l|c|c|l|l|}
 \hline
-\textbf{Target} & \textbf{Model} & \textbf{w/ SOH} & \textbf{w/o} & \textbf{$\Delta$AUC [CI]} & \textbf{DeLong $p$}\\
+\textbf{Target} & \textbf{Model} & \textbf{w/ SOH} & \textbf{w/o} & \textbf{$\Delta$AUC [95\% CI]} & \textbf{DeLong $p$}\\
 \hline
 %%BAKE:tab_soh
-Oxford & XGBoost & 0.917 & 0.429 & +0.488 (5 cells) & $7.2e-51$ \\ \hline
-Oxford & LightGBM & 0.971 & 0.332 & +0.639 (5 cells) & $2.6e-64$ \\ \hline
-Oxford & Random Forest & 0.989 & 0.581 & +0.409 (5 cells) & $6.5e-36$ \\ \hline
+Oxford & XGBoost & 0.917 & 0.429 & +0.488 [NA; n=5] & $7.2e-51$ \\ \hline
+Oxford & LightGBM & 0.971 & 0.332 & +0.639 [NA; n=5] & $2.6e-64$ \\ \hline
+Oxford & Random Forest & 0.989 & 0.581 & +0.409 [NA; n=5] & $6.5e-36$ \\ \hline
 Severson & XGBoost & 0.896 & 0.750 & +0.146 [0.10, 0.23] & $<10^{-300}$ \\ \hline
 Severson & LightGBM & 0.882 & 0.718 & +0.164 [0.13, 0.23] & $<10^{-300}$ \\ \hline
 Severson & Random Forest & 0.889 & 0.746 & +0.143 [0.11, 0.23] & $<10^{-300}$ \\ \hline
@@ -592,7 +593,8 @@ Table IX states the central comparison with the cell as the
 experimental unit. On Severson the bootstrap interval on $\Delta$AUC
 excludes zero by a wide margin for every model. On Oxford the
 equivalent interval is uninformative (five cells, effectively four),
-so the cycle-level DeLong $p$-values, which are inflated by
+so the cycle-level DeLong $p$-values, which treat correlated cycles
+as independent and can therefore be anti-conservatively small under
 pseudoreplication, are not used as primary evidence. Within-dataset
 model comparisons at $H{=}20$ are mostly not significant after honest
 accounting (DeLong on pooled rows: XGBoost vs.\ LightGBM $1.4\times10^{-2}$
