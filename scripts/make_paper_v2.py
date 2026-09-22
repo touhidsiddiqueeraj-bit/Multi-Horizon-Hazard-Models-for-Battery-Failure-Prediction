@@ -92,12 +92,32 @@ T["BASE_SOH_ALL_SEV"] = lambda: f3(j("base_nasa+calce_severson_soh_only"))
 T["BASE_SENSORS_NASA_SEV"] = lambda: f3(j("base_nasa_severson_sensors"))
 T["BASE_CYCLE_CALCE"] = lambda: f3(j("base_within_calce_cycle_only"))
 T["BASE_CYCLE_NASA"] = lambda: f3(j("base_within_nasa_cycle_only"))
-T["MONO_RATE_WITHIN"] = lambda: f"{100*max(v for k, v in N.items() if k.startswith('mono_within_') and v is not None):.1f}\\%"
-T["MONO_RATE_TRANSFER"] = lambda: f"{100*max(v for k, v in N.items() if k.startswith('mono_transfer_') and v is not None and 'hazard' not in k):.1f}\\%"
+T["TAB_MONO"] = lambda: frag("tab_monotonicity.tex")
+
+
+def _mono_vals(prefix):
+    return [v for k, v in N.items()
+            if k.startswith(prefix) and v is not None and np.isfinite(v)]
+
+
+T["MONO_WITHIN_RANGE"] = lambda: f"{100*min(_mono_vals('mono_within_')):.0f}--{100*max(_mono_vals('mono_within_')):.0f}\\%"
+T["MONO_SEV_MAX"] = lambda: (lambda kv: f"{100*kv[1]:.1f}\\% ({kv[0]})")(max(
+    ((f"{k.split('_')[2]}-trained {k.split('_')[-1]}", v) for k, v in N.items()
+     if k.startswith("mono_transfer_") and "_severson_" in k
+     and v is not None and np.isfinite(v)),
+    key=lambda kv: kv[1]))
 
 # calibration section
-T["NASA_PRAUC_RAW"] = lambda: f3(j("cal_nasa_raw")["PRAUC"]) if "cal_nasa_raw" in N else "0.77"
-T["NASA_PRAUC_ISO"] = lambda: f3(j("cal_nasa_iso")["PRAUC"]) if "cal_nasa_iso" in N else "0.64"
+def _nasa_prauc(method):
+    w = pd.read_csv(os.path.join(RES, "within_trees.csv"))
+    s = w[(w.dataset == "nasa") &
+          (w.model.isin(["xgboost", "lightgbm", "random_forest"])) &
+          (w.method == method)]["PRAUC"]
+    return float(s.mean())
+
+
+T["NASA_PRAUC_RAW"] = lambda: f3(_nasa_prauc("raw"))
+T["NASA_PRAUC_ISO"] = lambda: f3(_nasa_prauc("iso"))
 T["CALCE_PLATT_ECE"] = lambda: f3(j("cal_calce_platt")["ECE"])
 T["CALCE_ISO_ECE"] = lambda: f3(j("cal_calce_iso")["ECE"])
 T["CALCE_PLATT_SLOPE"] = lambda: f3(j("cal_calce_platt")["Slope"])
@@ -146,13 +166,17 @@ T["FAILDEF_WITHIN_GAP"] = lambda: f"{_faildef_within('soh_only','nasa','with_soh
 T["FAILDEF_WITHIN_SENSORS"] = lambda: f3(j("base_within_nasa_sensors"))
 
 # calibration transfer / recalibration
-def _iso_loss_max():
+def _iso_loss_max(target=None):
     tr = pd.read_csv(os.path.join(RES, "transfer_trees.csv"))
     w = tr[(tr.feature_set == "with_soh") & (tr.H == 20)]
+    if target is not None:
+        w = w[w.target == target]
     return float((w["raw_AUC"] - w["iso_AUC"]).max())
 
 
 T["ISO_LOSS_MAX"] = lambda: f"{_iso_loss_max():.2f}"
+T["ISO_LOSS_OXF"] = lambda: f"{_iso_loss_max('oxford'):.2f}"
+T["ISO_LOSS_SEV"] = lambda: f"{_iso_loss_max('severson'):.2f}"
 T["ARM_A_ECE0"] = lambda: f3(j("armA", "5")["ece_zero"])
 T["ARM_A_ECE5_ISO"] = lambda: f3(j("armA", "5")["ece_iso"])
 T["ARM_A_ECE5_PLATT"] = lambda: f3(j("armA", "5")["ece_platt"])
@@ -171,6 +195,51 @@ T["OP_FPR_SEV_WITH"] = lambda: f"{100*j('op_severson_with_soh_raw')['fpr']:.0f}\
 T["OP_FNR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fnr']:.0f}\\%"
 T["OP_FPR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fpr']:.0f}\\%"
 
+
+def _oper_other(model, fs, col):
+    oc = pd.read_csv(os.path.join(RES, "operational_costs.csv"))
+    r = oc[(oc.target == "severson") & (oc.model == model) &
+           (oc.feature_set == fs) & (oc.method == "raw")]
+    return float(r.iloc[0][col])
+
+
+T["OP_FPR_SEV_WITH_LGBM"] = lambda: f"{100*_oper_other('lightgbm', 'with_soh', 'tgt_fpr'):.0f}\\%"
+T["OP_FNR_SEV_WITH_RF"] = lambda: f"{100*_oper_other('random_forest', 'with_soh', 'tgt_fnr'):.0f}\\%"
+
+# ------------------------------------------------- prognosis split (Phase 1)
+def _prog(target, source, model, fs):
+    d = pd.read_csv(os.path.join(RES, "prognosis_split.csv"))
+    r = d[(d.target == target) & (d.source == source) & (d.model == model) &
+          (d.fs == fs) & (d.H == 20)]
+    if len(r) == 0:
+        raise KeyError(f"prognosis_split lacks {target}/{source}/{model}/{fs}")
+    return r.iloc[0]
+
+
+def _prog_pair(target, source="nasa+calce", model="xgboost", fs="with_soh"):
+    r = _prog(target, source, model, fs)
+    return f"{r['all_auc']:.3f} to {r['prog_auc']:.3f} ({r['frac_above']:.0%} above)"
+
+
+def _prog_ci(target, source="nasa+calce", model="xgboost", fs="with_soh"):
+    r = _prog(target, source, model, fs)
+    return f"{r['prog_auc']:.3f} [{r['prog_lo']:.3f}, {r['prog_hi']:.3f}]"
+
+
+T["TAB_PROGNOSIS"] = lambda: frag("tab_prognosis.tex")
+T["PROG_SEV_ALL"] = lambda: f"{_prog('severson', 'nasa+calce', 'xgboost', 'with_soh')['all_auc']:.3f}"
+T["PROG_SEV"] = lambda: _prog_ci("severson")
+T["PROG_SEV_NO_ALL"] = lambda: f"{_prog('severson', 'nasa+calce', 'xgboost', 'no_soh')['all_auc']:.3f}"
+T["PROG_SEV_NO"] = lambda: _prog_ci("severson", fs="no_soh")
+T["PROG_DIST_ALL"] = lambda: f"{_prog('severson', 'nasa+calce', 'logreg', 'base_soh_dist')['all_auc']:.3f}"
+T["PROG_DIST"] = lambda: f"{_prog('severson', 'nasa+calce', 'logreg', 'base_soh_dist')['prog_auc']:.3f}"
+T["PROG_HNEI"] = lambda: _prog_pair("ba_nmc_hnei")
+T["PROG_NCA"] = lambda: _prog_pair("ba_nca_snl")
+T["PROG_NMC"] = lambda: _prog_pair("ba_nmc_snl")
+T["PROG_LFP"] = lambda: _prog_pair("ba_lfp_snl")
+T["PROG_BA"] = lambda: (lambda vs: f"{min(vs):.2f}--{max(vs):.2f}")([
+    _prog(t, "nasa+calce", "xgboost", "with_soh")["prog_auc"]
+    for t in ["ba_nmc_hnei", "ba_nca_snl", "ba_nmc_snl", "ba_lfp_snl"]])
 
 # ------------------------------------------------- Battery Archive extension
 def _ba(key, default=np.nan):

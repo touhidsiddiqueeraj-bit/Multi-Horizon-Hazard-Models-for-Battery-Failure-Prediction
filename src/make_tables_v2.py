@@ -189,7 +189,7 @@ def ablation_table():
                         f"{TARGET_LABEL[tgt]} & {MODEL_LABEL[model]} & {int(r['H'])} & "
                         f"{r['auc_with']:.3f} & {r['auc_without']:.3f} & "
                         f"{r['delta_bootstrap']:+.3f} {ci_tex} & "
-                        f"{'$<10^{-300}$' if r['delong_p_cyclelevel'] == 0 else '$' + format(r['delong_p_cyclelevel'], '.1e') + '$'} \\\\")
+                        f"{'$<10^{-16}$ (underflow)' if r['delong_p_cyclelevel'] == 0 or r['delong_p_cyclelevel'] < 1e-16 else '$' + format(r['delong_p_cyclelevel'], '.1e') + '$'} \\\\")
                     js[f"soh_delta_{tgt}_{model}_{int(r['H'])}"] = {
                         "delta": float(r["delta_bootstrap"]),
                         "ci": [float(r["delta_lo"]) if np.isfinite(r["delta_lo"]) else None,
@@ -373,6 +373,54 @@ def monotonicity_summary():
     for _, r in d.iterrows():
         js[f"mono_{r['setting']}_{r['dataset']}_{r['model']}"] = float(r["monotonicity_violation_rate"]) \
             if np.isfinite(r["monotonicity_violation_rate"]) else None
+    rows_tex = []
+    for _, r in d.iterrows():
+        raw = r["monotonicity_violation_rate"]
+        pl = r["monotonicity_violation_rate_platt"] if "monotonicity_violation_rate_platt" in d.columns else np.nan
+        setting = r["setting"]
+        if setting.startswith("transfer_"):
+            setting = "transfer (" + setting[len("transfer_"):] + " src)"
+        rows_tex.append(
+            f"{setting} & {r['dataset']} & {MODEL_LABEL.get(r['model'], r['model'])} & "
+            f"{raw:.3f} & {pl:.3f} \\\\")
+    save_fragment("tab_monotonicity.tex", "\n".join(rows_tex) + "\n")
+    return js
+
+
+def prognosis_table():
+    """Detection-vs-prognosis split: all-rows AUC vs SOH>0.80-at-score AUC."""
+    p = os.path.join(_RES, "prognosis_split.csv")
+    js = {}
+    if not os.path.exists(p):
+        return js
+    d = pd.read_csv(p)
+    TGT = {"severson": "Severson", "ba_nmc_hnei": "HNEI NMC",
+           "ba_nca_snl": "SNL NCA", "ba_nmc_snl": "SNL NMC",
+           "ba_lfp_snl": "SNL LFP", "nasa": "NASA (within)", "calce": "CALCE (within)"}
+    MDL = {"logreg": "SOH-dist rule", "gru": "GRU"}
+    FST = {"with_soh": "with SOH", "no_soh": "no SOH",
+           "common_with_soh": "common+SOH", "common_no_soh": "common, no SOH",
+           "base_soh_dist": "dist rule"}
+    rows_tex = []
+    sub = d[(d.H == 20) & (d["target"].isin(TGT)) & (~d["target"].isin(["nasa", "calce"]))].copy()
+    sub = sub[sub["source"] == "nasa+calce"]  # headline source; all sources stay in paper_numbers
+    order = {"severson": 0, "ba_nmc_hnei": 1, "ba_nca_snl": 2,
+             "ba_nmc_snl": 3, "ba_lfp_snl": 4}
+    sub["_o"] = sub["target"].map(order)
+    sub = sub.sort_values(by=["_o", "model", "fs"])
+    for _, r in sub.iterrows():
+        js[f"prog_{r['target']}_{r['source']}_{r['model']}_{r['fs']}_all"] = float(r["all_auc"])
+        js[f"prog_{r['target']}_{r['source']}_{r['model']}_{r['fs']}_prog"] = float(r["prog_auc"])
+        js[f"prog_{r['target']}_{r['source']}_{r['model']}_{r['fs']}_frac"] = float(r["frac_above"])
+        js[f"prog_{r['target']}_{r['source']}_{r['model']}_{r['fs']}_ci"] = [
+            float(r["prog_lo"]) if np.isfinite(r["prog_lo"]) else None,
+            float(r["prog_hi"]) if np.isfinite(r["prog_hi"]) else None]
+        rows_tex.append(
+            f"{TGT[r['target']]} & {MDL.get(r['model'], MODEL_LABEL.get(r['model'], r['model']))} & {FST.get(r['fs'], r['fs'])} & "
+            f"{f(r['all_auc'])} {ci(r['all_lo'], r['all_hi'])} & "
+            f"{f(r['prog_auc'])} {ci(r['prog_lo'], r['prog_hi'])} & "
+            f"{r['frac_above']:.2f} \\\\")
+    save_fragment("tab_prognosis.tex", "\n".join(rows_tex) + "\n")
     return js
 
 
@@ -444,7 +492,8 @@ def main():
     out = {}
     functions = [within_table, calibration_table, transfer_tables, ablation_table,
                  feature_ablation_table, faildef_table, samechem_table, hazard_table,
-                 baselines_table, operational_table, monotonicity_summary, recal_tables]
+                 baselines_table, operational_table, monotonicity_summary, prognosis_table,
+                 recal_tables]
     try:
         from make_tables_ba import (within_ba_table, crosschem_ba_table,
                                     samechem_ba_table, condshift_table, audit_numbers)
