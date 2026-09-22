@@ -442,9 +442,17 @@ def recal_tables():
 
 def main():
     out = {}
-    for fn in [within_table, calibration_table, transfer_tables, ablation_table,
-               feature_ablation_table, faildef_table, samechem_table, hazard_table,
-               baselines_table, operational_table, monotonicity_summary, recal_tables]:
+    functions = [within_table, calibration_table, transfer_tables, ablation_table,
+                 feature_ablation_table, faildef_table, samechem_table, hazard_table,
+                 baselines_table, operational_table, monotonicity_summary, recal_tables]
+    try:
+        from make_tables_ba import (within_ba_table, crosschem_ba_table,
+                                    samechem_ba_table, condshift_table, audit_numbers)
+        functions += [within_ba_table, crosschem_ba_table, samechem_ba_table,
+                      condshift_table, audit_numbers]
+    except ImportError as e:
+        print(f"SKIP Battery Archive tables: {e}")
+    for fn in functions:
         try:
             out.update(fn() or {})
         except FileNotFoundError as e:

@@ -36,12 +36,24 @@ TGT_LABEL = {"oxford": "Oxford", "severson": "Severson"}
 def collapse_map():
     tr = pd.read_csv(os.path.join(_RES, "transfer_trees.csv"))
     gru = pd.read_csv(os.path.join(_RES, "gru_transfer.csv"))
+    ba = pd.read_csv(os.path.join(_RES, "transfer_ba.csv"))
+    BA_TGT = ["ba_nmc_hnei", "ba_nca_snl", "ba_nmc_snl", "ba_lfp_snl"]
+    BA_LABEL = {"ba_nmc_hnei": "HNEI NMC", "ba_nca_snl": "SNL NCA",
+                "ba_nmc_snl": "SNL NMC", "ba_lfp_snl": "SNL LFP"}
     rows = TREE_ORDER + ["gru"]
     cols = [(s, t) for s in ["nasa", "calce", "nasa+calce"] for t in ["oxford", "severson"]]
+    cols += [("nasa+calce", t) for t in BA_TGT]
     M = np.full((len(rows), len(cols)), np.nan)
     for i, model in enumerate(rows):
         for j, (s, t) in enumerate(cols):
-            if model == "gru":
+            if t in BA_TGT:
+                if model == "gru":
+                    continue  # GRU not evaluated on the BA targets
+                w = ba[(ba.source == s) & (ba.target == t) & (ba.model == model) &
+                       (ba.feature_set == "with_soh") & (ba.H == 20)]["raw_AUC"].mean()
+                n = ba[(ba.source == s) & (ba.target == t) & (ba.model == model) &
+                       (ba.feature_set == "no_soh") & (ba.H == 20)]["raw_AUC"].mean()
+            elif model == "gru":
                 w = gru[(gru.source == s) & (gru.target == t) &
                         (gru.feature_set == "common_with_soh") & (gru.H == 20)]["raw_AUC"].mean()
                 n = gru[(gru.source == s) & (gru.target == t) &
@@ -53,17 +65,21 @@ def collapse_map():
                        (tr.feature_set == "no_soh") & (tr.H == 20)]["raw_AUC"].mean()
             if np.isfinite(w) and np.isfinite(n):
                 M[i, j] = w - n
-    fig, ax = plt.subplots(figsize=(7.2, 2.4))
+    labels = [f"{SRC_LABEL[s]}$\\to${TGT_LABEL[t]}" if t in TGT_LABEL
+              else f"ALL LCO$\\to${BA_LABEL[t]}" for s, t in cols]
+    fig, ax = plt.subplots(figsize=(10.0, 2.6))
     im = ax.imshow(M, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-    ax.set_xticks(range(len(cols)),
-                  [f"{SRC_LABEL[s]}$\\to${TGT_LABEL[t]}" for s, t in cols], rotation=20, ha="right")
+    ax.set_xticks(range(len(cols)), labels, rotation=22, ha="right", fontsize=8)
     ax.set_yticks(range(len(rows)), [TREE_LABEL[m] for m in rows])
     for i in range(len(rows)):
         for j in range(len(cols)):
             if np.isfinite(M[i, j]):
-                ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=8,
+                ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=7,
                         color="white" if abs(M[i, j]) > 0.6 else "black")
-    ax.set_title(r"$\Delta$AUC from removing SOH (with-SOH $-$ without-SOH), $H{=}20$")
+            else:
+                ax.text(j, i, "---", ha="center", va="center", fontsize=7, color="gray")
+    ax.set_title(r"$\Delta$AUC from removing SOH (with-SOH $-$ without-SOH), $H{=}20$"
+                 r" (right block: new Battery Archive targets)")
     fig.colorbar(im, ax=ax, fraction=0.02, label=r"$\Delta$AUC")
     fig.tight_layout()
     fig.savefig(os.path.join(_FIGS, "fig_collapse_map.png"), bbox_inches="tight")

@@ -1,0 +1,19 @@
+=== condition shift [ba_nca_snl] ===
+  temp_rate  leave-condition-out with_soh H=20: raw=0.989 dist_rule=0.987 cells=18 pos=5061
+  temp_rate  leave-condition-out no_soh   H=20: raw=0.894 dist_rule=0.987 cells=18 pos=5061
+  temp       leave-condition-out with_soh H=20: raw=0.989 dist_rule=0.987 cells=18 pos=5061
+  temp       leave-condition-out no_soh   H=20: raw=0.888 dist_rule=0.987 cells=18 pos=5061
+  rate       leave-condition-out with_soh H=20: raw=0.961 dist_rule=0.987 cells=18 pos=5061
+  rate       leave-condition-out no_soh   H=20: raw=0.820 dist_rule=0.987 cells=18 pos=5061
+=== condition shift [ba_nmc_snl] ===
+  temp_rate  leave-condition-out with_soh H=20: raw=0.847 dist_rule=0.886 cells=6 pos=1785
+  temp_rate  leave-condition-out no_soh   H=20: raw=0.666 dist_rule=0.886 cells=6 pos=1785
+  temp       leave-condition-out with_soh H=20: raw=0.787 dist_rule=0.886 cells=6 pos=1785
+  temp       leave-condition-out no_soh   H=20: raw=0.569 dist_rule=0.886 cells=6 pos=1785
+  rate       leave-condition-out with_soh H=20: raw=0.847 dist_rule=0.886 cells=6 pos=1785
+  rate       leave-condition-out no_soh   H=20: raw=0.666 dist_rule=0.886 cells=6 pos=1785
+=== condition shift [ba_lfp_snl] ===
+  temp_rate  leave-condition-out with_soh H=20: raw=0.991 dist_rule=0.996 cells=6 pos=2347
+  temp       leave-condition-out with_soh H=20: raw=0.995 dist_rule=0.999 cells=17 pos=2347
+  rate       leave-condition-out with_soh H=20: raw=0.994 dist_rule=0.998 cells=10 pos=2347
+saved results_v2/condition_shift.csv

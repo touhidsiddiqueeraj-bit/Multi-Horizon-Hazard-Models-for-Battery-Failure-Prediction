@@ -73,9 +73,11 @@ T["TAB_REC_A"] = lambda: frag("tab_rec_a.tex")
 T["TAB_REC_B"] = lambda: frag("tab_rec_b.tex")
 T["TAB_SOH_TESTS"] = lambda: frag("tab_soh_tests.tex")
 T["TAB_OPER"] = lambda: frag("tab_operational.tex")
+T["TAB_CROSSCHEM_NEW"] = lambda: frag("tab_crosschem_new.tex")
+T["TAB_CONDSHIFT"] = lambda: frag("tab_condshift.tex")
 
 # abstract / intro
-T["N_TARGETS"] = lambda: "two"
+T["N_TARGETS"] = lambda: "six"
 T["N_SEV"] = lambda: "141"
 T["WITHIN_MIN"] = lambda: rng([f"within_{d}_{m}" for d in ["nasa", "calce"]
                                for m in ["xgboost", "lightgbm", "random_forest"]], "mean_AUC")
@@ -168,6 +170,108 @@ T["OP_FNR_SEV_WITH"] = lambda: f"{100*j('op_severson_with_soh_raw')['fnr']:.0f}\
 T["OP_FPR_SEV_WITH"] = lambda: f"{100*j('op_severson_with_soh_raw')['fpr']:.0f}\\%"
 T["OP_FNR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fnr']:.0f}\\%"
 T["OP_FPR_SEV_NO"] = lambda: f"{100*j('op_severson_no_soh_raw')['fpr']:.0f}\\%"
+
+
+# ------------------------------------------------- Battery Archive extension
+def _ba(key, default=np.nan):
+    v = N.get(key, default)
+    if not np.isfinite(v):
+        raise KeyError(f"paper_numbers.json lacks key '{key}' (run make_tables_v2 first)")
+    return v
+
+
+def _ba_xfer(fs, key="pooled"):
+    """Values of a transfer metric across LCO -> {NCA, NMC, LFP-SNL} configs."""
+    vals = []
+    for grp in ["ba_nca_snl", "ba_nmc_snl", "ba_nmc_hnei", "ba_lfp_snl"]:
+        for m in ["xgboost", "lightgbm", "random_forest"]:
+            rec = N.get(f"xfer_ba_{grp}_nasa+calce_{m}_{fs}")
+            if rec is not None:
+                vals.append(float(rec[key]))
+    return vals
+
+
+def _ba_deltas():
+    vals = []
+    for grp in ["ba_nca_snl", "ba_nmc_snl", "ba_nmc_hnei", "ba_lfp_snl"]:
+        for m in ["xgboost", "lightgbm", "random_forest"]:
+            rec = N.get(f"xfer_ba_delta_{grp}_{m}")
+            if rec is not None:
+                vals.append(float(rec["delta"]))
+    return vals
+
+
+def _rng(vals, nd=2, space=","):
+    vals = [v for v in vals if np.isfinite(v)]
+    if not vals:
+        return "---"
+    return f"{min(vals):.{nd}f}{space}{max(vals):.{nd}f}"
+
+
+N_BA_WORDS = {15: "15", 18: "18", 21: "21", 60: "60", 106787: "106\\,787"}
+
+T["N_DATASETS"] = lambda: "eight"
+T["N_CHEM"] = lambda: "four"
+T["BA_CELLS_TOTAL"] = lambda: str(int(_ba("ba_cells_total")))
+T["BA_CELLS_NMC"] = lambda: str(int(_ba("ba_cells_ba_nmc_hnei") + _ba("ba_cells_ba_nmc_snl")))
+T["BA_CELLS_HNEI"] = lambda: str(int(_ba("ba_cells_ba_nmc_hnei")))
+T["BA_CELLS_NMCSNL"] = lambda: str(int(_ba("ba_cells_ba_nmc_snl")))
+T["BA_CELLS_AUDIT"] = lambda: str(int(_ba("ba_cells_total") + _ba("ba_cells_excluded")))
+T["BA_VOLT_FIRST"] = lambda: str(int(_ba("ba_volt_first")))
+T["BA_CELLS_NCA"] = lambda: str(int(_ba("ba_cells_ba_nca_snl")))
+T["BA_CELLS_LFP"] = lambda: str(int(_ba("ba_cells_ba_lfp_snl")))
+T["BA_CELLS_EXCLUDED"] = lambda: str(int(_ba("ba_cells_excluded")))
+T["BA_ROWS_TOTAL"] = lambda: N_BA_WORDS.get(int(_ba("ba_rows_total")),
+                                            f"{int(_ba('ba_rows_total')):,}".replace(",", "\\,"))
+T["BA_CYC_NMC"] = lambda: _rng([_ba("ba_cycles_min_ba_nmc_hnei"),
+                                _ba("ba_cycles_max_ba_nmc_hnei"),
+                                _ba("ba_cycles_min_ba_nmc_snl"),
+                                _ba("ba_cycles_max_ba_nmc_snl")], nd=0, space="--")
+T["BA_CYC_NMC_HNEI"] = lambda: _rng([_ba("ba_cycles_min_ba_nmc_hnei"),
+                                     _ba("ba_cycles_max_ba_nmc_hnei")], nd=0, space="--")
+T["BA_CYC_NMC_SNL"] = lambda: _rng([_ba("ba_cycles_min_ba_nmc_snl"),
+                                    _ba("ba_cycles_max_ba_nmc_snl")], nd=0, space="--")
+T["BA_CYC_NCA"] = lambda: _rng([_ba("ba_cycles_min_ba_nca_snl"),
+                                _ba("ba_cycles_max_ba_nca_snl")], nd=0, space="--")
+T["BA_CYC_LFP"] = lambda: _rng([_ba("ba_cycles_min_ba_lfp_snl"),
+                                _ba("ba_cycles_max_ba_lfp_snl")], nd=0, space="--")
+T["BA_EOL_CELLS"] = lambda: str(int(sum(float(_ba(f"ba_eol_cells_{g}")) for g in
+                                        ["ba_nmc_hnei", "ba_nca_snl", "ba_nmc_snl",
+                                         "ba_lfp_snl"])))
+T["BA_EOL_LFP"] = lambda: str(int(_ba("ba_eol_cells_ba_lfp_snl")))
+T["BA_PREV_NMC"] = lambda: f"{0.5*(float(_ba('ba_prev_ba_nmc_hnei_H20')) + float(_ba('ba_prev_ba_nmc_snl_H20'))):.2f}"
+T["BA_PREV_NCA"] = lambda: f"{float(_ba('ba_prev_ba_nca_snl_H20')):.2f}"
+T["BA_PREV_LFP"] = lambda: f"{float(_ba('ba_prev_ba_lfp_snl_H20')):.3f}"
+
+T["WITHIN_BA_TOTAL"] = lambda: str(int(_ba("within_ba_ge085")))
+T["WITHIN_BA_COMBOS"] = lambda: str(int(_ba("within_ba_total")))
+T["WITHIN_BA_GE085"] = lambda: str(int(_ba("within_ba_ge085")))
+T["WITHIN_BA_RANGE"] = lambda: _rng([_ba(f"within_ba_{g}_{m}_min", np.nan)
+                                     for g in ["ba_nca_snl", "ba_nmc_snl",
+                                               "ba_nmc_hnei", "ba_lfp_snl"]
+                                     for m in ["xgboost", "lightgbm",
+                                               "random_forest"]],
+                                    nd=2, space="--")
+T["XFER_BA_WITH"] = lambda: _rng(_ba_xfer("with_soh"), nd=2, space="--")
+T["XFER_BA_NO"] = lambda: _rng(_ba_xfer("no_soh"), nd=2, space="--")
+T["XFER_BA_COMMON_NO"] = lambda: _rng(_ba_xfer("common_no_soh"), nd=2, space="--")
+T["XFER_BA_DELTA"] = lambda: _rng(_ba_deltas(), nd=2, space="--")
+T["XFER_BA_DELTA_MIN"] = lambda: f"{min(_ba_deltas() or [np.nan]):+.2f}"
+T["COND_DROP_WITH_MAX"] = lambda: f"{float(_ba('condshift_drop_with_max')):.2f}"
+T["COND_DROP_NO_MAX"] = lambda: f"{float(_ba('condshift_drop_no_max')):.2f}"
+T["COND_NCA_TEMPRATE"] = lambda: f"{float(_ba('condshift_ba_nca_snl_temp_rate_with_soh')):.2f}"
+T["COND_NCA_TEMPRATE_NO"] = lambda: f"{float(_ba('condshift_ba_nca_snl_temp_rate_no_soh')):.2f}"
+T["COND_NCA_REF"] = lambda: f"{float(_ba('condshift_ref_ba_nca_snl_with_soh')):.2f}"
+T["COND_NMC_TEMPRATE"] = lambda: f"{float(_ba('condshift_ba_nmc_snl_temp_rate_with_soh')):.2f}"
+T["COND_NMC_TEMPRATE_NO"] = lambda: f"{float(_ba('condshift_ba_nmc_snl_temp_rate_no_soh')):.2f}"
+T["COND_DIST_MIN"] = lambda: f"{float(_ba('condshift_dist_min')):.3f}"
+T["COND_DIST_MAX"] = lambda: f"{float(_ba('condshift_dist_max')):.3f}"
+T["COND_NMC_MIXED"] = lambda: f"{float(_ba('condshift_ref_ba_nmc_snl_with_soh')):.2f}"
+T["BA_WITHIN_NMC_MIN"] = lambda: f"{float(_ba('within_ba_ba_nmc_snl_xgboost_min')):.2f}"
+T["SAME_LAB_NCA_NMC_WITH"] = lambda: f"{float(_ba('samechem_ba_ba_nca_snl_ba_nmc_snl_with_soh')):.2f}"
+T["SAME_LAB_NCA_NMC_NO"] = lambda: f"{float(_ba('samechem_ba_ba_nca_snl_ba_nmc_snl_no_soh')):.2f}"
+T["SAME_CHEM_LFP_SNL_SEV_WITH"] = lambda: f"{float(_ba('samechem_ba_ba_lfp_snl_severson_with_soh')):.2f}"
+T["SAME_CHEM_LFP_SNL_SEV_NO"] = lambda: f"{float(_ba('samechem_ba_ba_lfp_snl_severson_no_soh')):.2f}"
 
 
 def main():

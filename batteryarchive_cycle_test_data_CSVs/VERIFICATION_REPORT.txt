@@ -1,0 +1,17 @@
+================================================================================
+LAYER B: CSV <-> RAW API JSON fidelity (all 75 cells)
+  01_energy_and_capacity_decay.csv: 218,238 rows checked vs API, mismatches: 0
+  02_efficiencies.csv: 218,678 rows checked vs API, mismatches: 0
+  03_max_min_mean_voltage_by_cycle.csv: 218,917 rows checked vs API, mismatches: 0
+  04_charge_voltage_by_step.csv: 13,877 rows checked vs API, mismatches: 0
+  05_discharge_voltage_by_step.csv: 8,421 rows checked vs API, mismatches: 0
+================================================================================
+LAYER A: rendered chart traces <-> CSV (live page extraction)
+  01 Energy&Capacity (Cycle Index view): 872,746/872,746 points match, unmatched: 0 -> PASS
+  01 Energy&Capacity (Time Series view): 872,746/872,746 points match, unmatched: 0 -> PASS
+  02 Efficiencies: 437,356/437,356 points match, unmatched: 0 -> PASS (incl. 14 NaN-shown-as-0 by dashboard display option)
+  03 Max/Min/Mean Voltage: 874,203/874,203 points match, unmatched: 0 -> PASS
+  04 Charge Voltage by Step: 13,877/13,877 points match, unmatched: 0 -> PASS
+  05 Discharge Voltage by Step: 8,421/8,421 points match, unmatched: 0 -> PASS
+================================================================================
+VERIFICATION RESULT: LayerA(charts vs csv)=PASS, LayerB(csv vs raw api)=PASS

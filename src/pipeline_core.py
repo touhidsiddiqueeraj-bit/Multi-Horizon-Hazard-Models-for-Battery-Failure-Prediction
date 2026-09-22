@@ -27,6 +27,10 @@ _DATA_DIR = os.path.join(_HERE, "..", "data")
 _RESULTS_DIR = os.path.join(_HERE, "..", "results_v2")
 _PREDS_DIR = os.path.join(_HERE, "..", "results_v2", "preds")
 
+# One cleaned file holds every admitted Battery Archive cell; the dataset key
+# selects the subset (loader_batteryarchive.py writes the `dataset` column).
+BA_CLEAN = os.path.join(_DATA_DIR, "ba_clean.csv")
+
 FULL_FEATURES = ["cycle", "avg_voltage", "min_voltage", "avg_current", "avg_temp", "duration", "SOH"]
 SENSOR_FEATURES = ["avg_voltage", "min_voltage", "avg_current", "avg_temp", "duration"]
 COMMON_FEATURES_WITH_SOH = ["cycle", "avg_voltage", "min_voltage", "SOH"]
@@ -53,13 +57,36 @@ DATASETS = {
     "calce": os.path.join(_DATA_DIR, "calce_clean.csv"),
     "oxford": os.path.join(_DATA_DIR, "oxford_clean.csv"),
     "severson": os.path.join(_DATA_DIR, "severson_clean.csv"),
+    # Battery Archive chemistry extension: one cleaned file, subset by its
+    # `dataset` column (see loader_batteryarchive.py).
+    "ba_nmc_hnei": BA_CLEAN,
+    "ba_nca_snl": BA_CLEAN,
+    "ba_nmc_snl": BA_CLEAN,
+    "ba_lfp_snl": BA_CLEAN,
 }
+
+BA_DATASETS = ["ba_nmc_hnei", "ba_nca_snl", "ba_nmc_snl", "ba_lfp_snl"]
 
 LCO_SOURCES = {
     "nasa": ["nasa"],
     "calce": ["calce"],
     "nasa+calce": ["nasa", "calce"],
 }
+
+# Sources added with the Battery Archive extension. They are kept separate from
+# LCO_SOURCES so that the original LCO-only grids stay reproducible unchanged.
+BA_SOURCES = {
+    "ba_lfp_snl": ["ba_lfp_snl"],
+    "ba_nca_snl": ["ba_nca_snl"],
+    "ba_nmc_hnei": ["ba_nmc_hnei"],
+    "nmc_all": ["ba_nmc_hnei", "ba_nmc_snl"],
+    "ba_all": BA_DATASETS,
+}
+TRANSFER_SOURCES = {**LCO_SOURCES, **BA_SOURCES}
+
+# Transfer targets for the chemistry extension (LFP targets first for
+# comparability with the original tables).
+BA_TARGETS = ["oxford", "severson"] + BA_DATASETS
 
 
 def get_models():
@@ -83,7 +110,11 @@ def get_models():
 
 
 def load_clean(ds_name):
+    if ds_name not in DATASETS:
+        raise KeyError(f"unknown dataset {ds_name!r}")
     df = pd.read_csv(DATASETS[ds_name])
+    if ds_name in BA_DATASETS:
+        df = df[df["dataset"] == ds_name].copy()
     df = df.replace([np.inf, -np.inf], np.nan)
     df = df.dropna(subset=[c for c in REQUIRED_COLS if c in df.columns]).copy()
     df = df[(df["SOH"] > 0) & (df["SOH"] < 1.2)].copy()
@@ -95,8 +126,8 @@ def load_clean(ds_name):
 
 
 def load_source(source_key):
-    if source_key in LCO_SOURCES:
-        parts = [load_clean(n) for n in LCO_SOURCES[source_key]]
+    if source_key in TRANSFER_SOURCES:
+        parts = [load_clean(n) for n in TRANSFER_SOURCES[source_key]]
         return parts[0] if len(parts) == 1 else pd.concat(parts, ignore_index=True)
     if source_key in DATASETS:
         return load_clean(source_key)
