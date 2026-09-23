@@ -8,7 +8,7 @@ How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?**
 | File | Purpose |
 |---|---|
 | `main_condensed.tex` / `.pdf` | **Submission manuscript** (condensed, generated — do not hand-edit) |
-| `supplement.tex` / `.pdf` | Supplementary Material: 13 tables + 9 figures omitted for length |
+| `supplement.tex` / `.pdf` | Supplementary Material: 15 tables + 11 figures omitted for length |
 | `main_jest.tex` / `.pdf` | Full-length port (record only, NOT for submission) |
 | `figs/` (14 PNGs) | All figures |
 | `highlights.txt` | 3–5 Highlights bullets, each ≤ 85 chars (Elsevier mandatory file) |
@@ -43,7 +43,7 @@ then compile in `paper_jest/` with the repo LaTeX toolchain
 
 **Word-count status: 7,700 vs 6,000 guidance (~28% over).** Floats, abstract,
 keywords, and highlights comply. The manuscript was cut from ~13,700 words
-(full port) by moving 13 tables + 9 figures to the 14-page supplement; the
+(full port) by moving 15 tables + 11 figures to the 15-page supplement; the
 remaining prose is methods and kept-table explanations with little redundancy
 left. The cover letter discloses the overage and offers further condensation
 on editorial direction. Deeper cuts from here remove kept content (GRU/hazard

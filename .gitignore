@@ -43,6 +43,9 @@ hardware/.history/
 data/nasa/**
 data/calce/*.zip
 data/oxford/*.mat
+# Pooled prediction files (~7.5 GB, regenerable via src/prognosis_split.py inputs
+# and experiment scripts; CSVs + paper_numbers.json reproduce every table)
+results_v2/preds/
 !data/nasa/README.md
 !data/calce/README.md
 !data/oxford/README.md
