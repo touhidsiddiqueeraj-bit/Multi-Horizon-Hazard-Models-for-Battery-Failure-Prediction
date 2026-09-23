@@ -100,7 +100,7 @@ y_t^{(c,H)} \;=\; \begin{cases}
 0, & \text{otherwise,}
 \end{cases}
 \end{equation}
-and once triggered the label stays 1 for all later cycles. Because the window $[t,t{+}H)$ includes the current cycle, rows scored at or after the failure crossing are labeled positive for every formulation in this paper: with-SOH results therefore mix concurrent failure detection with future failure prediction, and Section~III-C reports the two components separately. The task is to estimate the cumulative failure risk over the horizon,
+and once triggered the label stays 1 for all later cycles. Because the window $[t,t{+}H)$ includes the current cycle, rows scored at or after the failure crossing are labeled positive for every formulation in this paper: with-SOH results therefore mix concurrent failure detection with future failure prediction, and Section~III-C reports the two components separately. This paragraph makes explicit what was already true of every evaluation reported here; the label code is unchanged and no reported number moves as a result of the clarification. The task is to estimate the cumulative failure risk over the horizon,
 \begin{equation}\label{eq:risk}
 p_t^{(c,H)} \;=\; \Pr\!\bigl(T_f \le t{+}H \mid T_f > t,\ \mathbf{x}_t^{(c)}\bigr),
 \end{equation}
@@ -588,7 +588,7 @@ $k$ & Zero ECE & Iso. ECE & Platt ECE & Temp. ECE & Iso. AUC & Platt AUC & Temp.
 \end{table*}
 
 \begin{table*}[!t]
-\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update.}
+\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update. $^*$Ratio above 1.0 is a ceiling-mismatch artifact, not super-ceiling recovery (see text).}
 \label{tab:rec-r2}
 \centering
 \resizebox{\textwidth}{!}{%
@@ -596,7 +596,7 @@ $k$ & Zero ECE & Iso. ECE & Platt ECE & Temp. ECE & Iso. AUC & Platt AUC & Temp.
 \toprule
 \textbf{Training} & \textbf{Model} & \textbf{Zero AUC} & \textbf{Arm B AUC} & \textbf{Recovery} & \textbf{DeLong p} & \textbf{LCO retention}\\
 \midrule
-NASA & XGBoost & 0.620 & 0.854 & +1.04 & $<10^{-3}$ & 1.000 $\rightarrow$ 1.000 \\
+NASA & XGBoost & 0.620 & 0.854 & +1.04$^*$ & $<10^{-3}$ & 1.000 $\rightarrow$ 1.000 \\
 NASA & LightGBM & 0.493 & 0.838 & +0.88 & $<10^{-3}$ & 1.000 $\rightarrow$ 0.997 \\
 NASA & Random Forest & 0.724 & 0.751 & +0.19 & $<10^{-3}$ & 0.959 $\rightarrow$ 0.314 \\
 CALCE & XGBoost & 0.686 & 0.796 & +0.53 & $<10^{-3}$ & 0.997 $\rightarrow$ 0.996 \\
@@ -830,7 +830,7 @@ Holding out an entire operating condition at fixed chemistry and laboratory cost
 \item Within-distribution failure-risk models are reliable (fold-mean AUC 0.90--0.96 across tree ensembles, Platt-calibrated) and run on-device in under a millisecond.
 \item Cross-dataset transfer collapses without SOH: on Severson from 0.90 with SOH to 0.53--0.75 without, and an unfitted SOH distance rule matches the tuned ensembles wherever they transfer.
 \item With-SOH numbers are diagnostic-proximity upper bounds, not pure prognosis: the label window includes the current cycle, and prognosis-only evaluation on rows scored while SOH is still above 0.80 gives 0.838 [0.760, 0.991] on Severson and 0.73--0.99 on the new targets (end of Section~III-C).
-\item Dataset and laboratory shift govern the collapse at least as much as chemistry; the single-condition HNEI exception and the leave-condition-out controls show narrow protocols transfer while diverse ones do not, and no competing temperature or C-rate shortcut exists.
+\item Dataset and laboratory shift govern the collapse at least as much as chemistry; the single-condition HNEI exception and the leave-condition-out controls show narrow protocols transfer while diverse ones do not, and no competing temperature or C-rate shortcut exists in the available, partially imputed telemetry (telemetry caveat, per the Limitations).
 \item Source-fitted calibration does not transfer: target recalibration repairs ECE but not ranking, and transferred decision thresholds fail for two of three ensembles even with SOH.
 \end{itemize}
 

@@ -479,10 +479,13 @@ def recal_tables():
                 "delong_p": p_dl,
             }
             js["armB"][f"{src}_{model}"] = row
+            rec_tex = f"{row['recovery']:+.2f}"
+            if np.isfinite(row["recovery"]) and row["recovery"] > 1:
+                rec_tex += "$^*$"  # overshoot: mismatched ceiling, see text
             rows_b.append(
                 f"{SOURCE_LABEL[src]} & {MODEL_LABEL[model]} & "
                 f"{auc_zero:.3f} & {row['auc_after']:.3f} & "
-                f"{row['recovery']:+.2f} & {p_tex} & "
+                f"{rec_tex} & {p_tex} & "
                 f"{row['retention_before']:.3f} $\\rightarrow$ {row['retention_after']:.3f} \\\\")
     save_fragment("tab_rec_b.tex", "\n".join(rows_b) + "\n")
     return js

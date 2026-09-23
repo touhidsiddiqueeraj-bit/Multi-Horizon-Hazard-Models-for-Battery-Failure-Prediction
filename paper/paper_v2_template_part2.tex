@@ -259,7 +259,7 @@ $k$ & Zero ECE & Iso. ECE & Platt ECE & Temp. ECE & Iso. AUC & Platt AUC & Temp.
 \end{table*}
 
 \begin{table*}[!t]
-\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update.}
+\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update. $^*$Ratio above 1.0 is a ceiling-mismatch artifact, not super-ceiling recovery (see text).}
 \label{tab:rec-r2}
 \centering
 \resizebox{\textwidth}{!}{%
@@ -452,7 +452,7 @@ Holding out an entire operating condition at fixed chemistry and laboratory cost
 \item Within-distribution failure-risk models are reliable (fold-mean AUC @@WITHIN_MIN@@ across tree ensembles, Platt-calibrated) and run on-device in under a millisecond.
 \item Cross-dataset transfer collapses without SOH: on Severson from @@XFER_WITH_SEV@@ with SOH to @@XFER_NO_SEV_MIN@@--@@XFER_NO_SEV_MAX@@ without, and an unfitted SOH distance rule matches the tuned ensembles wherever they transfer.
 \item With-SOH numbers are diagnostic-proximity upper bounds, not pure prognosis: the label window includes the current cycle, and prognosis-only evaluation on rows scored while SOH is still above 0.80 gives @@PROG_SEV@@ on Severson and @@PROG_BA@@ on the new targets (end of Section~III-C).
-\item Dataset and laboratory shift govern the collapse at least as much as chemistry; the single-condition HNEI exception and the leave-condition-out controls show narrow protocols transfer while diverse ones do not, and no competing temperature or C-rate shortcut exists.
+\item Dataset and laboratory shift govern the collapse at least as much as chemistry; the single-condition HNEI exception and the leave-condition-out controls show narrow protocols transfer while diverse ones do not, and no competing temperature or C-rate shortcut exists in the available, partially imputed telemetry (telemetry caveat, per the Limitations).
 \item Source-fitted calibration does not transfer: target recalibration repairs ECE but not ranking, and transferred decision thresholds fail for two of three ensembles even with SOH.
 \end{itemize}
 

@@ -100,7 +100,7 @@ y_t^{(c,H)} \;=\; \begin{cases}
 0, & \text{otherwise,}
 \end{cases}
 \end{equation}
-and once triggered the label stays 1 for all later cycles. Because the window $[t,t{+}H)$ includes the current cycle, rows scored at or after the failure crossing are labeled positive for every formulation in this paper: with-SOH results therefore mix concurrent failure detection with future failure prediction, and Section~III-C reports the two components separately. The task is to estimate the cumulative failure risk over the horizon,
+and once triggered the label stays 1 for all later cycles. Because the window $[t,t{+}H)$ includes the current cycle, rows scored at or after the failure crossing are labeled positive for every formulation in this paper: with-SOH results therefore mix concurrent failure detection with future failure prediction, and Section~III-C reports the two components separately. This paragraph makes explicit what was already true of every evaluation reported here; the label code is unchanged and no reported number moves as a result of the clarification. The task is to estimate the cumulative failure risk over the horizon,
 \begin{equation}\label{eq:risk}
 p_t^{(c,H)} \;=\; \Pr\!\bigl(T_f \le t{+}H \mid T_f > t,\ \mathbf{x}_t^{(c)}\bigr),
 \end{equation}
