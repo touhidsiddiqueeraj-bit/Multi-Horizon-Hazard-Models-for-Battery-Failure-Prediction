@@ -1,0 +1,5 @@
+Cross-dataset battery failure-risk transfer is mostly a health-state shortcut
+Removing SOH collapses transfer; a threshold rule matches tuned ensembles
+Dataset shift matters at least as much as chemistry shift for transfer
+Source-fitted calibration fails under shift; thresholds rarely transfer
+Tree ensembles deploy on a $12 microcontroller in under a millisecond

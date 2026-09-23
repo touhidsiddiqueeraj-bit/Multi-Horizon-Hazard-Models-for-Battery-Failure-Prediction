@@ -123,7 +123,7 @@ Diagnosis or prognosis? Because the label window includes the scoring cycle, row
 \label{tab:prog}
 \centering
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lllcccc}
+\begin{tabular}{lllccc}
 \toprule
 \textbf{Target} & \textbf{Model} & \textbf{Features} & \textbf{All rows} & \textbf{Prognosis-only} & \textbf{Frac.\ above}\\
 \midrule
@@ -259,7 +259,7 @@ $k$ & Zero ECE & Iso. ECE & Platt ECE & Temp. ECE & Iso. AUC & Platt AUC & Temp.
 \end{table*}
 
 \begin{table*}[!t]
-\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update. $^*$Ratio above 1.0 is a ceiling-mismatch artifact, not super-ceiling recovery (see text).}
+\caption{Arm B Recovery at $k=5$ on Severson Without SOH, $H=20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update. \textsuperscript{*}Ratio above 1.0 is a ceiling-mismatch artifact, not super-ceiling recovery (see text).}
 \label{tab:rec-r2}
 \centering
 \resizebox{\textwidth}{!}{%
@@ -376,7 +376,7 @@ The full 372 kB binary does not fit internal SRAM, whose free heap is roughly 32
 \label{tab:deploy}
 \centering
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccc}
 \toprule
 \textbf{Model} & \textbf{Nodes} & \textbf{Max Err} & \textbf{Flash} & \textbf{PSRAM} & \textbf{SRAM (1 model)}\\
 \midrule
@@ -421,7 +421,7 @@ With SOH available, transfer from the LCO sources spans pooled AUC @@XFER_BA_WIT
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
-\textbf{Target} & \textbf{Model} & \textbf{With SOH} & \textbf{Without SOH} & \textbf{$\Delta$ (paired)}\\
+\textbf{Target} & \textbf{Model} & \textbf{With SOH} & \textbf{Without SOH} & \textbf{Delta (paired)}\\
 \midrule
 @@TAB_CROSSCHEM_NEW@@
 \bottomrule
@@ -432,13 +432,13 @@ With SOH available, transfer from the LCO sources spans pooled AUC @@XFER_BA_WIT
 The same-chemistry controls of Section~III-G varied laboratory while holding chemistry fixed; here the complement is measured --- hold chemistry \emph{and} laboratory fixed and vary only the operating condition. For each SNL group (NCA, NMC, LFP), the test cell is chosen from an operating condition (temperature band, C-rate, or both) that contributes no training cell in that fold; metadata parsed from cell identifiers provides the condition labels and is never used as a feature. Table~\ref{tab:condshift} compares this leave-condition-out protocol with the ordinary mixed-cell folds on the same group.
 
 \begin{table}[!t]
-\caption{Leave-Condition-Out Versus Mixed-Cell Folds at H=20 (XGBoost). Conditions Are Temperature Band, C-Rate, or Both; Metadata Never Enters the Features.}
+\caption{Leave-Condition-Out Versus Mixed-Cell Folds at H=20 (XGBoost). Conditions Are Temperature Band, C-Rate, or Both; Metadata Never Enters the Features. Ref.\ Is the Ordinary Mixed-Cell AUC for the Same Feature Set (--- Where Unstable or Not Run).}
 \label{tab:condshift}
 \centering
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{llccc}
+\begin{tabular}{llcccc}
 \toprule
-\textbf{Group} & \textbf{Held-out axis} & \textbf{With SOH} & \textbf{No SOH} & \textbf{Ref.}\\
+\textbf{Group} & \textbf{Held-out axis} & \textbf{With SOH} & \textbf{Ref.} & \textbf{No SOH} & \textbf{Ref.}\\
 \midrule
 @@TAB_CONDSHIFT@@
 \bottomrule

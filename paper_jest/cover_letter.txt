@@ -1,0 +1,29 @@
+Dear Editor,
+
+We submit our manuscript "Multi-Horizon Failure-Risk Models for Battery
+Failure Prediction: How Much Cross-Chemistry Transfer Is a State-of-Health
+Shortcut?" for consideration as a Full Length Research Article in the
+Journal of Energy Storage.
+
+Instead of remaining-useful-life regression, we study multi-horizon
+failure-risk classification — whether a cell fails within the next H
+cycles — and subject it to a validity analysis across eight datasets
+(NASA, CALCE, Oxford, Severson, and 60 new Battery Archive NMC/NCA/LFP
+cells), four model families, leakage-clean calibration, and an ESP32-S3
+deployment. The central finding is a cautionary negative result: apparent
+cross-dataset transfer is largely a State-of-Health shortcut, reproducible
+by an unfitted threshold rule, while sensor features often invert under
+shift. Same-chemistry cross-laboratory controls show dataset shift matters
+at least as much as chemistry shift.
+
+The work has not been published elsewhere and is not under consideration
+by another journal. All authors approve the submission. We declare no
+competing interests. [FUNDING STATEMENT IF APPLICABLE.]
+
+Suggested reviewers: [NAME, AFFILIATION, EMAIL; ...]
+Excluded reviewers: [NAME, AFFILIATION — optional, with reason.]
+
+Sincerely,
+[CORRESPONDING AUTHOR NAME]
+[Affiliation, City, Country]
+[corresponding.author@example.com]
