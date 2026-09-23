@@ -54,6 +54,10 @@ arduino_firmware/bench/models_data.h
 
 # LaTeX build artifacts
 paper_ieee_access/*.aux
+paper_jest/*.aux
+paper_jest/*.log
+paper_jest/*.out
+paper_jest/*.spl
 paper_ieee_access/*.log
 paper_ieee_access/*.out
 paper_ieee_access/missfont.log
