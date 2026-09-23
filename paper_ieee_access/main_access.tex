@@ -39,7 +39,7 @@ Battery failure prediction, multi-horizon failure-risk classification, state-of-
 \emergencystretch=6em
 \makeatletter\def\UrlBreaks{\do\/\do\-}\makeatother
 \section{Introduction}
-Lithium-ion batteries sit underneath the electrification of transport and the decarbonization of grids, yet their long-term reliability remains hard to certify in the field. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression, in which a model predicts a continuous cycle count to end of life \cite{meng2019review}. RUL regression is appropriate for capacity-fade studies, but it answers a question operators rarely ask in real time: a battery management system needs to know whether a specific cell will survive the next mission, not how many cycles it has left in aggregate. Review studies group prior methods into physics-based, purely data-driven, and hybrid families \cite{meng2019review}. Tree ensembles, such as Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, and LightGBM \cite{ke2017lightgbm}, have been applied to capacity and RUL estimation, but their use for binary failure-risk classification at multiple horizons is recent \cite{shikdar2026learning}.
+Lithium-ion batteries sit underneath the electrification of transport and the decarbonization of grids, yet their long-term reliability remains hard to certify in the field. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression, in which a model predicts a continuous cycle count to end of life \cite{meng2019review,roman2021machine}. RUL regression is appropriate for capacity-fade studies, but it answers a question operators rarely ask in real time: a battery management system needs to know whether a specific cell will survive the next mission, not how many cycles it has left in aggregate. Predicting lifetime from field data rather than laboratory cycling remains an open challenge \cite{sulzer2021challenge}. Review studies group prior methods into physics-based, purely data-driven, and hybrid families \cite{meng2019review}. Tree ensembles, such as Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, and LightGBM \cite{ke2017lightgbm}, have been applied to capacity and RUL estimation, but their use for binary failure-risk classification at multiple horizons is recent \cite{shikdar2026learning}.
 
 Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-horizon failure-risk classification. For a given cycle $t$ and horizon $H$, the model predicts whether failure, defined as SOH below 0.80 or average voltage sag beyond 6\%, occurs within the next $H$ cycles. Their histogram-based gradient boosting model on the NASA 18650 set (37 LCO cells) reached AUC of 0.87--0.90 across $H \in \{10,20,30,50\}$. That work left three gaps open. First, one model on one dataset says nothing about sensitivity to the learner, the hyperparameters, or the calibration method. Second, no cross-dataset check existed, so nothing stopped a model trained on LCO cells from being trusted on LFP cells. Third, no path existed from a Python research prototype to the microcontroller where a battery management system actually runs.
 
@@ -114,13 +114,13 @@ Eight public aging datasets are used:
 \item \textbf{1) NASA 18650} \cite{saha2007battery}: 37 LCO cells aged under randomized charge--discharge profiles at room temperature, roughly 1~000 cycles per cell, with diverse failure modes;
 \item \textbf{2) CALCE LCO/CX2} \cite{calce2023battery}: 7 cells (CS2\_33--36, CX2\_36--38) at 1C/1C with per-cycle voltage, current, and capacity; per-cell ambient temperature and discharge duration are unlogged;
 \item \textbf{3) Oxford} \cite{birkl2017oxford}: 5 LFP pouch cells at 1C/1C under controlled temperature. The public release stores discharge summaries at roughly 100-cycle intervals, so after cleaning, 46--78 usable discharge cycles per cell remain (320 rows total);
-\item \textbf{4) MIT--Stanford Severson} \cite{severson2019data}: 141 LFP cells under a fast-charging protocol, 534--2~237 cycles each (about 117~000 in total);
-\item \textbf{5) HNEI NMC} \cite{batteryarchive2023}: 15 NMC 18650 cells cycled continuously at 25~$^\circ$C under a fixed charge protocol and mixed discharge C-rates, 1016--1064 cycles each --- all reaching the 80\% SOH end-of-life criterion;
-\item \textbf{6) SNL NCA} \cite{batteryarchive2023}: 18 NCA cells at 30~$^\circ$C across several C-rate combinations, 451--904 cycles each;
-\item \textbf{7) SNL NMC} \cite{batteryarchive2023}: 6 NMC 18650 cells at 25--40~$^\circ$C across mixed C-rates, 384--670 cycles each;
-\item \textbf{8) SNL LFP} \cite{batteryarchive2023}: 21 LFP cells cycled at 30--40~$^\circ$C, 3022--4544 cycles each, of which 5 reach 80\% SOH within the recorded window.
+\item \textbf{4) MIT--Stanford Severson} \cite{severson2019data,attia2020closedloop}: 141 LFP cells under a fast-charging protocol, 534--2~237 cycles each (about 117~000 in total);
+\item \textbf{5) HNEI NMC/LCO} \cite{batteryarchive2023}: 15 NMC/LCO-blend 18650 cells cycled continuously at 25~$^\circ$C under a fixed charge protocol and mixed discharge C-rates, 1016--1064 cycles each --- all reaching the 80\% SOH end-of-life criterion;
+\item \textbf{6) SNL NCA} \cite{batteryarchive2023,preger2020degradation}: 18 NCA cells at 15--35~$^\circ$C across several C-rate combinations, 451--904 cycles each;
+\item \textbf{7) SNL NMC} \cite{batteryarchive2023,preger2020degradation}: 6 NMC 18650 cells at 15--25~$^\circ$C across mixed C-rates, 384--670 cycles each;
+\item \textbf{8) SNL LFP} \cite{batteryarchive2023,preger2020degradation}: 21 LFP cells cycled at 15--35~$^\circ$C, 3022--4544 cycles each, of which 5 reach 80\% SOH within the recorded window.
 \end{itemize}
-Items 5--8 are distributed through the public Battery Archive \cite{batteryarchive2023} and are used here only as \emph{transfer targets} and for within-group controls; none of their cycles influences protocol or hyperparameter selection. The Battery Archive export provides per-cycle capacity and voltage summaries but, like CALCE, no per-cycle current or temperature columns, so the affected features are zero-imputed exactly like CALCE's, and the unit-safe common feature set is primary for these groups.
+Items 5--8 are the Battery Archive ``Cycle Test Data'' dashboard export \cite{batteryarchive2023} (retrieved September 2026; per-cycle capacity and voltage summaries), whose underlying SNL test matrix is documented by Preger et al.~\cite{preger2020degradation}; the groups are used here only as \emph{transfer targets} and for within-group controls; none of their cycles influences protocol or hyperparameter selection. The Battery Archive export provides per-cycle capacity and voltage summaries but, like CALCE, no per-cycle current or temperature columns, so the affected features are zero-imputed exactly like CALCE's, and the unit-safe common feature set is primary for these groups.
 
 A pre-registered cleaning rule, fixed before any model was trained on the new cells, admits a cell only if it passes: formation-cycle removal by low first-cycle coulombic efficiency, a Hampel despiking of the capacity trace, truncation at sustained level shifts in capacity (re-test or rest artifacts), per-cycle voltage validity, and a minimum of 20 usable cycles. Of 75 downloaded cells, 60 pass (15 + 6 NMC, 18 NCA, 21 LFP; 106\,787 cycle rows); the remaining 15 are excluded for exactly one recorded reason each (sustained-capacity level shifts, or windows that mix state-of-charge ranges) and are never used. On every admitted cell the SOH end-of-life crossing occurs no later than the voltage-sag crossing, so the composite failure label on the new groups is, in effect, the SOH criterion alone.
 
@@ -210,14 +210,7 @@ while XGBoost and LightGBM pass the summed score through a sigmoid,
 \begin{equation}\label{eq:sigmoid}
 p \;=\; \frac{1}{1+\exp\!\bigl(-\textstyle\sum_{t=1}^{T}\ell_t - s_0\bigr)},
 \end{equation}
-where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). Fig.~\ref{fig:circuit} shows the wiring. Three validation stages confirm correctness: a Python walker that mirrors the C logic and is compared against \texttt{predict\_proba()}, a cross-compiled C binary tested on desktop x86\_64, and on-target execution on an ESP32-S3-DevKitC-1 reading the binary from flash. All three must report maximum absolute error below $10^{-5}$ on every row before deployment is accepted.
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=0.85\textwidth]{circuit.png}
-\caption{Prototype wiring for the ESP32-S3 deployment. The battery discharges through the INA219 shunt into a load, the 2:1 divider senses cell voltage at ADC GPIO1, and I2C (GPIO8/9) serves the INA219 and DS3231 while OneWire (GPIO10) reads the DS18B20. The boards are a \$12 ESP32-S3-DevKitC-1 and two breakout modules.}
-\label{fig:circuit}
-\end{figure*}
+where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). Three validation stages confirm correctness: a Python walker that mirrors the C logic and is compared against \texttt{predict\_proba()}, a cross-compiled C binary tested on desktop x86\_64, and on-target execution on an ESP32-S3-DevKitC-1 reading the binary from flash. All three must report maximum absolute error below $10^{-5}$ on every row before deployment is accepted.
 \section{Results}
 
 \subsection{Within-Dataset Performance}
@@ -251,7 +244,7 @@ Hazard Logistic & CALCE & 0.979$\pm$0.042 & 0.948$\pm$0.119 & 0.936$\pm$0.138 & 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.62\textwidth]{Fig01_Within_Dataset_AUC.png}
-\caption{Within-dataset AUC heatmap, mean across horizons, Platt-calibrated. Right block: the four new Battery Archive groups (tree ensembles only; GRU and hazard models cover NASA/CALCE).}
+\caption{Within-dataset AUC heatmap for the tree ensembles, mean across horizons, Platt-calibrated. Right block: the four new Battery Archive groups. GRU and hazard within-dataset numbers are in Table~\ref{tab:within}.}
 \label{fig:within}
 \end{figure*}
 
@@ -347,7 +340,7 @@ ALL LCO & Random Forest & 0.581 [0.516,\,0.644] & 0.608$\pm$0.103 & 0.746 [0.673
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_collapse_map.png}
-\caption{Transferability collapse map at $H{=}20$: the AUC drop from removing SOH, per source$\to$target pair and model. Positive values mean SOH removal destroys apparent transfer performance; the near-uniform saturation at the maximum drop is the signature of a single-feature shortcut rather than of distributed degradation knowledge. Right block: ALL-LCO $\to$ new Battery Archive targets (trees only; GRU not evaluated there).}
+\caption{Transferability collapse map at $H{=}20$ for the tree ensembles: the AUC drop from removing SOH, per source$\to$target pair and model. Positive values mean SOH removal destroys apparent transfer performance; the near-uniform saturation at the maximum drop is the signature of a single-feature shortcut rather than of distributed degradation knowledge. Right block: ALL-LCO $\to$ new Battery Archive targets. GRU deltas are in the text and Table~\ref{tab:gru}.}
 \label{fig:collapse}
 \end{figure*}
 
@@ -764,12 +757,12 @@ All three & 26 336 & --- & 4.7 ms & 2.7 ms & ---\\
 \subsection{Replication on New Chemistries: NCA, NMC, and LFP Transfer Targets}
 The transfer claim is re-tested on 60 cells of NMC, NCA and LFP chemistry from two further laboratories (Battery Archive groups 5--8 of Section~II-B), with the LCO training pool and protocol untouched --- the new cells never enter model selection --- and the experiment run on the same protocol version as every result above. Fig.~\ref{fig:baquality} shows the post-cleaning capacity traces with the pre-registered audit decisions. Table~\ref{tab:crosschemnew} reports the NASA+CALCE $\rightarrow$ new-target transfer at $H{=}20$, with and without SOH, together with the paired cell-level bootstrap for the SOH ablation.
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{fig_ba_quality.png}
+\includegraphics[width=0.95\textwidth]{fig_ba_quality.png}
 \caption{Data audit of the Battery Archive groups after the pre-registered cleaning rule (formation-cycle drop, Hampel despiking, level-shift truncation, voltage validity, minimum 20 usable cycles): (a) admitted-cell capacity traces with the 80\% end-of-life criterion; (b) retained versus excluded cycles per group; (c) recorded exclusion reasons. Of 75 downloaded cells, 60 are admitted and 15 are excluded for exactly one recorded reason.}
 \label{fig:baquality}
-\end{figure}
+\end{figure*}
 
 With SOH available, transfer from the LCO sources spans pooled AUC 0.77--1.00 across the new targets --- the same upper-bound regime as Table~\ref{tab:crosswith}. Removing SOH drops transfer to 0.36--1.00, and the paired per-cell bootstrap puts the with-minus-without difference at 0.00--0.64 AUC across the three ensembles --- on the SNL groups the LCO-trained ensemble contributes nothing portable on NCA, NMC, or LFP chemistry from an unseen laboratory, exactly as it contributed nothing on the earlier LFP targets. The HNEI NMC group is the exception: full no-SOH transfer (cycle index included) stays at 0.99 pooled there. All 15 HNEI cells cycle under one condition and one fixed charge protocol, so cycle-index and voltage cues survive the laboratory change; this is the dataset-shift mechanism of Section~III-G operating in reverse --- narrow, stereotyped protocols transfer, diverse ones do not --- not chemistry-specific knowledge. The common-set column repeats the check on the unit-safe feature subset (Section~II-C), controlling for the structurally missing current and temperature columns of the export: the SNL collapse is not an artifact of the zero-imputed columns --- though only for the available telemetry, per the Limitations. On the new groups the voltage-sag endpoint never fires before the SOH endpoint (0 of 60 admitted cells), so the composite label is, effectively, the SOH criterion alone; the failure-definition ablation of Section~III-F therefore cannot be re-run on these targets, and all with-SOH numbers here are to be read as label-proximity upper bounds, as defined in Section~II-A.
 
@@ -885,6 +878,10 @@ This work received no external funding. The authors declare no conflicts of inte
 \bibitem{lundberg2020from} S. M. Lundberg, G. G. Erion, H. Chen, et al., ``From local explanations to global understanding with explainable AI for trees,'' \emph{Nat. Mach. Intell.}, vol. 2, no. 1, pp. 56--67, 2020.
 \bibitem{grzesik2024combining} P. Grzesik and D. Mrozek, ``Combining machine learning and edge computing: Opportunities, challenges, platforms, frameworks, and use cases,'' \emph{Electronics}, vol. 13, no. 3, Art. no. 640, 2024.
 \bibitem{gupta2023online} C. Gupta and A. Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc. ICML}, PMLR 202, 2023, pp. 12182--12204.
+\bibitem{preger2020degradation} Y. Preger, H. C. Barkholtz, A. Fresquez, et al., ``Degradation of commercial lithium-ion cells as a function of chemistry and cycling conditions,'' \emph{J. Electrochem. Soc.}, vol. 167, no. 12, Art. no. 120532, 2020.
+\bibitem{attia2020closedloop} P. M. Attia, A. Grover, N. Jin, et al., ``Closed-loop optimization of fast-charging protocols for batteries with machine learning,'' \emph{Nature}, vol. 578, no. 7795, pp. 397--402, 2020.
+\bibitem{sulzer2021challenge} V. Sulzer, P. Mohtat, A. Aitio, et al., ``The challenge and opportunity of battery lifetime prediction from field data,'' \emph{Joule}, vol. 5, no. 8, pp. 1934--1955, 2021.
+\bibitem{roman2021machine} D. Roman, S. Saxena, V. Robu, et al., ``Machine learning pipeline for battery state-of-health estimation,'' \emph{Nat. Mach. Intell.}, vol. 3, no. 4, pp. 447--456, 2021.
 \bibitem{delong1988comparing} E. R. DeLong, D. M. DeLong, and D. L. Clarke-Pearson, ``Comparing the areas under two or more correlated receiver operating characteristic curves: A nonparametric approach,'' \emph{Biometrics}, vol. 44, no. 3, pp. 837--845, 1988.
 \bibitem{shikdar2026robustness} T. A. Shikdar and H. Laaksonen, ``How far does the model hold? Robustness of multihorizon battery failure intelligence under realistic operating conditions,'' submitted for publication, 2026.
 \end{thebibliography}

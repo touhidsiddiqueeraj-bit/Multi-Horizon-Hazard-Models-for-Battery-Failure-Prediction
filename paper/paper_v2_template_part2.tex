@@ -20,7 +20,7 @@ Table~\ref{tab:within} summarizes within-dataset performance across the four hor
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.62\textwidth]{Fig01_Within_Dataset_AUC.png}
-\caption{Within-dataset AUC heatmap, mean across horizons, Platt-calibrated. Right block: the four new Battery Archive groups (tree ensembles only; GRU and hazard models cover NASA/CALCE).}
+\caption{Within-dataset AUC heatmap for the tree ensembles, mean across horizons, Platt-calibrated. Right block: the four new Battery Archive groups. GRU and hazard within-dataset numbers are in Table~\ref{tab:within}.}
 \label{fig:within}
 \end{figure*}
 
@@ -95,7 +95,7 @@ The GRU behaves no better, and its multi-seed evaluation (three seeds) shows tha
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_collapse_map.png}
-\caption{Transferability collapse map at $H{=}20$: the AUC drop from removing SOH, per source$\to$target pair and model. Positive values mean SOH removal destroys apparent transfer performance; the near-uniform saturation at the maximum drop is the signature of a single-feature shortcut rather than of distributed degradation knowledge. Right block: ALL-LCO $\to$ new Battery Archive targets (trees only; GRU not evaluated there).}
+\caption{Transferability collapse map at $H{=}20$ for the tree ensembles: the AUC drop from removing SOH, per source$\to$target pair and model. Positive values mean SOH removal destroys apparent transfer performance; the near-uniform saturation at the maximum drop is the signature of a single-feature shortcut rather than of distributed degradation knowledge. Right block: ALL-LCO $\to$ new Battery Archive targets. GRU deltas are in the text and Table~\ref{tab:gru}.}
 \label{fig:collapse}
 \end{figure*}
 
@@ -405,12 +405,12 @@ All three & 26 336 & --- & 4.7 ms & 2.7 ms & ---\\
 \subsection{Replication on New Chemistries: NCA, NMC, and LFP Transfer Targets}
 The transfer claim is re-tested on @@BA_CELLS_TOTAL@@ cells of NMC, NCA and LFP chemistry from two further laboratories (Battery Archive groups 5--8 of Section~II-B), with the LCO training pool and protocol untouched --- the new cells never enter model selection --- and the experiment run on the same protocol version as every result above. Fig.~\ref{fig:baquality} shows the post-cleaning capacity traces with the pre-registered audit decisions. Table~\ref{tab:crosschemnew} reports the NASA+CALCE $\rightarrow$ new-target transfer at $H{=}20$, with and without SOH, together with the paired cell-level bootstrap for the SOH ablation.
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{fig_ba_quality.png}
+\includegraphics[width=0.95\textwidth]{fig_ba_quality.png}
 \caption{Data audit of the Battery Archive groups after the pre-registered cleaning rule (formation-cycle drop, Hampel despiking, level-shift truncation, voltage validity, minimum 20 usable cycles): (a) admitted-cell capacity traces with the 80\% end-of-life criterion; (b) retained versus excluded cycles per group; (c) recorded exclusion reasons. Of @@BA_CELLS_AUDIT@@ downloaded cells, @@BA_CELLS_TOTAL@@ are admitted and @@BA_CELLS_EXCLUDED@@ are excluded for exactly one recorded reason.}
 \label{fig:baquality}
-\end{figure}
+\end{figure*}
 
 With SOH available, transfer from the LCO sources spans pooled AUC @@XFER_BA_WITH@@ across the new targets --- the same upper-bound regime as Table~\ref{tab:crosswith}. Removing SOH drops transfer to @@XFER_BA_NO@@, and the paired per-cell bootstrap puts the with-minus-without difference at @@XFER_BA_DELTA@@ AUC across the three ensembles --- on the SNL groups the LCO-trained ensemble contributes nothing portable on NCA, NMC, or LFP chemistry from an unseen laboratory, exactly as it contributed nothing on the earlier LFP targets. The HNEI NMC group is the exception: full no-SOH transfer (cycle index included) stays at 0.99 pooled there. All 15 HNEI cells cycle under one condition and one fixed charge protocol, so cycle-index and voltage cues survive the laboratory change; this is the dataset-shift mechanism of Section~III-G operating in reverse --- narrow, stereotyped protocols transfer, diverse ones do not --- not chemistry-specific knowledge. The common-set column repeats the check on the unit-safe feature subset (Section~II-C), controlling for the structurally missing current and temperature columns of the export: the SNL collapse is not an artifact of the zero-imputed columns --- though only for the available telemetry, per the Limitations. On the new groups the voltage-sag endpoint never fires before the SOH endpoint (@@BA_VOLT_FIRST@@ of @@BA_CELLS_TOTAL@@ admitted cells), so the composite label is, effectively, the SOH criterion alone; the failure-definition ablation of Section~III-F therefore cannot be re-run on these targets, and all with-SOH numbers here are to be read as label-proximity upper bounds, as defined in Section~II-A.
 
@@ -507,6 +507,10 @@ This work received no external funding. The authors declare no conflicts of inte
 \bibitem{lundberg2020from} S. M. Lundberg, G. G. Erion, H. Chen, et al., ``From local explanations to global understanding with explainable AI for trees,'' \emph{Nat. Mach. Intell.}, vol. 2, no. 1, pp. 56--67, 2020.
 \bibitem{grzesik2024combining} P. Grzesik and D. Mrozek, ``Combining machine learning and edge computing: Opportunities, challenges, platforms, frameworks, and use cases,'' \emph{Electronics}, vol. 13, no. 3, Art. no. 640, 2024.
 \bibitem{gupta2023online} C. Gupta and A. Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc. ICML}, PMLR 202, 2023, pp. 12182--12204.
+\bibitem{preger2020degradation} Y. Preger, H. C. Barkholtz, A. Fresquez, et al., ``Degradation of commercial lithium-ion cells as a function of chemistry and cycling conditions,'' \emph{J. Electrochem. Soc.}, vol. 167, no. 12, Art. no. 120532, 2020.
+\bibitem{attia2020closedloop} P. M. Attia, A. Grover, N. Jin, et al., ``Closed-loop optimization of fast-charging protocols for batteries with machine learning,'' \emph{Nature}, vol. 578, no. 7795, pp. 397--402, 2020.
+\bibitem{sulzer2021challenge} V. Sulzer, P. Mohtat, A. Aitio, et al., ``The challenge and opportunity of battery lifetime prediction from field data,'' \emph{Joule}, vol. 5, no. 8, pp. 1934--1955, 2021.
+\bibitem{roman2021machine} D. Roman, S. Saxena, V. Robu, et al., ``Machine learning pipeline for battery state-of-health estimation,'' \emph{Nat. Mach. Intell.}, vol. 3, no. 4, pp. 447--456, 2021.
 \bibitem{delong1988comparing} E. R. DeLong, D. M. DeLong, and D. L. Clarke-Pearson, ``Comparing the areas under two or more correlated receiver operating characteristic curves: A nonparametric approach,'' \emph{Biometrics}, vol. 44, no. 3, pp. 837--845, 1988.
 \bibitem{shikdar2026robustness} T. A. Shikdar and H. Laaksonen, ``How far does the model hold? Robustness of multihorizon battery failure intelligence under realistic operating conditions,'' submitted for publication, 2026.
 \end{thebibliography}
