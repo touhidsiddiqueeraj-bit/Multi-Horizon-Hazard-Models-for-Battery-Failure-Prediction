@@ -65,12 +65,12 @@ def collapse_map():
               else f"ALL LCO$\\to${BA_LABEL[t]}" for s, t in cols]
     fig, ax = plt.subplots(figsize=(10.0, 2.2))
     im = ax.imshow(M, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-    ax.set_xticks(range(len(cols)), labels, rotation=22, ha="right", fontsize=8)
+    ax.set_xticks(range(len(cols)), labels, rotation=22, ha="right", fontsize=10)
     ax.set_yticks(range(len(rows)), [TREE_LABEL[m] for m in rows])
     for i in range(len(rows)):
         for j in range(len(cols)):
-            ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=8,
-                    color="white" if abs(M[i, j]) > 0.6 else "black")
+            ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=11,
+                        color="white" if abs(M[i, j]) > 0.6 else "black")
     ax.set_title(r"$\Delta$AUC from removing SOH (with-SOH $-$ without-SOH), $H{=}20$"
                  r" (right block: new Battery Archive targets)")
     fig.colorbar(im, ax=ax, fraction=0.02, label=r"$\Delta$AUC")
@@ -101,7 +101,7 @@ def reliability():
     ax.set_xlabel("mean predicted probability")
     ax.set_ylabel("observed failure frequency")
     ax.set_title("(a) Within CALCE, XGBoost, $H{=}20$\n(cross-fitted calibration)")
-    ax.legend(fontsize=7, loc="upper left")
+    ax.legend(fontsize=10, loc="upper left")
     ax = axes[1]
     d = load_preds("transfer_severson_nasa+calce_no_soh_xgboost_H20.csv")
     y = d["y"].to_numpy()
@@ -112,7 +112,7 @@ def reliability():
     ax.set_xlabel("mean predicted probability")
     ax.set_ylabel("observed failure frequency")
     ax.set_title("(b) ALL LCO $\\to$ Severson, no SOH, $H{=}20$\n(calibration does not transfer)")
-    ax.legend(fontsize=7, loc="upper left")
+    ax.legend(fontsize=10, loc="upper left")
     fig.tight_layout()
     fig.savefig(os.path.join(_FIGS, "fig_reliability_v2.png"), bbox_inches="tight")
     plt.close(fig)
@@ -133,7 +133,7 @@ def prauc_horizon():
     ax.set_xlabel("horizon $H$ (cycles)")
     ax.set_ylabel("PR-AUC (raw scores)")
     ax.set_title("Within-dataset PR-AUC vs horizon")
-    ax.legend(fontsize=6)
+    ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(os.path.join(_FIGS, "fig_prauc_horizon.png"), bbox_inches="tight")
     plt.close(fig)
@@ -154,7 +154,7 @@ def netbenefit():
     ax.set_xlabel("threshold $p_t$")
     ax.set_ylabel("net benefit")
     ax.set_title("Decision curve, ALL LCO$\\to$Severson, no SOH, $H{=}20$")
-    ax.legend(fontsize=7)
+    ax.legend(fontsize=9)
     fig.tight_layout()
     fig.savefig(os.path.join(_FIGS, "fig_netbenefit.png"), bbox_inches="tight")
     plt.close(fig)

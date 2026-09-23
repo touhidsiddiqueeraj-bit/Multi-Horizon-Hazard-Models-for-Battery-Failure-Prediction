@@ -50,8 +50,43 @@ def main():
     body = body.replace("\\end{figure*}", "\\end{figure}")
     body = body.replace("\\begin{table*}", "\\begin{table}")
     body = body.replace("\\end{table*}", "\\end{table}")
+    # Width overrides for the 1-column preprint layout: small-source figures
+    # would print with sub-7pt type at their IEEE widths.
+    body = body.replace(
+        "\\includegraphics[width=0.62\\textwidth]{Fig01_Within_Dataset_AUC.png}",
+        "\\includegraphics[width=1.0\\textwidth]{Fig01_Within_Dataset_AUC.png}")
+    body = body.replace(
+        "\\includegraphics[width=\\columnwidth]{fig_prauc_horizon.png}",
+        "\\includegraphics[width=0.65\\textwidth]{fig_prauc_horizon.png}")
+    body = body.replace(
+        "\\includegraphics[width=0.5\\textwidth]{fig_netbenefit.png}",
+        "\\includegraphics[width=0.75\\textwidth]{fig_netbenefit.png}")
 
     used_figs = sorted(set(re.findall(r"\\includegraphics\[[^\]]*\]\{(.+?)\}", body)))
+
+    # Reorder bibitems into first-citation order (manual thebibliography
+    # numbers by list position, so list order must match citation order).
+    cited = []
+    for m in re.finditer(r"\\cite\{([^}]+)\}", body):
+        for key in m.group(1).split(","):
+            key = key.strip()
+            if key and key not in cited:
+                cited.append(key)
+    parts = re.findall(r"(\\bibitem\{(.*?)\}.*?)(?=\\bibitem\{|\Z)", bib, re.S)
+    by_key = {}
+    for b, k in parts:
+        b = b.split("\\end{thebibliography}")[0]  # last match swallows the env end
+        by_key[k] = b
+    missing = [k for k in cited if k not in by_key]
+    if missing:
+        print(f"WARNING: cited keys without bibitem: {missing}", file=sys.stderr)
+    ordered = [by_key[k] for k in cited if k in by_key]
+    ordered += [b for b, k in parts if k not in cited]
+    n_entries = len(re.findall(r"\\bibitem\{", bib))
+    bib = ("\\begin{thebibliography}{99}\n"
+           + "\n".join(b.strip() for b in ordered) + "\n"
+           + "\\end{thebibliography}")
+    assert len(cited) <= n_entries, "more cited keys than bibitems"
 
     out = (
         "\\documentclass[preprint,12pt]{elsarticle}\n"
@@ -59,6 +94,9 @@ def main():
         "\\usepackage{booktabs}\n"
         "\\usepackage{graphicx}\n"
         "\\usepackage[colorlinks=true]{hyperref}\n"
+        # The ported body cites sections by IEEE Roman numbers (II-A, III-C…).
+        "\\renewcommand{\\thesection}{\\Roman{section}}\n"
+        "\\renewcommand{\\thesubsection}{\\thesection-\\Alph{subsection}}\n"
         "\\graphicspath{{./figs/}}\n"
         "\\begin{document}\n"
         "\\begin{frontmatter}\n"

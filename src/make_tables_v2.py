@@ -208,8 +208,8 @@ def feature_ablation_table():
     rows_tex = []
     for fs in ["full", "no_soh", "no_cycle", "no_soh_no_cycle", "soh_only", "cycle_only", "sensors_only"]:
         cells = [FEATSET_LABEL[fs]]
-        for source in ["nasa", "calce", "nasa+calce"]:
-            for tgt in ["oxford", "severson"]:
+        for tgt in ["oxford", "severson"]:
+            for source in ["nasa", "calce", "nasa+calce"]:
                 r = d[(d.feature_set == fs) & (d.source == source) & (d.target == tgt) & (d.H == 20)]
                 if len(r) == 0:
                     cells.append("---")
@@ -230,10 +230,12 @@ def faildef_table():
     d = pd.read_csv(p)
     dtr = d[d.source.notna()]
     dwithin = d[d.source.isna()] if "source" in d.columns else d.iloc[0:0]
-    for _, r in dwithin.iterrows():
-        auc = r.get("AUC", np.nan)
-        if "endpoint" in r and np.isfinite(auc):
-            js[f"faildefwithin_{r['endpoint']}_{r['dataset']}_{r['feature_set']}"] = float(auc)
+    for (endpoint, dataset, fs), g in dwithin.groupby(["endpoint", "dataset", "feature_set"]):
+        vals = pd.to_numeric(g["AUC"], errors="coerce").dropna()
+        if len(vals) == 0:
+            continue
+        auc = float(vals.mean())  # repeated runs: mean, not last-row-wins
+        js[f"faildefwithin_{endpoint}_{dataset}_{fs}"] = auc
     d = dtr  # transfer rows only
     rows_tex = []
     endpoint_label = {"combined": "Combined (SOH or sag)",
@@ -323,8 +325,8 @@ def baselines_table():
                 "soh_cycle": "SOH + cycle", "sensors": "sensors only", "full": "full (7 feats)"}
     for b in ["soh_dist", "soh_only", "cycle_only", "soh_cycle", "sensors", "full"]:
         cells = [bl_label[b]]
-        for source in ["nasa", "calce", "nasa+calce"]:
-            for tgt in ["oxford", "severson"]:
+        for tgt in ["oxford", "severson"]:
+            for source in ["nasa", "calce", "nasa+calce"]:
                 r = d[(d.baseline == b) & (d.source == source) & (d.target == tgt) & (d.H == 20)]
                 if len(r) == 0:
                     cells.append("---")
@@ -383,6 +385,7 @@ def monotonicity_summary():
         rows_tex.append(
             f"{setting} & {r['dataset']} & {MODEL_LABEL.get(r['model'], r['model'])} & "
             f"{raw:.3f} & {pl:.3f} \\\\")
+    rows_tex.append("--- & --- & Survival product & 0.000 & 0.000 \\\\")
     save_fragment("tab_monotonicity.tex", "\n".join(rows_tex) + "\n")
     return js
 
@@ -400,7 +403,7 @@ def prognosis_table():
     MDL = {"logreg": "SOH-dist rule", "gru": "GRU"}
     FST = {"with_soh": "with SOH", "no_soh": "no SOH",
            "common_with_soh": "common+SOH", "common_no_soh": "common, no SOH",
-           "base_soh_dist": "dist rule"}
+           "base_soh_dist": "dist rule", "base_soh_only": "SOH-only"}
     rows_tex = []
     sub = d[(d.H == 20) & (d["target"].isin(TGT)) & (~d["target"].isin(["nasa", "calce"]))].copy()
     sub = sub[sub["source"] == "nasa+calce"]  # headline source; all sources stay in paper_numbers
@@ -481,7 +484,7 @@ def recal_tables():
             js["armB"][f"{src}_{model}"] = row
             rec_tex = f"{row['recovery']:+.2f}"
             if np.isfinite(row["recovery"]) and row["recovery"] > 1:
-                rec_tex += "$^*$"  # overshoot: mismatched ceiling, see text
+                rec_tex += "\\textsuperscript{*}"  # overshoot: mismatched ceiling, see text
             rows_b.append(
                 f"{SOURCE_LABEL[src]} & {MODEL_LABEL[model]} & "
                 f"{auc_zero:.3f} & {row['auc_after']:.3f} & "

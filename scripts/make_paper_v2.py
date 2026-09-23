@@ -249,10 +249,12 @@ def _ba(key, default=np.nan):
     return v
 
 
-def _ba_xfer(fs, key="pooled"):
+def _ba_xfer(fs, key="pooled", skip_hnei=False):
     """Values of a transfer metric across LCO -> {NCA, NMC, LFP-SNL} configs."""
     vals = []
     for grp in ["ba_nca_snl", "ba_nmc_snl", "ba_nmc_hnei", "ba_lfp_snl"]:
+        if skip_hnei and grp == "ba_nmc_hnei":
+            continue
         for m in ["xgboost", "lightgbm", "random_forest"]:
             rec = N.get(f"xfer_ba_{grp}_nasa+calce_{m}_{fs}")
             if rec is not None:
@@ -260,9 +262,11 @@ def _ba_xfer(fs, key="pooled"):
     return vals
 
 
-def _ba_deltas():
+def _ba_deltas(skip_hnei=False):
     vals = []
     for grp in ["ba_nca_snl", "ba_nmc_snl", "ba_nmc_hnei", "ba_lfp_snl"]:
+        if skip_hnei and grp == "ba_nmc_hnei":
+            continue
         for m in ["xgboost", "lightgbm", "random_forest"]:
             rec = N.get(f"xfer_ba_delta_{grp}_{m}")
             if rec is not None:
@@ -325,6 +329,8 @@ T["XFER_BA_WITH"] = lambda: _rng(_ba_xfer("with_soh"), nd=2, space="--")
 T["XFER_BA_NO"] = lambda: _rng(_ba_xfer("no_soh"), nd=2, space="--")
 T["XFER_BA_COMMON_NO"] = lambda: _rng(_ba_xfer("common_no_soh"), nd=2, space="--")
 T["XFER_BA_DELTA"] = lambda: _rng(_ba_deltas(), nd=2, space="--")
+T["XFER_BA_NO_SNL"] = lambda: _rng(_ba_xfer("no_soh", skip_hnei=True), nd=2, space="--")
+T["XFER_BA_DELTA_SNL"] = lambda: _rng(_ba_deltas(skip_hnei=True), nd=2, space="--")
 T["XFER_BA_DELTA_MIN"] = lambda: f"{min(_ba_deltas() or [np.nan]):+.2f}"
 T["COND_DROP_WITH_MAX"] = lambda: f"{float(_ba('condshift_drop_with_max')):.2f}"
 T["COND_DROP_NO_MAX"] = lambda: f"{float(_ba('condshift_drop_no_max')):.2f}"

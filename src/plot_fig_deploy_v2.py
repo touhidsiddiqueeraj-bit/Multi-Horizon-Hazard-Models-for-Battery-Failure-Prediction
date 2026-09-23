@@ -30,16 +30,16 @@ from matplotlib.lines import Line2D
 handles, labels_ = ax.get_legend_handles_labels()
 handles.append(Line2D([0], [0], color="#348ABD", ls="--", lw=0.8))
 labels_.append("all three, PSRAM")
-ax.legend(handles, labels_, fontsize=6.5, frameon=False, loc="upper left")
-ax.set_xticks(x, ["XGBoost", "LightGBM", "Rand.\nForest"], fontsize=8)
-ax.set_ylabel("single-row inference (ms)", fontsize=8)
-ax.set_title("(a) ESP32-S3 latency at 240 MHz", fontsize=9)
-ax.legend(handles, labels_, fontsize=6.5, frameon=False, loc="upper left")
+ax.legend(handles, labels_, fontsize=11, frameon=False, loc="upper left")
+ax.set_xticks(x, ["XGBoost", "LightGBM", "Rand.\nForest"], fontsize=10)
+ax.set_ylabel("single-row inference (ms)", fontsize=10)
+ax.set_title("(a) ESP32-S3 latency at 240 MHz", fontsize=11)
+ax.legend(handles, labels_, fontsize=11, frameon=False, loc="upper left")
 ax.tick_params(axis="y", labelsize=7)
 for i in range(3):
     for k, vals in enumerate([flash, psram, sram]):
         ax.text(i + (k - 1) * w, vals[i] + 0.04, f"{vals[i]:.2f}",
-                ha="center", fontsize=5.6)
+                ha="center", fontsize=10)
 
 ax = axes[1]
 shares = [v / FREE_SRAM * 100 for v in kb] + [sum(kb) / FREE_SRAM * 100]
@@ -47,19 +47,19 @@ labels = ["XGBoost", "LightGBM", "Rand.\nForest", "All three"]
 barcolors = colors + ["#888888"]
 bars = ax.bar(np.arange(4), shares, 0.55, color=barcolors)
 ax.axhline(100, color="black", ls="--", lw=0.9)
-ax.text(-0.42, 104, "free SRAM limit (320 kB)", fontsize=6.5, va="bottom")
+ax.text(-0.42, 104, "free SRAM limit (320 kB)", fontsize=11, va="bottom")
 for i, (b, v) in enumerate(zip(bars, shares)):
     inside = v > 55
     ax.text(b.get_x() + b.get_width() / 2,
             (v - 6) if inside else (v + 3),
             f"{v:.0f}%\n({kb[i] if i < 3 else 372} kB)",
-            ha="center", fontsize=6.2,
+            ha="center", fontsize=10,
             va="top" if inside else "bottom",
             color="white" if inside else "black")
-ax.set_xticks(np.arange(4), labels, fontsize=7.5)
-ax.set_ylabel("share of ~320 kB free SRAM (%)", fontsize=8)
+ax.set_xticks(np.arange(4), labels, fontsize=11)
+ax.set_ylabel("share of ~320 kB free SRAM (%)", fontsize=10)
 ax.set_ylim(0, 132)
-ax.set_title("(b) binary footprint vs. SRAM budget", fontsize=9)
+ax.set_title("(b) binary footprint vs. SRAM budget", fontsize=11)
 ax.tick_params(axis="y", labelsize=7)
 fig.tight_layout(pad=1.4, rect=(0, 0.02, 1, 1))
 fig.savefig(os.path.join(_FIGS, "fig_deploy.png"), bbox_inches="tight", dpi=150)

@@ -40,13 +40,13 @@ assert np.isfinite(M).all(), f"heatmap has blank cells: {M!r}"
 fig, ax = plt.subplots(figsize=(7.0, 2.2))
 im = ax.imshow(M, cmap="viridis", vmin=0.8, vmax=1.0, aspect="auto")
 ax.set_xticks(range(len(cols)), ["NASA 18650", "CALCE"] + [BA_LABEL[c] for c in BA_COLS],
-              rotation=18, ha="right", fontsize=8)
-ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=8)
+              rotation=18, ha="right", fontsize=10)
+ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=10)
 for i in range(len(rows)):
     for j in range(len(cols)):
-        ax.text(j, i, f"{M[i, j]:.3f}", ha="center", va="center", fontsize=8,
+        ax.text(j, i, f"{M[i, j]:.3f}", ha="center", va="center", fontsize=10,
                 color="white" if M[i, j] < 0.93 else "black")
-ax.set_title("Fold-mean AUC, mean over horizons\n(Platt-calibrated)", fontsize=9)
+ax.set_title("Fold-mean AUC, mean over horizons\n(Platt-calibrated)", fontsize=11)
 fig.colorbar(im, ax=ax, fraction=0.046, label="AUC")
 fig.tight_layout()
 fig.savefig(os.path.join(_FIGS, "Fig01_Within_Dataset_AUC.png"), bbox_inches="tight", dpi=150)
