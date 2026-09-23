@@ -48,7 +48,7 @@ This paper begins from those gaps but is organized around a sharper validity que
 Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al. \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al. \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting} and imbalanced data \cite{huang2020experimental}, but no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
 
 \begin{table*}[!t]
-\caption{Comparison of Representative Battery Studies With This Work}
+\caption{Comparison of Representative Battery Studies With This Work.}
 \label{tab:lit}
 \centering
 \footnotesize

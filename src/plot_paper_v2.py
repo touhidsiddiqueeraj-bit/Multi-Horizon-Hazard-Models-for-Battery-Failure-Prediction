@@ -24,7 +24,7 @@ _RES = os.path.join(_HERE, "..", "results_v2")
 _FIGS = os.path.join(_HERE, "..", "paper_ieee_access", "figs")
 os.makedirs(_FIGS, exist_ok=True)
 
-plt.rcParams.update({"font.size": 9, "axes.titlesize": 10, "figure.dpi": 150})
+plt.rcParams.update({"font.size": 10, "axes.titlesize": 11, "figure.dpi": 150})
 
 TREE_ORDER = ["xgboost", "lightgbm", "random_forest"]
 TREE_LABEL = {"xgboost": "XGBoost", "lightgbm": "LightGBM", "random_forest": "Random Forest",
@@ -65,14 +65,14 @@ def collapse_map():
               else f"ALL LCO$\\to${BA_LABEL[t]}" for s, t in cols]
     fig, ax = plt.subplots(figsize=(10.0, 2.2))
     im = ax.imshow(M, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-    ax.set_xticks(range(len(cols)), labels, rotation=22, ha="right", fontsize=10)
+    ax.set_xticks(range(len(cols)), labels, rotation=22, ha="right", fontsize=12)
     ax.set_yticks(range(len(rows)), [TREE_LABEL[m] for m in rows])
     for i in range(len(rows)):
         for j in range(len(cols)):
-            ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=11,
+            ax.text(j, i, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=13,
                         color="white" if abs(M[i, j]) > 0.6 else "black")
     ax.set_title(r"$\Delta$AUC from removing SOH (with-SOH $-$ without-SOH), $H{=}20$"
-                 r" (right block: new Battery Archive targets)")
+                 r" (right block: new Battery Archive targets)", fontsize=13)
     fig.colorbar(im, ax=ax, fraction=0.02, label=r"$\Delta$AUC")
     fig.tight_layout()
     fig.savefig(os.path.join(_FIGS, "fig_collapse_map.png"), bbox_inches="tight")

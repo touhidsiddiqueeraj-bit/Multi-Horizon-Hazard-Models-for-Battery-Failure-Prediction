@@ -33,7 +33,7 @@ _BA = os.path.join(_HERE, "..", "data")
 _FIG_IEE = os.path.join(_HERE, "..", "paper_ieee_access", "figs")
 _FIG_IJ = os.path.join(_HERE, "..", "paper_ijphm", "figs")
 
-plt.rcParams.update({"font.size": 9, "axes.titlesize": 9.5, "figure.dpi": 200})
+plt.rcParams.update({"font.size": 11, "axes.titlesize": 12, "figure.dpi": 200})
 
 GROUP_LABEL = {"ba_nmc_hnei": "HNEI NMC (15)", "ba_nca_snl": "SNL NCA (18)",
                "ba_nmc_snl": "SNL NMC (6)", "ba_lfp_snl": "SNL LFP (21)"}
@@ -54,7 +54,7 @@ def panel_a(ax, clean):
     ax.set_ylabel("SOH (cleaned)")
     ax.set_title("(a) admitted cells after cleaning")
     ax.set_ylim(0, 1.15)
-    ax.legend(fontsize=7.5, loc="lower left", frameon=True, framealpha=0.9)
+    ax.legend(fontsize=10, loc="lower left", frameon=True, framealpha=0.9)
     ax.grid(alpha=0.25, lw=0.4)
 
 
@@ -68,14 +68,14 @@ def panel_b(ax, audit):
     ax.bar(x + 0.19, dropped, 0.36, color="#d9d9d9", hatch="//",
            label="excluded (mixed SOC window)")
     for xi, (a, d) in enumerate(zip(admitted, dropped)):
-        ax.text(xi - 0.19, a + 0.3, str(a), ha="center", fontsize=8)
+        ax.text(xi - 0.19, a + 0.3, str(a), ha="center", fontsize=10)
         if d:
-            ax.text(xi + 0.19, d + 0.3, str(d), ha="center", fontsize=8)
+            ax.text(xi + 0.19, d + 0.3, str(d), ha="center", fontsize=10)
     ax.set_xticks(x)
-    ax.set_xticklabels([GROUP_LABEL[g].split(" (")[0] for g in groups], fontsize=8)
+    ax.set_xticklabels([GROUP_LABEL[g].split(" (")[0] for g in groups], fontsize=10)
     ax.set_ylabel("Cells")
     ax.set_title("(b) cell accounting")
-    ax.legend(fontsize=7.5, frameon=False)
+    ax.legend(fontsize=10, frameon=False)
     ax.grid(alpha=0.25, axis="y", lw=0.4)
 
 
@@ -93,7 +93,7 @@ def panel_c(ax, raw):
                color="#c0392b", zorder=3, label="removed (spike / check-up)")
     ax.annotate("formation cycle",
                 xy=(cyc[0], q[0]), xytext=(cyc[0] + 120, min(q) * 1.6),
-                fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=0.5))
+                fontsize=10, arrowprops=dict(arrowstyle="->", lw=0.5))
     ax.set_xlabel("Cycle")
     ax.set_ylabel("Discharge capacity (Ah)")
     ax.set_title(f"(c) cleaning effect: {meta['lab']} {meta['chem_label']} cell")
@@ -102,8 +102,8 @@ def panel_c(ax, raw):
     ax.annotate("check-up tail removed\n(up to %.1f Ah)" % np.nanmax(q),
                 xy=(cyc.max(), ax.get_ylim()[1] * 0.97),
                 xytext=(cyc.max() * 0.45, ax.get_ylim()[1] * 0.78),
-                fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=0.5))
-    ax.legend(fontsize=7.5, frameon=False, loc="center left")
+                fontsize=10, arrowprops=dict(arrowstyle="->", lw=0.5))
+    ax.legend(fontsize=10, frameon=False, loc="center left")
     ax.grid(alpha=0.25, lw=0.4)
 
 
@@ -111,11 +111,13 @@ def main():
     clean = pd.read_csv(os.path.join(_BA, "ba_clean.csv"))
     audit = pd.read_csv(os.path.join(_BA, "ba_audit.csv"))
     raw = load_raw(SRC_DIR)
-    fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.6))
+    # Stacked 3x1 layout: at single-column widths the side-by-side panels
+    # render below legible type size; stacked panels print at ~10pt.
+    fig, axes = plt.subplots(3, 1, figsize=(7.5, 10))
     panel_a(axes[0], clean)
     panel_b(axes[1], audit)
     panel_c(axes[2], raw)
-    fig.tight_layout(pad=0.6)
+    fig.tight_layout(pad=0.8)
     out_dirs = [_FIG_IEE]
     if os.path.isdir(os.path.join(_HERE, "..", "paper_ijphm")):
         out_dirs.append(_FIG_IJ)

@@ -35,7 +35,7 @@ ax.set_xticks(x, ["XGBoost", "LightGBM", "Rand.\nForest"], fontsize=10)
 ax.set_ylabel("single-row inference (ms)", fontsize=10)
 ax.set_title("(a) ESP32-S3 latency at 240 MHz", fontsize=11)
 ax.legend(handles, labels_, fontsize=11, frameon=False, loc="upper left")
-ax.tick_params(axis="y", labelsize=7)
+ax.tick_params(axis="y", labelsize=10)
 for i in range(3):
     for k, vals in enumerate([flash, psram, sram]):
         ax.text(i + (k - 1) * w, vals[i] + 0.04, f"{vals[i]:.2f}",
@@ -60,7 +60,7 @@ ax.set_xticks(np.arange(4), labels, fontsize=11)
 ax.set_ylabel("share of ~320 kB free SRAM (%)", fontsize=10)
 ax.set_ylim(0, 132)
 ax.set_title("(b) binary footprint vs. SRAM budget", fontsize=11)
-ax.tick_params(axis="y", labelsize=7)
+ax.tick_params(axis="y", labelsize=10)
 fig.tight_layout(pad=1.4, rect=(0, 0.02, 1, 1))
 fig.savefig(os.path.join(_FIGS, "fig_deploy.png"), bbox_inches="tight", dpi=150)
 print("wrote fig_deploy.png")

@@ -148,8 +148,9 @@ CONDENSED_ABSTRACT = (
     "matters more for real-time dispatch than remaining-useful-life regression. This study "
     "widens a multi-horizon failure-risk classification framework into a validity-focused "
     "evaluation covering tree ensembles, a GRU classifier, a discrete-time hazard model, "
-    "and 60 new Battery Archive cells across six laboratories. Within-dataset discrimination "
-    "is reliable (fold-mean AUC 0.90--0.96). The central result is a controlled State-of-Health "
+    "and 60 new Battery Archive cells from two further laboratories, in an evaluation spanning "
+    "six laboratories in total. Within-dataset discrimination "
+    "is reliable (fold-mean AUC 0.90--0.96 across the tree ensembles). The central result is a controlled State-of-Health "
     "(SOH) ablation: apparent cross-dataset transfer with SOH (pooled AUC up to 1.00) collapses "
     "without it, and an unfitted SOH distance rule matches the tuned ensembles. Because SOH "
     "enters the failure label and the label window includes the current cycle, with-SOH numbers "
@@ -176,9 +177,10 @@ CONDENSED = {
     "minimal baselines": ("KEEP-MINUS", ["tab:baselines"]),
     "factorial feature ablation": ("REPLACE",
         "A full $2^3-1$ factorial ablation over \\{SOH, cycle index, sensors\\} (see Supplementary "
-        "Material) shows SOH-only is the strongest single group on both LFP targets, cycle-only is "
-        "competitive solely on Oxford, and no combination without SOH reaches 0.76 on either target: "
-        "the sensor features carry no cross-dataset signal."),
+        "Material) shows SOH-only is the strongest single group on both LFP targets, while cycle-only "
+        "is competitive on Oxford solely in the logistic baselines (0.99 NASA-source), not in the "
+        "factorial grid itself (0.54 Oxford, 0.72 Severson); no combination without SOH reaches 0.76 "
+        "on either target: the sensor features carry no cross-dataset signal."),
     "same-chemistry": ("KEEP-MINUS", ["tab:samechem"]),
     "hazard model versus": ("KEEP-MINUS", ["tab:hazard", "tab:mono"]),
     "failure of calibration transfer": ("REPLACE",
@@ -197,7 +199,7 @@ CONDENSED = {
         "0.99 (audit figure and full table in the Supplementary Material)."),
     "operating-condition shift": ("REPLACE",
         "Holding out entire operating conditions at fixed chemistry and laboratory costs the "
-        "sensor-only model while the SOH distance rule stays undisturbed (see Supplementary "
+        "sensor-only model while the SOH distance rule stays above 0.886 pooled AUC (see Supplementary "
         "Material): no competing shortcut hides in temperature or C-rate."),
     "cross-dataset transfer": ("KEEP-MINUS", ["tab:gru"]),
     "operational cost analysis": ("KEEP-MINUS", ["fig:netbenefit"]),
@@ -260,7 +262,7 @@ def build_condensed(title, abstract, keywords, body, bib, used_figs):
             chunk_nc = chunk
             for lab in ["tab:cal", "fig:cal", "fig:prauc", "tab:gru",
                         "tab:baselines", "tab:abl", "tab:samechem",
-                        "tab:hazard", "tab:mono", "tab:rec_a", "tab:rec_b",
+                        "tab:hazard", "tab:mono", "tab:rec-r1", "tab:rec-r2",
                         "tab:sohtests", "fig:shap_xgb", "fig:shap_lgbm",
                         "fig:shap_rf", "fig:shap_noxgb", "fig:shap_nolgbm",
                         "fig:shap_norf", "tab:crosschemnew", "fig:baquality",
@@ -325,10 +327,104 @@ def build_condensed(title, abstract, keywords, body, bib, used_figs):
     # Moved floats must not point back at main-text labels.
     suppl = suppl.replace(
         "Table~\\ref{tab:crosswith}",
-        "the main-text transfer table")
+        "main-text Table 3")
+    suppl = split_target_tables(suppl)
     with open(os.path.join(OUTDIR, "supplement.tex"), "w") as fh:
         fh.write(suppl)
     print(f"condensed main + supplement ({len(suppl_floats)} moved floats)")
+
+
+def split_target_tables(suppl):
+    """Split 7-column Oxford/Severson tables into two readable 4-column ones.
+
+    Wide shrunken tables render below legible type; per-target tables do not.
+    Regenerated from the result CSVs (never by parsing LaTeX), replacing the
+    original envs in the supplement copies only (shared fragments untouched).
+    """
+    import pandas as pd
+    res = os.path.join(ROOT, "results_v2")
+
+    def replace_env(suppl, lab, new_blocks):
+        lipos = suppl.find(f"\\label{{{lab}}}")
+        if lipos < 0:
+            return suppl
+        start = max(suppl.rfind("\\begin{table}", 0, lipos),
+                    suppl.rfind("\\begin{figure}", 0, lipos))
+        if start < 0:
+            return suppl
+        depth, end = 0, -1
+        for m in re.finditer(r"\\(begin|end)\{(?:figure|table)\*?\}", suppl[start:]):
+            depth += 1 if m.group(1) == "begin" else -1
+            if depth == 0:
+                end = start + m.end()
+                break
+        if end < 0:
+            return suppl
+        return suppl[:start] + "\n\n".join(new_blocks) + suppl[end:]
+
+    def ci(lo, hi):
+        if lo is None or hi is None:
+            return ""
+        import math
+        if not (math.isfinite(lo) and math.isfinite(hi)):
+            return ""
+        return f"[{lo:.3f},{hi:.3f}]"
+
+    # --- baselines split (baselines_transfer.csv, H=20) ---
+    b = pd.read_csv(os.path.join(res, "baselines_transfer.csv"))
+    bl_label = {"soh_dist": "SOH distance rule", "soh_only": "SOH only",
+                "cycle_only": "cycle only", "soh_cycle": "SOH + cycle",
+                "sensors": "sensors only", "full": "full (7 feats)"}
+    blocks = []
+    for tgt, tgtlabel in [("oxford", "Oxford"), ("severson", "Severson")]:
+        lines = ["\\textbf{Baseline} & \\textbf{NASA} & \\textbf{CALCE} & \\textbf{ALL} \\\\",
+                 "\\midrule"]
+        for base in ["soh_dist", "soh_only", "cycle_only", "soh_cycle", "sensors", "full"]:
+            cells = [bl_label[base]]
+            for src in ["nasa", "calce", "nasa+calce"]:
+                r = b[(b.baseline == base) & (b.source == src) &
+                      (b.target == tgt) & (b.H == 20)]
+                cells.append(f"{float(r['AUC'].iloc[0]):.3f} "
+                             f"{ci(float(r['AUC_lo'].iloc[0]), float(r['AUC_hi'].iloc[0]))}"
+                             if len(r) else "---")
+            lines.append(" & ".join(cells) + " \\\\")
+        blocks.append(
+            "\\begin{table}\n\\centering\n"
+            "\\caption{Minimal Transfer Baselines at H=20: Pooled AUC With Cell-Level "
+            f"Bootstrap 95\\% CI. The Distance Rule Is the Unfitted Score $0.80-$SOH. [{tgtlabel} target].}}\n"
+            f"\\label{{tab:baselines-{tgtlabel.lower()}}}\n"
+            "\\begin{tabular}{lccc}\n\\toprule\n"
+            + "\n".join(lines) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}")
+    suppl = replace_env(suppl, "tab:baselines", blocks)
+
+    # --- ablation split (feature_ablation.csv, H=20) ---
+    f = pd.read_csv(os.path.join(res, "feature_ablation.csv"))
+    fs_label = {"full": "Full", "no_soh": "No SOH", "no_cycle": "No cycle index",
+                "no_soh_no_cycle": "No SOH, no cycle", "soh_only": "SOH only",
+                "cycle_only": "Cycle only", "sensors_only": "Sensors only"}
+    blocks = []
+    for tgt, tgtlabel in [("oxford", "Oxford"), ("severson", "Severson")]:
+        lines = ["\\textbf{Feature set} & \\textbf{NASA} & \\textbf{CALCE} & \\textbf{ALL} \\\\",
+                 "\\midrule"]
+        for fs in ["full", "no_soh", "no_cycle", "no_soh_no_cycle",
+                   "soh_only", "cycle_only", "sensors_only"]:
+            cells = [fs_label[fs]]
+            for src in ["nasa", "calce", "nasa+calce"]:
+                r = f[(f.feature_set == fs) & (f.source == src) &
+                      (f.target == tgt) & (f.H == 20)]
+                cells.append(f"{float(r['raw_AUC'].iloc[0]):.3f} "
+                             f"{ci(float(r['raw_AUC_lo'].iloc[0]), float(r['raw_AUC_hi'].iloc[0]))}"
+                             if len(r) else "---")
+            lines.append(" & ".join(cells) + " \\\\")
+        blocks.append(
+            "\\begin{table}\n\\centering\n"
+            "\\caption{Factorial Feature Ablation at H=20 (XGBoost, Pooled AUC With Cell-Level "
+            f"Bootstrap 95\\% CI). Feature Groups: SOH; Cycle Index; Sensors [{tgtlabel} target].}}\n"
+            f"\\label{{tab:abl-{tgtlabel.lower()}}}\n"
+            "\\begin{tabular}{lccc}\n\\toprule\n"
+            + "\n".join(lines) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}")
+    suppl = replace_env(suppl, "tab:abl", blocks)
+    return suppl
 
 
 if __name__ == "__main__":
