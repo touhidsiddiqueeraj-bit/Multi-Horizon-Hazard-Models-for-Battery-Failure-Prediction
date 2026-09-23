@@ -8,32 +8,56 @@ System design and data flow for the Multi-Horizon Battery Failure Prediction pro
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        RESEARCH TRACK                               │
+│                        RESEARCH TRACK (v2)                          │
 │                                                                     │
 │  NASA (.mat) ──→ loader.py ──→ nasa_clean_filtered.csv              │
 │  CALCE (.zip) ──→ loader_calce.py ──→ calce_clean.csv               │
 │  Oxford (.mat) ──→ loader_oxford.py ──→ oxford_clean.csv            │
+│  Severson ──→ loader_severson.py ──→ severson_clean.csv             │
+│  Battery Archive (dashboard export) ──→ loader_batteryarchive.py    │
+│      ──→ data/ba_clean.csv (60 admitted cells) + data/ba_audit.csv  │
 │                                       │                              │
 │                                       ▼                              │
-│  ┌────────────────────────────────────────────────────┐             │
-│  │  benchmark_cv.py — 5-fold GroupKFold CV            │             │
-│  │  • XGBoost / LightGBM / Random Forest / GRU       │             │
-│  │  • H ∈ {10, 20, 30, 50}                           │             │
-│  │  • Within-dataset + cross-chemistry transfer      │             │
-│  │  • Isotonic vs Platt calibration                  │             │
-│  └─────────┬──────────────────────────────────────────┘             │
+│  ┌────────────────────────────────────────────────────────┐         │
+│  │  Experiment modules (all cell-disjoint; calibrators    │         │
+│  │  fit on cross-fitted out-of-fold source scores only)   │         │
+│  │  • benchmark_cv.py within|transfer|ablation_tests      │         │
+│  │    (XGBoost/LightGBM/RF; H ∈ {10,20,30,50})            │         │
+│  │  • gru_cv.py within|transfer (8-unit GRU, seeds 42/1/7)│         │
+│  │  • baselines.py, feature_ablation.py, faildef_ablation │         │
+│  │  • same_chem_transfer.py, hazard_model.py,             │         │
+│  │    operational_metrics.py, monotonicity_check.py,      │         │
+│  │    condition_shift.py, prognosis_split.py              │         │
+│  └─────────┬──────────────────────────────────────────────┘         │
 │            │                                                        │
 │            ▼                                                        │
-│  benchmark_results.csv — all metrics (AUC, Brier)                  │
+│  results_v2/*.csv — per-experiment metrics                         │
+│  results_v2/preds/ — pooled prediction files (~7.5 GB, untracked)  │
 │            │                                                        │
 │            ▼                                                        │
-│  plot_*.py ──→ data/Fig*.png                                        │
-│  generate_paper.py ──→ paper/paper.docx                            │
-│  generate_presentation.py ──→ presentation/*.pptx                  │
+│  src/make_tables_v2.py (+ make_tables_ba.py)                       │
+│      ──→ results_v2/paper_numbers.json (552 keys)                  │
+│      ──→ results_v2/tex_fragments/ (20 table fragments)            │
+│            │                                                        │
+│            ▼                                                        │
+│  scripts/make_paper_v2.py — fills @@TOKENS@@ in                    │
+│      paper/paper_v2_template_part{1,2}.tex                         │
+│      ──→ paper_ieee_access/main_access.tex/.pdf (IEEE Access)      │
+│            │                                                        │
+│            ▼                                                        │
+│  scripts/make_jest.py [--condensed] — elsarticle port:             │
+│      paper_jest/main_jest.tex (full record)                        │
+│      paper_jest/main_condensed.tex + supplement.tex (submission)   │
+│                                                                     │
+│  plot_paper_v2.py, plot_fig01_v2.py, plot_shap.py,                 │
+│  plot_ba_quality.py, plot_fig_deploy_v2.py ──→ paper_ieee_access/figs/ │
+│                                                                     │
+│  Legacy `data/benchmark_results.csv` and `src/generate_*.py` /      │
+│  `src/plot_fig01_fig03_fig04.py`-era outputs are NOT used anymore. │
 └────────────────────────────┬────────────────────────────────────────┘
-                             │
-                             │ export_esp32_models.py
-                             ▼
+                              │
+                              │ scripts/export_esp32_models.py
+                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      DEPLOYMENT TRACK                               │
 │                                                                     │
@@ -57,7 +81,7 @@ System design and data flow for the Multi-Horizon Battery Failure Prediction pro
 
 ### Data Loaders
 
-Four loaders normalize disparate battery cycling data into a shared feature space.
+Five loaders normalize disparate battery cycling data into a shared feature space.
 
 | Dataset | Loader | Format | Cells | Chemistry |
 |---------|--------|--------|------:|:---------:|
@@ -65,27 +89,42 @@ Four loaders normalize disparate battery cycling data into a shared feature spac
 | CALCE LCO/CX2 | `loader_calce.py` | `.zip` → `.xlsx` per cell | 7 | LCO |
 | Oxford LFP | `loader_oxford.py` | `.mat` (single file) | 5 | LFP |
 | MIT-Stanford Severson LFP | `loader_severson.py` | `.mat`/processed CSV | 141 | LFP |
+| Battery Archive (HNEI/SNL) | `loader_batteryarchive.py` | dashboard CSV export | 60 admitted of 75 | NMC/NCA/LFP |
 
-Each loader outputs a flat CSV with columns: `cell`, `cycle`, `avg_voltage`, `min_voltage`, `avg_current`, `avg_temp`, `duration`, `SOH`, `RUL`.
+Each loader outputs a flat CSV with columns: `cell`, `cycle`, `avg_voltage`, `min_voltage`, `avg_current`, `avg_temp`, `duration`, `SOH`, `RUL` (plus `dataset, lab, chem, temp_C, window, rate` for BA rows). Missing current/temperature columns (CALCE, BA) are left empty and zero-imputed downstream. `make_composite_fail_in_H` returns labels reindexed to the input frame's row order — loaders and callers must `reset_index(drop=True)` before positional slicing.
 
 ### Composite Failure Label (`composite_label.py`)
 
-A cycle at position *t* is labelled positive if failure occurs within [*t*, *t+H*) cycles, where failure is defined as:
+A cycle at position *t* is labelled positive if failure occurs within [*t*, *t+H*) cycles, where failure is defined as (endpoint selectable: `combined` | `soh_only` | `volt_only`):
 
 ```
 SOH ≤ 0.80  OR  avg_voltage_sag < 0.94 × baseline_avg_voltage
 ```
 
-The voltage sag baseline is the mean `min_voltage` over the first 10 cycles of each cell.
+The window **includes the scoring cycle** and the label stays 1 afterwards, so with-SOH results mix concurrent failure detection with future prediction (quantified by `prognosis_split.py`). The voltage sag baseline is the mean `min_voltage` over the first 10 cycles of each cell. On Battery Archive groups the voltage endpoint never fires first, so the label is effectively SOH-only there.
 
 ### Benchmark CV (`benchmark_cv.py`)
 
-Two evaluation modes:
+CLI: `within` | `transfer` | `ablation_tests` (the last also covers Battery Archive transfer/ablation). Two evaluation modes:
 
-1. **Within-dataset**: 5-fold GroupKFold (grouped by cell — no cell leaks across folds). Each fold: train on 80% of cells, evaluate on held-out 20%.
-2. **Cross-chemistry**: Train on all LCO cells (NASA + CALCE, or either alone), test on all Oxford LFP cells (single train/test split).
+1. **Within-dataset**: 5-fold cell-grouped CV on NASA, leave-one-cell-out on CALCE (and per-group folds on BA) — no cell leaks across train/calibration/test.
+2. **Transfer**: train on LCO (NASA, CALCE, or both), test on Oxford / Severson / BA targets; plus BA↔BA and BA→LFP same-lab controls.
 
-For each fold, both isotonic and Platt calibrators are fit on training-fold scores (not a held-out set). This is a deliberate fairness choice — `CalibratedClassifierCV(cv=3)` would give an unfair 3-model ensemble advantage.
+Calibrators (Platt, isotonic, temperature) are fit **only on cross-fitted out-of-fold source scores** — never in-sample, never on target cells. (An earlier pipeline version fit calibrators on training scores; its numbers were optimistic and are superseded.)
+
+### Prognosis Split (`prognosis_split.py`)
+
+Answers "detection or prognosis?" without retraining: joins saved pooled predictions (`results_v2/preds/`) positionally per cell to current-cycle SOH (alignment validated by matching saved `y` against recomputed labels; GRU windows drop the first 9 cycles per cell) and reports all-rows AUC vs SOH-at-score->0.80 AUC with cell bootstrap CIs → `results_v2/prognosis_split.csv`.
+
+### Condition Shift (`condition_shift.py`)
+
+Leave-condition-out evaluation on SNL groups: test cells come from a temperature/C-rate condition contributing no training cells (condition labels parsed from cell IDs, never used as features) → `results_v2/condition_shift.csv`. HNEI has a single condition and is omitted.
+
+### Aggregation → Assembly (`make_tables_v2.py` → `make_paper_v2.py` → `make_jest.py`)
+
+- `src/make_tables_v2.py` (with `src/make_tables_ba.py` for BA tables) aggregates every results CSV into `results_v2/paper_numbers.json` (552 keys) and `results_v2/tex_fragments/` (20 table fragments). Table column order is **target-major** (Oxford triple then Severson triple); within-failure-definition values are **means over reruns**.
+- `scripts/make_paper_v2.py` fills every `@@TOKEN@@` in `paper/paper_v2_template_part{1,2}.tex` and writes `paper_ieee_access/main_access.tex`. It **fails loudly** on missing fill rules or leftover tokens — a missing number can never silently reach the PDF.
+- `scripts/make_jest.py` ports the assembled paper to elsarticle (`paper_jest/main_jest.tex`, full record). `--condensed` additionally writes the submission manuscript (`main_condensed.tex`: 7 tables + 3 figs) and `supplement.tex` (15 tables + 11 figs): all `\subsection` headings are kept so hardcoded `Section~III-X` strings keep working; moved sections become summary paragraphs; moved floats go to the supplement; the `REWORD` map rewrites `\ref`s to moved floats.
 
 ### Few-Shot Target-Chemistry Recalibration
 
@@ -106,8 +145,8 @@ and writes paper figures to `paper_ieee_access/figs/` and tables to
 |-------|-----------|--------|
 | XGBoost | `max_depth=4, n_estimators=300, lr=0.05, subsample=0.8, colsample_bytree=0.8, min_child_weight=5` | Paper match |
 | LightGBM | `max_depth=4, n_estimators=300, lr=0.05, subsample=0.8, colsample_bytree=0.8, min_child_samples=20` | Paper match |
-| Random Forest | `max_depth=6, n_estimators=300` | Paper match |
-| GRU | 1 layer, 8 hidden units, W=10 window, BCEWithLogits loss, Adam lr=0.005, patience=10 | Paper match |
+| Random Forest | `max_depth=6, n_estimators=300` | Paper match (`n_jobs=1` — `n_jobs=4` deadlocks nested CV) |
+| GRU | 1 layer, 8 hidden units, W=10 window, BCEWithLogits loss, Adam lr=0.005, patience=10 | Transfer seeds 42/1/7, within seed 42 |
 
 ---
 
@@ -417,17 +456,21 @@ All three models are packed into one `trees.bin`. The C engine parses all three 
 ```
 Root
 ├── src/              Research: ML training, CV, plotting, paper gen
-├── scripts/          Model export: train + export trees.bin
+├── scripts/          Paper assembly (make_paper_v2, make_jest), gates, model export
 ├── pc_validation/    C vs Python validation suite
 ├── esp32_firmware/   ESP-IDF firmware (production)
 ├── arduino_firmware/ Arduino firmware (web dashboard)
-├── data/             Cleaned CSVs, benchmark results, figures
-├── hardware validation/  Self-contained hardware docs (separate repo)
-├── paper/            Generated paper.docx
+├── data/             Cleaned CSVs (incl. ba_clean.csv, ba_audit.csv), legacy assets
+├── batteryarchive_cycle_test_data_CSVs/  Raw BA export + provenance notes
+├── results_v2/       Experiment CSVs, paper_numbers.json, tex_fragments/
+│   └── preds/        Pooled predictions (~7.5 GB, intentionally untracked)
+├── results/recalibration/  Resumable target-adaptation run
+├── paper/            Templates (paper_v2_template_part{1,2}.tex) + legacy docx
+├── paper_ieee_access/  Generated IEEE Access .tex/.pdf + figs/
+├── paper_jest/       JES submission: condensed manuscript + supplement + cover letter
 ├── presentation/     Generated PPTX decks
 ├── figs_journal_clean/     Publication-quality figures
 ├── figs_journal_editable/  Editable figure sources (SVG/PDF/PPTX)
 ├── tables_journal/   Journal-ready CSV tables
-├── study_materials/  Primer, discrepancy note, figure annotations
-└── opendesign/       OpenDesign viewer
+├── study_materials/  Primer, discrepancy note, BA protocol, hazard framework
 ```
