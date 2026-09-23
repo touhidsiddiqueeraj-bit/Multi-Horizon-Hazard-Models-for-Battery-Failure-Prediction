@@ -148,7 +148,7 @@ def _faildef(fs, tgt, endpoint):
 
 T["FAILDEF_ADV_COMBINED"] = lambda: f"{_faildef('with_soh','severson','combined') - _faildef('no_soh','severson','combined'):+.2f}"
 T["FAILDEF_ADV_VOLT"] = lambda: f"{_faildef('with_soh','severson','volt_only') - _faildef('no_soh','severson','volt_only'):+.2f}"
-T["FAILDEF_ADV_DROP"] = lambda: "most"
+T["FAILDEF_ADV_DROP"] = lambda: "about a fifth"
 T["FAILDEF_VOLT_WITH"] = lambda: f3(_faildef("with_soh", "severson", "volt_only"))
 T["FAILDEF_VOLT_NO"] = lambda: f3(_faildef("no_soh", "severson", "volt_only"))
 T["FAILDEF_WITH_SOHLABEL"] = lambda: f3(_faildef("with_soh", "severson", "soh_only"))

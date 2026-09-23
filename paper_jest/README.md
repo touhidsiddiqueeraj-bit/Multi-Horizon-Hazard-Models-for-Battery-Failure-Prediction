@@ -7,15 +7,17 @@ How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?**
 
 | File | Purpose |
 |---|---|
-| `main_jest.tex` | Manuscript source (generated — do not hand-edit) |
-| `main_jest.pdf` | Compiled manuscript for upload |
-| `figs/` (14 PNGs) | All `\includegraphics`'d figures, copied from `paper_ieee_access/figs/` |
+| `main_condensed.tex` / `.pdf` | **Submission manuscript** (condensed, generated — do not hand-edit) |
+| `supplement.tex` / `.pdf` | Supplementary Material: 13 tables + 9 figures omitted for length |
+| `main_jest.tex` / `.pdf` | Full-length port (record only, NOT for submission) |
+| `figs/` (14 PNGs) | All figures |
 | `highlights.txt` | 3–5 Highlights bullets, each ≤ 85 chars (Elsevier mandatory file) |
 | `cover_letter.txt` | Cover-letter draft (placeholders in ALL CAPS) |
-| `scripts/make_jest.py` | Generator: IEEE Access tex → elsarticle (re-run after any paper edit) |
+| `scripts/make_jest.py` | Generator: `--condensed` builds manuscript + supplement |
 
-Regenerate with: `python3 scripts/make_jest.py`, then compile in `paper_jest/`
-with the repo LaTeX toolchain (`pdflatex -progname=pdflatex`, twice).
+Regenerate with: `python3 scripts/make_paper_v2.py && python3 scripts/make_jest.py --condensed`,
+then compile in `paper_jest/` with the repo LaTeX toolchain
+(`pdflatex -progname=pdflatex`, twice per document).
 
 ## Template provenance
 
@@ -31,17 +33,21 @@ with the repo LaTeX toolchain (`pdflatex -progname=pdflatex`, twice).
 > "Ideally, a research article should have a maximum of **6,000 words**
 > and **8–10 figures and/or tables**."
 
-| Measure | This manuscript | Guidance |
+| Measure | Condensed manuscript | Guidance |
 |---|---|---|
-| Words (PDF text incl. tables/refs) | ~13,700 | max 6,000 |
-| Figures | 14 | 8–10 floats total |
-| Tables | 20 | (shared budget with figures) |
+| Words (PDF text incl. tables/refs) | ~7,700 | ideally ≤ 6,000 |
+| Figures + tables | 3 + 7 = **10** | 8–10 floats total |
+| Abstract | single paragraph, ~150 words | 150–250 words |
+| Keywords | 6, `\sep`-separated | ~6 |
+| Highlights | 5 bullets, ≤85 chars | 3–5 bullets |
 
-**This manuscript exceeds the guidance roughly twofold on all three counts.**
-"Ideally" is not a hard cap, but a desk editor may ask for condensation.
-Condensation plan (not yet executed): move SHAP figs 7–12 to supplementary
-(6 floats), merge Tables 4+5 and 13+15, cut §III-O to a paragraph → ≈8 figs,
-≈14 tables, ≈10,000 words. Say the word and it gets done as a separate pass.
+**Word-count status: 7,700 vs 6,000 guidance (~28% over).** Floats, abstract,
+keywords, and highlights comply. The manuscript was cut from ~13,700 words
+(full port) by moving 13 tables + 9 figures to the 14-page supplement; the
+remaining prose is methods and kept-table explanations with little redundancy
+left. The cover letter discloses the overage and offers further condensation
+on editorial direction. Deeper cuts from here remove kept content (GRU/hazard
+methods, operational analysis) rather than redundancy.
 
 ## Known build notes
 
