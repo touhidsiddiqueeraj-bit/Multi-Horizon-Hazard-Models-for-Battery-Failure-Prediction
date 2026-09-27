@@ -39,33 +39,28 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a multi-horizon failure-risk prediction
-framework for lithium-ion battery failure that integrates probability
-calibration, cross-dataset evaluation, and statistical significance
-testing, and uses it to answer a validity question: when failure-risk
-models appear to transfer between datasets and chemistries, is
-degradation knowledge actually transferring, or is the model reading a
-health-state variable that encodes proximity to the failure criterion
-itself? Three tree ensembles (XGBoost, LightGBM, Random Forest) and a
-GRU baseline are trained on the NASA and CALCE LCO datasets under
-cell-disjoint folds with leakage-free, cross-fitted calibration, and
-evaluated on the Oxford and MIT--Stanford Severson LFP datasets across
-four horizons (10, 20, 30, 50 cycles). Under the clean protocol, every
-model--horizon--dataset combination reaches a fold-mean AUC of at least
-0.85 (32 of 32), and Platt scaling better preserves discrimination than
-isotonic regression while achieving comparable or better calibration
-error. The central result is a controlled State-of-Health (SOH)
-ablation: apparent cross-dataset, cross-chemistry transfer with SOH
-included (pooled AUC up to 1.00) collapses without SOH (at best 0.58 at
-$H{=}20$), and an unfitted distance-to-threshold rule on SOH alone
-reproduces most of the with-SOH transfer. Because SOH also enters the
-failure definition, all with-SOH numbers are upper bounds that partly
-measure label proximity: relabeling failure by voltage sag alone cuts
-with-SOH transfer by a quarter. Same-chemistry cross-laboratory
-controls show the collapse is driven by dataset shift at least as much
-as by chemistry, so SOH acts as a dataset- and chemistry-dependent
-health-state shortcut rather than a chemistry-specific transferable
-signal.
+This paper builds a multi-horizon failure-risk framework for
+lithium-ion batteries, one that combines probability calibration,
+cross-dataset evaluation, and significance testing, and uses it to ask
+a pointed question: when these models appear to transfer across
+datasets and chemistries, are they actually learning something about
+degradation, or are they just reading a health-state variable that
+already encodes how close a cell is to the failure line? We train
+three tree ensembles (XGBoost, LightGBM, Random Forest) plus a GRU
+baseline on the NASA and CALCE LCO datasets, then test them on the
+Oxford and Severson LFP datasets across four horizons. Within the
+training datasets, every model reaches an AUC of at least 0.85. But
+the central finding is what happens under a State-of-Health (SOH)
+ablation: cross-dataset transfer that looks near-perfect with SOH
+included (AUC up to 1.00) collapses to as low as 0.58 once SOH is
+removed, and a simple, unfitted rule based on distance to the SOH
+threshold reproduces most of that ``transfer'' on its own. Because SOH
+also partly defines the failure label itself, these with-SOH numbers
+are upper bounds; relabeling failure using voltage sag alone cuts the
+apparent transfer by a quarter. Same-chemistry controls show the
+collapse tracks dataset shift as much as chemistry shift, so SOH is
+acting as a shortcut tied to the dataset and chemistry, not a
+genuinely transferable signal.
 \end{abstract}
 
 \noindent\textbf{\textit{Keywords---battery management
@@ -634,32 +629,33 @@ $3.3\times10^{-1}$ and $8.5\times10^{-1}$), so no architecture
 superiority is claimed.
 
 \section{Conclusion}
-This paper presented a multi-horizon failure-risk framework for
-predicting lithium-ion battery failure across multiple datasets and
-chemistries, and used it to run a validity analysis rather than only a
-benchmark. Under cell-disjoint evaluation with leakage-free
-cross-fitted calibration, within-dataset performance is uniformly
-strong (fold-mean AUC $\ge 0.85$ in all 32 model--horizon--dataset
-combinations). The cross-dataset results support a narrower and more
-useful conclusion than apparent transfer success suggests: much of the
-observed cross-dataset, cross-chemistry discrimination is attributable
-to SOH, partly because SOH defines the failure criterion itself
-(quantified by the failure-endpoint ablation), rather than to
-degradation information in the remaining measured features, and
-same-chemistry controls attribute the collapse to dataset shift at
-least as much as to chemistry. Platt scaling preserves discrimination
-best at comparable calibration error, though no source-fitted
-calibrator repairs calibration on the shifted target.
+This paper built a multi-horizon failure-risk framework for
+lithium-ion batteries across datasets and chemistries, and used it to
+run a validity check rather than just another benchmark. Under
+cell-disjoint evaluation with leakage-free calibration, performance
+within each training dataset is consistently strong, every one of the
+32 model--horizon--dataset combinations reaches a fold-mean AUC above
+0.85. But the cross-dataset results point to a narrower and more
+useful conclusion than the raw transfer numbers suggest: most of the
+apparent cross-dataset, cross-chemistry discrimination comes down to
+SOH, partly because SOH is baked into how failure is defined in the
+first place, not because the remaining measured features carry real
+degradation information. Same-chemistry controls back this up, showing
+the collapse tracks dataset shift just as much as it tracks chemistry
+shift. Platt scaling comes out ahead for preserving discrimination at
+comparable calibration error, though no calibrator fitted on the
+source data actually repairs calibration once the target has shifted.
 
-Several limitations bound these claims: the fixed-horizon
-classifiers have no enforced monotonicity across horizons; Oxford's
-coarse 100-cycle sampling limits it to pooled-detection use; CALCE
-contributes only seven cells; cross-chemistry evaluation covered LCO
-and LFP only; and all datasets are laboratory-scale. Future work will
-extend the framework to minimal-feature baselines as standard
-practice, controlled same-laboratory cross-chemistry campaigns,
-continuous time-to-failure modeling, and validation on large-scale
-industrial datasets.
+A few limits are worth flagging. The fixed-horizon classifiers don't
+enforce any monotonicity across horizons. Oxford's coarse, 100-cycle
+sampling means it only supports pooled-detection use rather than
+horizon-specific claims. CALCE contributes just seven cells.
+Cross-chemistry testing here only covers LCO and LFP. And all four
+datasets are lab-scale rather than field data. Next steps include
+making minimal-feature baselines standard practice, running controlled
+same-lab cross-chemistry campaigns, moving toward continuous
+time-to-failure modeling, and testing all of this against larger,
+industrial-scale datasets.
 
 \section*{Acknowledgment}
 The authors would like to acknowledge the use of writing-support and
