@@ -1,0 +1,83 @@
+Dear Editor-in-Chief,
+
+We submit our manuscript "Multi-Horizon Failure-Risk Models for Battery
+Failure Prediction: How Much Cross-Chemistry Transfer Is a State-of-Health
+Shortcut?" for consideration as a Regular Paper in the IEEE Transactions
+on Reliability, with suggested category B2 (Prognostics and Health
+Management); B5 (Degradation and Maintenance) is an equally suitable
+secondary classification.
+
+Rather than remaining-useful-life regression, we study multi-horizon
+failure-risk classification -- whether a lithium-ion cell fails within
+the next H cycles, H in {10, 20, 30, 50} -- and subject it to a
+validity-focused evaluation across eight public aging datasets spanning
+four chemistries (LCO, LFP, NCA, NMC) from six laboratories, four model
+families, a discrete-time hazard formulation, and leakage-clean,
+cross-fitted probability calibration. The central finding is a cautionary
+result of direct relevance to prognostics practice: apparent
+cross-dataset, cross-chemistry transfer is largely a State-of-Health
+(SOH) shortcut. With SOH as a feature, transfer reaches pooled AUC up to
+1.00; without it, every model class collapses toward or below chance
+(at best 0.58 at H=20), and an unfitted distance-to-threshold rule on
+SOH alone (0.912 AUC on the 141-cell MIT-Stanford set) matches the tuned
+ensembles. Because SOH also enters the failure label, all with-SOH
+numbers are diagnostic-proximity upper bounds -- quantified by
+failure-definition relabeling, prognosis-only evaluation, and
+same-chemistry cross-laboratory controls that attribute the collapse to
+dataset shift at least as much as chemistry. The finding replicates on
+60 pre-registered NMC/NCA/LFP cells from two further laboratories, and
+a cost-sensitive operational evaluation shows transferred thresholds
+and source-fitted calibrators do not survive shift. A complete ESP32-S3
+deployment (372 kB, sub-millisecond inference) demonstrates the models
+are deployable whatever they are reading.
+
+We believe this work fits the Transactions' mission closely: it is a
+reliability-oriented validity analysis of prognostic models -- with
+cell-level bootstrap uncertainty as primary evidence, DeLong tests
+demoted for pseudoreplication, monotonicity of cumulative-risk
+estimates enforced by a survival formulation, and decision-theoretic
+operating-point analysis -- rather than a battery-materials study.
+
+Disclosure. A condensed conference version (four datasets, tree
+ensembles, and the core SOH ablation) is currently under review at
+WIECON-ECE 2026 and is unpublished. The present manuscript extends it
+substantially: the discrete-time hazard model and monotonicity
+analysis, the pre-registered Battery Archive replication on 60 new
+cells across three additional chemistries, same-chemistry
+cross-laboratory controls, the leave-condition-out analysis, the
+calibration-transfer and small-sample recalibration study, the
+operational cost analysis, and the embedded deployment are new. If the
+conference version is accepted before a decision is reached here, we
+will disclose and cite it immediately. The manuscript is original, has
+not been published, and is not under consideration by any other
+journal. All authors approve the submission and declare no competing
+interests. This work received no external funding.
+
+Data and code availability. All datasets are public; the complete
+pipeline, cleaned data, trained models, firmware, and validation suite
+are open source at
+https://github.com/touhidsiddiqueeraj-bit/Multi-Horizon-Hazard-Models-for-Battery-Failure-Prediction
+
+Suggested reviewers (no known conflicts of interest; see
+suggested_reviewers.txt for details):
+  - [NAME], [AFFILIATION] -- battery prognostics and health management
+  - [NAME], [AFFILIATION] -- battery diagnostics and ML benchmarking
+  - [NAME], [AFFILIATION] -- calibration under distribution shift
+  - [NAME], [AFFILIATION] -- reliability of degradation models
+  - [NAME], [AFFILIATION] -- embedded/edge prognostics
+
+The manuscript is 11 double-column pages (limit 15), with a 6-page
+Supplementary Material containing nine further tables and fourteen
+further figures.
+
+Thank you for your consideration.
+
+Sincerely,
+[TODO: CORRESPONDING AUTHOR NAME, TITLE]
+[TODO: DEPARTMENT, UNIVERSITY]
+[TODO: CITY, POSTCODE, BANGLADESH]
+[TODO: EMAIL] | ORCID: [TODO]
+
+On behalf of all authors:
+Hussain Touhid Siddiquee, Syeda Salsabil Islam,
+Ariya Jasimul Islam, Chowdhury Farzana Hoque Eshica

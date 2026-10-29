@@ -1,0 +1,52 @@
+SUGGESTED REVIEWERS -- IEEE Transactions on Reliability submission
+====================================================================
+
+Guidance: verify each candidate has (a) no collaboration or co-authorship
+with any author in the last 3-5 years, (b) no institutional relationship,
+and (c) is not an editor of this Transactions. Replace/edit freely at
+submission time -- the names below are candidates drawn from the paper's
+own reference list and the battery-PHM community, all with active
+programs in the relevant areas.
+
+1. Prof. Michael G. Pecht
+   University of Maryland, CALCE (USA)
+   Why: Founder of the CALCE battery group whose dataset is used here;
+   long-running program on battery prognostics and health management.
+   Note: extremely busy; may decline.
+
+2. Prof. David A. Howey
+   University of Oxford (UK)
+   Why: Co-author of the Oxford degradation dataset used here; active in
+   battery diagnostics and machine learning for health estimation.
+
+3. Prof. Simona Onori
+   Stanford University (USA)
+   Why: Battery modeling, state estimation, and prognostics; strong
+   methodological reviewer for degradation-model validity questions.
+
+4. Prof. Weihan Li
+   RWTH Aachen University (Germany)
+   Why: Data-driven battery state estimation, transfer/benchmarking
+   studies across public datasets; directly relevant to the
+   cross-dataset transfer question.
+
+5. Prof. Aaditya Ramdas
+   Carnegie Mellon University (USA)
+   Why: Probability calibration under distribution shift (online Platt
+   scaling / calibeating, cited in the manuscript); a methodological
+   rather than battery reviewer -- useful for the calibration analysis.
+
+6. Dr. Kandler Smith
+   National Renewable Energy Laboratory (NREL) (USA)
+   Why: Battery diagnostics and prognostics for EV/grid systems;
+   operational BMS perspective on the cost analysis.
+
+Consider with care
+------------------
+- T. A. Shikdar and H. Laaksonen (original multi-horizon failure-risk
+  framework, cited as the baseline): they know this framework best, but
+  the manuscript both extends and critiques their work. Reasonable to
+  include as a reviewer if the handling editor prefers; not listed above
+  to avoid the appearance of a conflict.
+- Do NOT suggest anyone at Bangladesh-adjacent collaborating
+  institutions or recent (<= 3 years) co-authors of any author.
