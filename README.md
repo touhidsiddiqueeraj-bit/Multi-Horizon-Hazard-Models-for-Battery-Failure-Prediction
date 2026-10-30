@@ -13,7 +13,9 @@ degradation knowledge. Plus a complete ESP32-S3 embedded deployment.
 > **Status.** The deliverable paper is `paper_ieee_access/main_access.pdf`
 > (IEEE Access, generated — see [Paper build](#paper-build)). A condensed
 > Journal of Energy Storage submission package lives in `paper_jest/`
-> (manuscript + supplement). Numbers below are headline values; every number
+> (manuscript + supplement). An IEEE Transactions on Reliability submission
+> package lives in `paper_tr/` (manuscript, supplement, cover letter,
+> checklist, author info). Numbers below are headline values; every number
 > in the paper is generated from `results_v2/` — see [Reproduction](#reproduction).
 
 ---
