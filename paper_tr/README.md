@@ -10,7 +10,7 @@ How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?*
 ```
 paper_tr/
   main_tr.tex           IEEE TR manuscript (compiles with tectonic/pdflatex+fontspec)
-  main_tr.pdf           compiled main paper (11 pages, IEEE TR limit is ~15)
+  main_tr.pdf           compiled main paper (12 pages, IEEE TR limit is ~15)
   supplement_tr.tex     Supplementary Material (compiles standalone)
   supplement_tr.pdf     compiled supplement (3 pages)
   IEEEtran.cls          class file used for compilation
@@ -58,10 +58,11 @@ README.md              this file
   fixed during re-verification: Oxford SOH-delta range corrected to +0.26–0.64;
   factorial-ablation cycle-only value corrected to 0.71 on Severson; a column
   mis-ordering in the supplement's factorial table.
-- **Round 3 — References:** 25 cite keys ↔ 25 bibitems, no undefined citations,
-  no orphan bibitems, no duplicates. On 2026-10-30 **all 25 entries were
-  verified against publisher records** (Wiley, Nature, Scientific Reports,
-  IEEE, MDPI, Crossref, arXiv, PMLR, JMLR listings). Fixes applied:
+- **Round 3 — References:** 39 cite keys ↔ 39 bibitems, no undefined citations,
+  no orphan bibitems, no duplicates, ordered by first citation. On 2026-10-30
+  **all 25 original entries were verified against publisher records**
+  (Wiley, Nature, Scientific Reports, IEEE, MDPI, Crossref, arXiv, PMLR, JMLR
+  listings). Fixes applied:
   - `shikdar2026learning` → published as "Learning When Not to Use a Battery:
     Multihorizon Failure Intelligence," *Int. Trans. Elect. Energy Syst.*,
     2026, doi:10.1155/etep/6000810.
@@ -82,16 +83,26 @@ README.md              this file
     unstable under severe imbalance).
   - `shikdar2026robustness` is cited as a companion study under review —
     confirm its final venue before submission.
+- **Bibliography expanded 25 → 39 on 2026-10-30:** 14 verified citations added
+  (Feng 2018 thermal-runaway review; Ng 2020 and Hannan 2017 battery
+  state-prediction/BMS reviews; Geirhos 2020 shortcut learning; Moreno-Torres
+  2012 dataset shift; Cho 2014 GRU; Cox 1972 and Kalbfleisch & Prentice 2002
+  survival analysis; Guo 2017 calibration/ECE; Efron 1979 bootstrap; Hanley &
+  McNeil 1982 AUC; Brier 1950; Saito & Rehmsmeier 2015 PR-AUC; Banbury 2021
+  MLPerf Tiny), each verified against Crossref, the publisher page, PMLR, the
+  ACL Anthology, or arXiv. Table I gained two rows (shortcut learning,
+  dataset shift) and the paper is now 12 pages.
 - **Round 4 — Consistency/readability:** section cross-references verified
   against the compiled heading letters (II-A…II-I, III-A…III-M, IV, V);
   biography blocks fixed; placeholder audit clean (the only "XXX" left is the
   standard "Manuscript received XXX" that the editor fills in); layout visually
-  verified on all 14 pages, and re-verified after the 2026-10-30 author-block
-  and bibliography edits with a clean recompile.
+  verified on all 15 pages, and re-verified after the 2026-10-30 author-block,
+  bibliography-expansion, and reference-verification edits with a clean
+  recompile.
 
 ## Still to complete before submission
 
-1. **Companion-study reference [14]** — cited as "manuscript under review";
+1. **Companion-study reference [18]** — cited as "manuscript under review";
    update with the venue if accepted.
 2. **Restore the lost figures** (see Round 1 note) if desired.
 3. **Reviewer e-mails** — copy from each researcher's official page when
