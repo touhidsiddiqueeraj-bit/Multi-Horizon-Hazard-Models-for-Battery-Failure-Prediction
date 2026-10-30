@@ -1,0 +1,75 @@
+% ITEES submission checklist -- International Transactions on Electrical Energy Systems
+% Compile: tectonic submission_checklist_ITEES.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular,
+  BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\usepackage{array,booktabs}
+\definecolor{acc}{HTML}{1F4E79}
+\setlist[itemize]{leftmargin=1.5em,itemsep=1pt,topsep=2pt}
+\newcommand{\boxitem}{\item[$\square$]}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\begin{document}
+
+{\LARGE\bfseries\color{acc} ITEES Submission Package --- Checklist}\\[2pt]
+{\small\textit{International Transactions on Electrical Energy Systems} (ITEES) --- Wiley Forward Series.
+Prepared October 30, 2026.}
+
+\section*{1. Journal facts used in this package}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}p{11.6cm}@{}}
+\toprule
+Publisher / model & Wiley, Forward Series, fully open access, CC BY 4.0 license \\
+ISSN & Print 1430-144X; Online 2050-7038 \\
+Editor-in-Chief & Prof.\ Chongqing Kang \\
+Submission portal & \texttt{wiley.atyponrex.com/journal/ETEP} (Wiley Research Exchange) \\
+Article types & Research Article (original research; systematic reviews also handled as research articles) \\
+Length limits & \textbf{No page limit} (verbatim from the journal guidelines). Only hard limit: abstract $\le$ \textbf{300 words} (this manuscript: 266 words) \\
+References & ``Any style'' accepted if numbered consecutively in citation order with square brackets [9], [9,10]; publisher reformats to Chicago style at proof stage (this manuscript: 38 numbered refs) \\
+Figures / tables & Embedded in the manuscript PDF; cited consecutively; bitmaps $\ge$300 dpi; tables: no vertical rules \\
+Declarations required & Funding statement, Conflicts of interest, Data availability --- all included in the manuscript \\
+APC & Listed up to US\$2{,}580 (DOAJ); \textbf{fully waived for the corresponding author} --- Bangladesh is a Research4Life Group~A country on Wiley's waiver list \\
+Standing & Impact Factor 2.6; SJR Q2 (Energy: 0.559); CiteScore 7.1 \\
+\bottomrule
+\end{tabular}
+
+\section*{2. What is in this package}
+\begin{itemize}
+\item \texttt{main\_itees.tex} / \texttt{main\_itees.pdf} --- manuscript in ITEES-ready format (single-column A4, 19 pages; Wiley-style title page with full postal address and emails; abstract 266 words; Roman-numbered sections so ``Section III-C'' cross-references stay correct; mandatory Declarations before the references).
+\item \texttt{cover\_letter\_ITEES.pdf} --- addressed to the Editor-in-Chief; leads with the ITEES continuity (extends Shikdar \& Laaksonen, ITEES 2026, DOI 10.1155/etep/6000810 --- ref [10]) and the ``controlled diagnosis, not a new model'' framing; closes with the APC-waiver request.
+\item \texttt{figs/} --- the four figures embedded by the manuscript.
+\item The original IEEE TR version is untouched in \texttt{paper\_tr/} in case you target another venue later.
+\end{itemize}
+
+\section*{3. Verify before you upload}
+\begin{itemize}
+\boxitem \textbf{Affiliation postal address}: the title page uses ``Ragib Nagar, Kamal Bazar, South Surma, Sylhet 3110, Bangladesh'' --- confirm it matches your official institutional address.
+\boxitem \textbf{ORCID iDs} for all four authors (the portal links them; register free at orcid.org if missing).
+\boxitem \textbf{Corresponding-author account} on the Research Exchange portal registered with \texttt{touhidsiddiqueeraj@gmail.com}.
+\boxitem \textbf{Supplementary material}: included in this package as \texttt{supplement\_ITEES.pdf} (5 pages, restyled to match the manuscript; sections and tables numbered S1\ldots). Upload it as the S1 file --- the main text points to it in five places.
+\boxitem \textbf{Figures at $\ge$300 dpi}: the four PNGs are print-resolution; if any was exported below 300 dpi, re-export before upload.
+\boxitem \textbf{Similarity check}: Wiley runs an automated similarity screen at submission. If any earlier version of this work (e.g., the IEEE Access draft or anything shared publicly) is posted online, disclose it in the cover letter.
+\boxitem \textbf{Author biographies}: intentionally omitted (an IEEE convention, not used by ITEES). If the portal asks, paste the bios from \texttt{paper\_tr/main\_tr.tex}.
+\boxitem \textbf{Reference [10] DOI} verified against Crossref: 10.1155/etep/6000810 (Shikdar \& Laaksonen, ITEES 2026). The unverifiable ``manuscript under review'' companion reference was removed; bibliography is now 38 entries.
+\end{itemize}
+
+\section*{4. Upload sequence on the portal}
+\begin{itemize}
+\boxitem Article type: \textbf{Research Article}.
+\boxitem Upload \texttt{main\_itees.pdf} as the main manuscript (portal accepts PDF) and the LaTeX source zip if requested.
+\boxitem Upload the supplementary file separately (S1).
+\boxitem Paste or attach \texttt{cover\_letter\_ITEES.pdf}.
+\boxitem Suggested reviewers if asked: pick 2--3 from the reference-list authors with no conflict (different institutions, no co-authorship in the last 3 years).
+\boxitem License: \textbf{CC BY 4.0}. APC: select the waiver/discount option --- Group~A countries are applied automatically; if the portal does not detect it, request the waiver in the funding step and cite the Research4Life Group~A list.
+\boxitem Funding step: ``no specific grant'' (matches the manuscript's funding statement).
+\end{itemize}
+
+\section*{5. What to expect}
+Editorial screening (scope, integrity, basic quality) first; papers outside scope or below the quality bar are declined here without review. Then peer review. Count on a few weeks for screening and roughly 3--4 months end-to-end if it goes to review; respond to any revision request within the stated window. If declined at screening, the next free-for-you option on the ladder remains \textit{Energy Science \& Engineering} (Wiley, Q2, same waiver), so the package can be re-targeted quickly.
+
+\end{document}

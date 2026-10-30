@@ -18,6 +18,10 @@ paper_tr/
 Cover_Letter_IEEE_TR.docx       cover letter
 Suggested_Reviewers_IEEE_TR.docx seven suggested reviewers with rationale
 Submission_Checklist_IEEE_TR.docx pre-upload checklist and QA record
+itees_package/         ITEES (Wiley) submission package — see the 2026-10-30
+  main_itees.tex/.pdf        update 3 below: manuscript (19 pp, single-column
+                             A4, no page limit applies), restyled supplement,
+                             1-page cover letter, 2-page checklist, figs/
 AUTHORS.md             author list, ORCIDs, profiles
 README.md              this file
 ```
@@ -102,11 +106,12 @@ README.md              this file
 
 ## Still to complete before submission
 
-1. **Companion-study reference [18]** — cited as "manuscript under review";
-   update with the venue if accepted.
+1. ~~**Companion-study reference [18]**~~ — **resolved 2026-10-30** (see update 3).
 2. **Restore the lost figures** (see Round 1 note) if desired.
 3. **Reviewer e-mails** — copy from each researcher's official page when
-   entering them in ScholarOne.
+   entering them in the submission portal.
+4. **ITEES only:** confirm the postal address on the ITEES title page and
+   prepare ORCID iDs (see `itees_package/submission_checklist_ITEES.pdf`).
 
 ## 2026-10-30 update (post-review)
 
@@ -147,6 +152,59 @@ contribution is immediately clear to reviewers:
 - Recompiled cleanly; still 12 pages; the table fits the IEEE text frame
   exactly (measured 49.3–562.7 pt against the 49–563 pt frame); no new
   overfull boxes; cover letter and checklist unaffected.
+
+## 2026-10-30 update 3 — reference [18] resolved; ITEES submission package built
+
+**Reference [18] (`shikdar2026robustness`).** The entry was cited as
+"companion study, manuscript under review, 2026" — it can never carry a DOI
+while unpublished, and no published version exists (Crossref and web searches,
+checked 2026-10-30). At the authors' decision it was **removed**:
+
+- Related-work paragraph: the companion-attribution sentence was rewritten
+  around the paper's own scope; the closing gap statement now rests on the
+  verified SOH-regression-transfer literature only.
+- Table I: the [18] row and footnote d were removed (footnotes a–c remain;
+  the table still isolates "This work" as the only full-✓ row).
+- Section IV-C: the recalibration-arms paragraph was **reframed as this
+  study's own experiment** ("A final experiment asks whether a small labeled
+  target sample repairs this. In Arm A … in Arm B …") — consistent with the
+  contribution list ("a calibration analysis under shift with small-sample
+  recalibration"), the conclusion, and the supplement, which tabulates both
+  arms.
+- Bibliography: 39 → 38 entries, renumbered automatically; recompiled at
+  12 pages with no broken citations. The supplement section was retitled
+  "Small-Sample Recalibration (Arms A and B)" in the ITEES package.
+- **Ref [10] DOI verified against Crossref**: 10.1155/etep/6000810 resolves
+  to Shikdar & Laaksonen, *ITEES*, vol. 2026, art. 6000810, 2026.
+
+**ITEES package (`itees_package/`).** Full submission package for
+*International Transactions on Electrical Energy Systems* (Wiley Forward
+Series, eISSN 2050-7038, IF 2.6, SJR Q2), built to the journal's guidelines
+(no page limit; abstract ≤ 300 words — ours is 266; numbered square-bracket
+references in citation order, any style; mandatory funding / conflicts /
+data-availability statements; figures embedded; CC BY 4.0; APC up to
+US$2,580 **fully waived for Bangladesh**, Research4Life Group A):
+
+- `main_itees.tex` / `.pdf` — single-column A4 conversion of `main_tr.tex`
+  (19 pages; Wiley-style title page with full postal address and e-mails;
+  Roman sections/lettered subsections preserved so "Section III-C" refs stay
+  correct; IEEE biographies omitted — not part of the Wiley format; the two
+  widest tables rescaled for the single-column text frame; remaining
+  overfull boxes < 1.4 pt, invisible).
+- `supplement_ITEES.tex` / `.pdf` — the TR supplement restyled to match
+  (6 pages; sections/tables numbered S1…; same framing fix as the main text).
+- `cover_letter_ITEES.tex` / `.pdf` — one page; leads with the ITEES
+  continuity (direct extension of ref [10], published in ITEES) and the
+  "controlled diagnosis, not a new model" framing; closes with the APC-waiver
+  request.
+- `submission_checklist_ITEES.tex` / `.pdf` — journal facts, package
+  contents, verify-before-upload list (ORCIDs, postal address, similarity
+  check), portal upload sequence (`wiley.atyponrex.com/journal/ETEP`), and
+  expectations.
+- `figs/` — same four figures, embedded by both PDFs.
+
+The IEEE TR package in `paper_tr/` is untouched apart from the [18] removal
+and remains the fallback if the ITEES route is declined.
 
 ## Recovery note (important)
 

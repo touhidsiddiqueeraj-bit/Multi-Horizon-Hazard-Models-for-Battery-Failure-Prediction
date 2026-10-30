@@ -1,0 +1,50 @@
+% ITEES cover letter -- International Transactions on Electrical Energy Systems
+% Compile: tectonic cover_letter_ITEES.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular,
+  BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\usepackage[hidelinks]{hyperref}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+\begin{document}
+
+\small
+October 30, 2026
+
+\medskip
+Prof.\ Chongqing Kang\\
+Editor-in-Chief\\
+\textit{International Transactions on Electrical Energy Systems}\\
+Wiley
+
+\medskip
+\textbf{Re: Submission of a Research Article entitled ``Multi-Horizon Failure-Risk Models for Battery Failure Prediction: How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?''}
+
+\medskip
+Dear Professor Kang,
+
+We are pleased to submit the above Research Article for consideration in the \textit{International Transactions on Electrical Energy Systems} (ITEES).
+
+Lithium-ion battery management systems need to know whether a cell will fail within the next operating window, not how many cycles it has left. Our manuscript evaluates the recently proposed multi-horizon failure-risk classification framework with a validity-focused study across eight public aging datasets spanning four chemistries (LCO, LFP, NCA, NMC) from six laboratories: four model families plus a discrete-time hazard model, cell-disjoint splits, and a leakage-clean cross-fitted calibration protocol. The central result is a controlled state-of-health (SOH) ablation: apparent cross-chemistry transfer with SOH included (pooled AUC up to 1.00) collapses without it (at best 0.58 at $H{=}20$), much of the with-SOH signal is reproducible by an unfitted distance-to-threshold rule, and the findings replicate on 60 pre-registered cells from two further laboratories. The three production tree ensembles deploy on a \$12 ESP32-S3 microcontroller in under a millisecond per inference.
+
+We believe this work fits ITEES particularly well, for two reasons. First, it is a direct, validity-focused follow-up to Shikdar and Laaksonen, ``Learning When Not to Use a Battery: Multihorizon Failure Intelligence,'' recently published in this journal (ITEES, vol.\ 2026, art.\ no.\ 6000810, 2026; DOI 10.1155/etep/6000810), which introduced the failure-risk framework our study rigorously stress-tests; its readership is therefore the natural audience for the diagnosis. Second, rather than proposing yet another model, the paper delivers what the field currently lacks: a controlled diagnosis of what actually transfers between datasets and chemistries --- multi-learner sensitivity, a hazard formulation with structural monotonicity, SOH-shortcut and failure-definition ablations, same-chemistry cross-laboratory controls, a calibration-transfer analysis with small-sample repair, cell-level uncertainty treatment, and an embedded deployment --- with direct implications for how BMS-level prognostics should be validated before deployment in EV and grid-storage applications.
+
+We confirm that this manuscript is original, has not been published previously, and is not under consideration by any other journal. All authors have read and approved the submission and declare no conflicts of interest. The research received no specific funding. All datasets analyzed are publicly available, and supplementary material with the full monotonicity and recalibration tables accompanies the submission.
+
+Finally, we note that the corresponding author is based at Leading University, Sylhet, Bangladesh, which is in a Research4Life Group~A country on Wiley's full APC-waiver list; we would be grateful if the article could be considered under the automatic full waiver for open-access publication.
+
+Thank you for your consideration. We look forward to the reviewers' feedback.
+
+\medskip
+Sincerely,
+
+\medskip
+Hussain Touhid Siddiquee (corresponding author),\\
+on behalf of all co-authors\\
+Department of Electrical and Electronic Engineering,\\
+Leading University, Sylhet, Bangladesh\\
+\mbox{touhidsiddiqueeraj@gmail.com}
+
+\end{document}
