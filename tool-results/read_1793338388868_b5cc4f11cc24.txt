@@ -1,0 +1,252 @@
+     1→     1→     1→% IEEE Transactions on Reliability submission manuscript.
+     2→     2→     2→% Standalone adaptation of the validated results in results_v2/ (numbers
+     3→     3→     3→% identical to paper_ieee_access/main_access.tex); condensed to the IEEE TR
+     4→     4→     4→% 15-page limit. Do NOT edit main_access.tex relationship: this file is the
+     5→     5→     5→% IEEE TR deliverable, analogous to paper_wiecon/main.tex.
+     6→     6→     6→% Compile: tectonic main_tr.tex   (or pdflatex main_tr.tex, twice)
+     7→     7→     7→\documentclass[journal]{IEEEtran}
+     8→     8→     8→\usepackage{amsmath}
+     9→     9→     9→\usepackage{booktabs}
+    10→    10→    10→\usepackage{graphicx}
+    11→    11→    11→\usepackage{fontspec}
+    12→    12→    12→% Times text (IEEE look); math stays Computer Modern. Loaded by filename
+    13→    13→    13→% because the tectonic bundle exposes TeX Gyre Termes as OTF files.
+    14→    14→    14→\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular,
+    15→    15→    15→  BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+    16→    16→    16→\usepackage[hidelinks]{hyperref}
+    17→    17→    17→\graphicspath{{./figs/}}
+    18→    18→    18→\emergencystretch=2em
+    19→    19→    19→\makeatletter\def\UrlBreaks{\do\/\do\-\do\.}\makeatother
+    20→    20→    20→\begin{document}
+    21→    21→    21→
+    22→    22→    22→\title{Multi-Horizon Failure-Risk Models for Battery Failure Prediction: How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?}
+    23→    23→    23→
+    24→    24→    24→\author{Hussain~Touhid~Siddiquee,
+    25→    25→    25→        Syeda~Salsabil~Islam,
+    26→    26→    26→        Ariya~Jasimul~Islam,
+    27→    27→    27→        and~Chowdhury~Farzana~Hoque~Eshica%
+    28→    28→    28→\thanks{Manuscript received XXX; revised XXX. (Corresponding author: Hussain Touhid Siddiquee.)}%
+    29→    29→    29→\thanks{The authors are with [TODO: DEPARTMENT], [TODO: UNIVERSITY], Dhaka [TODO: POSTCODE], Bangladesh (e-mail: [TODO: corresponding email]). [TODO: confirm author order and emails.]}}
+    30→    30→    30→
+    31→    31→    31→\markboth{IEEE Transactions on Reliability}%
+    32→    32→    32→{Siddiquee \MakeLowercase{\textit{et al.}}: Multi-Horizon Failure-Risk Models for Battery Failure Prediction}
+    33→    33→    33→
+    34→    34→    34→\maketitle
+    35→    35→    35→
+    36→    36→    36→\begin{abstract}
+    37→    37→    37→Predicting whether a lithium-ion cell will fail inside a short operating window is a different question from estimating its remaining useful life, and it is the one that matters most for real-time dispatch in electric vehicles and grid storage. This study widens a recently proposed multi-horizon failure-risk classification framework, first shown on one model and one dataset, into a validity-focused evaluation covering four model families, a discrete-time hazard model, trivial health-state baselines, and eight public aging datasets spanning four chemistries (LCO, LFP, nickel-rich NCA, and NMC) from six laboratories, all under cell-disjoint splits and a leakage-clean, cross-fitted calibration protocol. Within-dataset discrimination is reliable, with fold-mean area under the curve (AUC) of 0.90--0.96 across the tree ensembles. The central result is a controlled state-of-health (SOH) ablation: apparent cross-dataset transfer with SOH included (pooled AUC up to 1.00) collapses without SOH (at best 0.58 at $H{=}20$), and much of the with-SOH signal is reproducible by a distance-to-threshold rule on SOH alone (0.912 AUC on the 141-cell MIT--Stanford set). Because SOH also enters the failure definition, all with-SOH numbers are diagnostic-proximity upper bounds rather than pure prognosis: relabeling failures by voltage sag alone, a criterion SOH does not define, cuts with-SOH transfer by 0.17. Same-chemistry cross-laboratory controls confirm that the collapse is driven by dataset shift at least as much as by chemistry, and the findings replicate on 60 pre-registered NMC, NCA, and LFP cells from two further laboratories. Isotonic calibration largely fails to transfer, and the three tree ensembles deploy on a \$12 ESP32-S3 in under a millisecond per inference for a single SRAM-resident model.
+    38→    38→    38→\end{abstract}
+    39→    39→    39→
+    40→    40→    40→\begin{IEEEkeywords}
+    41→    41→    41→Battery failure prediction, prognostics and health management, multi-horizon failure-risk classification, state-of-health shortcut, cross-chemistry transfer, dataset shift, probability calibration, discrete-time hazard model, embedded machine learning.
+    42→    42→    42→\end{IEEEkeywords}
+    43→    43→    43→
+    44→    44→    44→\IEEEpeerreviewmaketitle
+    45→    45→    45→
+    46→    46→    46→\section{Introduction}
+    47→    47→    47→LITHIUM-ION batteries underpin electrified transport and grids, yet field reliability remains hard to certify. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression \cite{meng2019review,roman2021machine}, which answers a question operators rarely ask in real time: a battery management system (BMS) needs to know whether a cell survives the next mission, not its aggregate cycle count. Predicting lifetime from field rather than laboratory data remains open \cite{sulzer2021challenge}. Tree ensembles --- Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, LightGBM \cite{ke2017lightgbm} --- serve capacity and RUL estimation, but binary failure-risk classification at multiple horizons is recent \cite{shikdar2026learning}.
+    48→    48→    48→
+    49→    49→    49→Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-horizon failure-risk classification: for cycle $t$ and horizon $H$, predict whether failure (SOH below 0.80 or voltage sag beyond 6\%) occurs within $H$ cycles. Their gradient boosting model on NASA 18650 (37 LCO cells) reached AUC 0.87--0.90 across $H \in \{10,20,30,50\}$, but left three gaps: one model on one dataset (no learner, hyperparameter, or calibration sensitivity), no cross-dataset check, and no path to the microcontroller where a BMS runs.
+    50→    50→    50→
+    51→    51→    51→This paper begins from those gaps but is organized around a sharper validity question: \emph{when a failure-risk model appears to transfer between datasets and chemistries, is anything about degradation being transferred, or is the model merely reading a health-state variable that encodes proximity to the failure criterion?} The composite label is defined from SOH, and SOH is also the strongest feature, so a model can score well on transfer while learning only ``distance to the SOH $=$ 0.80 threshold.''
+    52→    52→    52→
+    53→    53→    53→Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting} and imbalanced data \cite{huang2020experimental}, but no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
+    54→    54→    54→
+    55→    55→    55→\begin{table}[!t]
+    56→    56→    56→\caption{Representative Prior Work Relative to This Study.}
+    57→    57→    57→\label{tab:lit}
+    58→    58→    58→\centering
+    59→    59→    59→\footnotesize
+    60→    60→    60→\begin{tabular}{p{1.55cm}p{1.1cm}p{0.75cm}p{2.7cm}}
+    61→    61→    61→\toprule
+    62→    62→    62→\textbf{Study} & \textbf{Family} & \textbf{Data} & \textbf{Position}\\
+    63→    63→    63→\midrule
+    64→    64→    64→Meng and Li \cite{meng2019review} & PHM review & Various & Physics-based, data-driven, hybrid families\\
+    65→    65→    65→Breiman; Chen; Ke \cite{breiman2001random,chen2016xgboost,ke2017lightgbm} & Tree ensembles & RUL & RUL regression, not failure-risk classification\\
+    66→    66→    66→Sahoo et al.\ \cite{sahoo2022transfer}; Lu et al.\ \cite{lu2023deep} & Transfer (SOH) & NASA, CALCE; large corpora & SOH regression only\\
+    67→    67→    67→Platt; Zadrozny et al.\ \cite{platt1999probabilistic,zadrozny2002transforming,niculescu2005predicting,huang2020experimental} & Calibration & Various & In-domain comparison only\\
+    68→    68→    68→Lundberg et al.\ \cite{lundberg2020from} & Explainability & --- & TreeSHAP for ensembles\\
+    69→    69→    69→Grzesik and Mrozek \cite{grzesik2024combining} & Edge ML & --- & No battery failure cases\\
+    70→    70→    70→Gupta and Ramdas \cite{gupta2023online} & Online calib. & --- & Distribution-shift Platt\\
+    71→    71→    71→Shikdar and Laaksonen \cite{shikdar2026learning} & Failure risk & NASA & One model, one dataset (baseline)\\
+    72→    72→    72→\textbf{This work} & Failure risk + validity & 8 datasets & Multi-model SOH-shortcut diagnosis, hazard model, edge deployment\\
+    73→    73→    73→\bottomrule
+    74→    74→    74→\end{tabular}
+    75→    75→    75→\end{table}
+    76→    76→    76→
+    77→    77→    77→The objective of this study is to close the three gaps identified above and, in doing so, to answer the validity question rigorously. The contributions are:
+    78→    78→    78→\begin{itemize}
+    79→    79→    79→\item a four-model benchmark (three tree ensembles plus a GRU) on two LCO datasets under cell-disjoint splits with cross-fitted, leakage-free calibration;
+    80→    80→    80→\item a discrete-time hazard formulation whose survival product is monotone in the horizon by construction, against independent fixed-horizon classifiers that violate monotonicity on 32--45\% of rows (see Supplementary Material);
+    81→    81→    81→\item a shortcut diagnosis of cross-dataset transfer: minimal baselines, a factorial feature ablation, a failure-definition ablation relabeling failures by SOH or voltage sag alone, and same-chemistry cross-laboratory controls separating dataset shift from chemistry shift;
+    82→    82→    82→\item a cell-as-unit uncertainty treatment: cell-level bootstrap intervals on every headline number, with DeLong tests demoted to secondary evidence;
+    83→    83→    83→\item a calibration analysis under shift with small-sample recalibration, a cost-sensitive operational evaluation, and a complete ESP32-S3 embedded deployment.
+    84→    84→    84→\end{itemize}
+    85→    85→    85→
+    86→    86→    86→The remainder of this paper is organized as follows. Section~II describes the methodology, Section~III the results, Section~IV the analysis and limitations, and Section~V concludes.
+    87→    87→    87→
+    88→    88→    88→\section{Methodology}
+    89→    89→    89→\subsection{Composite Failure Label}
+    90→    90→    90→Following the original protocol \cite{shikdar2026learning}, cell State-of-Health at cycle $k$ is discharge capacity over mean first-10-cycle capacity,
+    91→    91→    91→\begin{equation}\label{eq:soh}
+    92→    92→    92→\begin{aligned}
+    93→    93→    93→\mathrm{SOH}_k^{(c)} &= \frac{Q_k^{(c)}}{\bar{Q}^{(c)}},\\[2pt]
+    94→    94→    94→\bar{Q}^{(c)} &= \frac{1}{10}\sum_{i=1}^{10} Q_i^{(c)},
+    95→    95→    95→\end{aligned}
+    96→    96→    96→\end{equation}
+    97→    97→    97→where $Q_k^{(c)}$ is the discharge capacity at cycle $k$. The voltage baseline $\bar{V}^{(c)}$ is defined analogously. A discharge cycle $t$ in cell $c$ is labeled as failing within horizon $H$ if any cycle $k\in[t,t{+}H)$ meets either of two criteria,
+    98→    98→    98→\begin{equation}\label{eq:label}
+    99→    99→    99→y_t^{(c,H)} \;=\; \begin{cases}
+   100→   100→   100→1, & \exists\, k\in[t,t{+}H):\ \mathrm{SOH}_k^{(c)}\le 0.80 \ \text{or}\\[2pt]
+   101→   101→   101→& \bar{V}_k^{(c)} < 0.94\,\bar{V}^{(c)},\\[2pt]
+   102→   102→   102→0, & \text{otherwise,}
+   103→   103→   103→\end{cases}
+   104→   104→   104→\end{equation}
+   105→   105→   105→and once triggered the label stays 1 for all later cycles. Because the window $[t,t{+}H)$ includes the current cycle, rows scored at or after the failure crossing are labeled positive for every formulation in this paper: with-SOH results therefore mix concurrent failure detection with future failure prediction, and Section~III-C reports the two components separately. The task is to estimate the cumulative failure risk over the horizon,
+   106→   106→   106→\begin{equation}\label{eq:risk}
+   107→   107→   107→p_t^{(c,H)} \;=\; \Pr\!\bigl(T_f \le t{+}H \mid T_f > t,\ \mathbf{x}_t^{(c)}\bigr),
+   108→   108→   108→\end{equation}
+   109→   109→   109→where $T_f$ is the failure cycle and $\mathbf{x}_t^{(c)}$ the feature vector at cycle $t$. Datasets without voltage data, or with voltage at the cutoff as in Oxford's flat LFP plateau, fall back to SOH alone.
+   110→   110→   110→
+   111→   111→   111→Three properties of this label definition matter for everything that follows. First, \eqref{eq:risk} is a fixed-horizon cumulative failure risk, not a discrete-time hazard: each horizon is an independent binary classifier with no monotonicity constraint $p_t^{(c,10)}\le p_t^{(c,20)}\le p_t^{(c,30)}\le p_t^{(c,50)}$. Section~II-E adds a true discrete-time hazard model, and the Supplementary Material quantifies the violations. Second, the label is \emph{partially defined by SOH itself}, and SOH is also an input feature; a with-SOH model can therefore detect proximity to the SOH $=0.80$ threshold without learning degradation dynamics. Every with-SOH result here is an upper bound including this leakage, and Section~III-E measures it by relabeling failures one endpoint at a time. Third, the endpoints separate: the label can use the SOH criterion alone, voltage sag alone, or both, independently of the feature ablation.
+   112→   112→   112→
+   113→   113→   113→\subsection{Datasets}
+   114→   114→   114→Eight public aging datasets are used; Table~\ref{tab:datasets} summarizes their sizes and chemistries.
+   115→   115→   115→
+   116→   116→   116→\begin{table*}[!t]
+   117→   117→   117→\caption{The Eight Aging Datasets. BA = Battery Archive; Groups 5--8 Are Transfer Targets Only.}
+   118→   118→   118→\label{tab:datasets}
+   119→   119→   119→\centering
+   120→   120→   120→\footnotesize
+   121→   121→   121→\begin{tabular}{p{4.2cm}rcp{1.3cm}rp{6.6cm}}
+   122→   122→   122→\toprule
+   123→   123→   123→\textbf{Dataset} & \textbf{Cells} & \textbf{Chem.} & \textbf{Rows} & \textbf{Notes}\\
+   124→   124→   124→\midrule
+   125→   125→   125→NASA 18650 \cite{saha2007battery} & 37 & LCO & 1\,028 & Randomized profiles, diverse failures\\
+   126→   126→   126→CALCE CX2/CS2 \cite{calce2023battery} & 7 & LCO & 8\,700 & Temp.\ and duration unlogged\\
+   127→   127→   127→Oxford \cite{birkl2017oxford} & 5 & LFP & 320 & $\sim$100-cycle spacing; horizon-invariant labels\\
+   128→   128→   128→MIT--Stanford \cite{severson2019data,attia2020closedloop} & 141 & LFP & 117\,000 & Fast-charging protocol\\
+   129→   129→   129→HNEI (BA) \cite{batteryarchive2023} & 15 & NMC/LCO & 15\,685 & 25\,$^\circ$C, single condition, all reach EOL\\
+   130→   130→   130→SNL NCA (BA) \cite{batteryarchive2023,preger2020degradation} & 18 & NCA & 11\,812 & 15--35\,$^\circ$C, mixed C-rates\\
+   131→   131→   131→SNL NMC (BA) \cite{batteryarchive2023,preger2020degradation} & 6 & NMC & 2\,997 & 15--25\,$^\circ$C\\
+   132→   132→   132→SNL LFP (BA) \cite{batteryarchive2023,preger2020degradation} & 21 & LFP & 76\,293 & Mostly censored (3\% prevalence)\\
+   133→   133→   133→\bottomrule
+   134→   134→   134→\end{tabular}
+   135→   135→   135→\end{table*}
+   136→   136→   136→
+   137→   137→   137→Groups 5--8 are the Battery Archive ``Cycle Test Data'' export \cite{batteryarchive2023} (September 2026 summaries; SNL matrix per Preger et al.~\cite{preger2020degradation}), used only as \emph{transfer targets} and within-group controls. A pre-registered cleaning rule admits a cell only if it passes formation-cycle removal, Hampel despiking of the capacity trace, truncation at sustained level shifts, per-cycle voltage validity, and a minimum of 20 usable cycles. Of 75 downloaded cells, 60 pass (15 HNEI + 6 NMC, 18 NCA, 21 LFP; 106\,787 cycle rows); the remaining 15 are excluded --- all 15 for mixed state-of-charge windows --- and are never used. On every admitted cell the SOH end-of-life crossing occurs no later than the voltage-sag crossing, so the composite label on the new groups is, in effect, the SOH criterion alone.
+   138→   138→   138→
+   139→   139→   139→One consequence of the Oxford logging resolution deserves emphasis. Consecutive cleaned cycles are roughly 100 cycles apart, so every horizon $H\in\{10,20,30,50\}$ is shorter than the sampling interval and the positive-label rows are \emph{identical for all four horizons}: Oxford measures pooled failure detection, not horizon-resolved prediction, and its per-cell means rest effectively on four cells (Cell5 contributes one positive row). Both caveats apply to every Oxford number in this paper.
+   140→   140→   140→
+   141→   141→   141→\subsection{Features and Preprocessing}
+   142→   142→   142→Each cycle is described by seven scalar features: cycle index, average and minimum discharge voltage, average discharge current, average temperature, discharge duration, and SOH. Trees are scale-invariant and need no standardization; the GRU and logistic baselines are standardized with training-set statistics. Unlogged CALCE and Battery Archive columns (temperature, duration, current) are zero-filled; a constant-zero column cannot split within one dataset but acts as a dataset identifier in pooled training, a confound controlled with a common-feature subset (Section~III-C).
+   143→   143→   143→
+   144→   144→   144→\subsection{Models}
+   145→   145→   145→Three tree ensembles are benchmarked with hyperparameters matched to the original study \cite{shikdar2026learning}: XGBoost \cite{chen2016xgboost} with max\_depth 4, 300 estimators, learning rate 0.05, subsample 0.8, colsample\_bytree 0.8, min\_child\_weight 5; LightGBM \cite{ke2017lightgbm} with the same depth, count, and rate; and Random Forest \cite{breiman2001random} with max\_depth 6 and 300 estimators; all random\_state 42.
+   146→   146→   146→
+   147→   147→   147→A compact GRU tests whether sequence-aware representations transfer across chemistries. It ingests sliding windows of $W{=}10$ cycles per cell through one 8-unit GRU layer,
+   148→   148→   148→\begin{equation}\label{eq:gru}
+   149→   149→   149→\begin{aligned}
+   150→   150→   150→\mathbf{r}_t &= \sigma(W_r\mathbf{x}_t + U_r\mathbf{h}_{t-1}),\quad
+   151→   151→   151→\mathbf{z}_t = \sigma(W_z\mathbf{x}_t + U_z\mathbf{h}_{t-1}),\\
+   152→   152→   152→\tilde{\mathbf{h}}_t &= \tanh(W_h\mathbf{x}_t + U_h(\mathbf{r}_t\odot\mathbf{h}_{t-1})),\\
+   153→   153→   153→\mathbf{h}_t &= (1-\mathbf{z}_t)\odot\mathbf{h}_{t-1} + \mathbf{z}_t\odot\tilde{\mathbf{h}}_t,
+   154→   154→   154→\end{aligned}
+   155→   155→   155→\end{equation}
+   156→   156→   156→and the final hidden state maps through a sigmoid linear layer to the failure probability (Adam, learning rate 0.005, binary cross-entropy). The 8-unit width matches the small training-cell counts. For cross-dataset runs the feature set is reduced to the common, unit-safe set --- cycle number, average and minimum voltage, plus SOH when enabled --- and the trees are evaluated on the identical common set, so no architecture claim rests on a feature-confounded comparison.
+   157→   157→   157→
+   158→   158→   158→Because the central question is whether apparent performance is a health-state shortcut, the most important models are embarrassingly simple ones \cite{shikdar2026learning}: the fitted-free \emph{SOH distance rule} $d_t = 0.80 - \mathrm{SOH}_t$; \emph{SOH-only}, \emph{cycle-only}, \emph{SOH+cycle}, \emph{sensors-only}, and \emph{full-feature} logistic regressions. If the SOH-only and distance-rule baselines reproduce most of the transferable performance of the tuned ensembles, then the ensembles contribute little beyond reading the health state --- the negative result this validity analysis predicts.
+   159→   159→   159→
+   160→   160→   160→\subsection{A True Discrete-Time Hazard Model}
+   161→   161→   161→To complement the four independent fixed-horizon classifiers, we also fit an explicit discrete-time survival model. For each observed cycle $t$ and offset $\ell\in\{1,\dots,L\}$ with $L{=}50$, define the hazard
+   162→   162→   162→\begin{equation}\label{eq:hazard}
+   163→   163→   163→h_\ell(t) \;=\; \Pr\!\bigl(T_f = t{+}\ell \mid T_f \ge t{+}\ell,\ \mathbf{x}_t\bigr),
+   164→   164→   164→\end{equation}
+   165→   165→   165→conditional on the features measured at $t$ only. One pooled classifier --- XGBoost, and a logistic regression --- is fit on the offset-expanded at-risk rows $(\mathbf{x}_t, \ell)$ with target $\mathbf{1}\{T_f = t{+}\ell\}$, restricted to $t{+}\ell \le T_f$, with $\ell$ as an input feature. The cumulative risk over horizon $H$ is the survival product
+   166→   166→   166→\begin{equation}\label{eq:survival}
+   167→   167→   167→R(t,H) \;=\; 1 - \prod_{\ell=1}^{H}\bigl(1-\hat h_\ell(t)\bigr),
+   168→   168→   168→\end{equation}
+   169→   169→   169→which is monotone non-decreasing in $H$ by construction and yields all four horizons from one model. Rows at or after failure are scored exactly like the fixed-horizon classifiers score them, so the evaluation rows are identical across formulations.
+   170→   170→   170→
+   171→   171→   171→\subsection{Calibration Protocol}
+   172→   172→   172→Three post-hoc calibration schemes are compared: Platt scaling fits a sigmoid to the raw scores $s_i$,
+   173→   173→   173→\begin{equation}\label{eq:platt}
+   174→   174→   174→p_i \;=\; \frac{1}{1+\exp(-\alpha s_i - \beta)},
+   175→   175→   175→\end{equation}
+   176→   176→   176→by logistic regression; isotonic regression \cite{zadrozny2002transforming} fits the non-decreasing step function that minimizes squared error; and temperature scaling divides the logit of the score by a single fitted temperature.
+   177→   177→   177→
+   178→   178→   178→The protocol is leakage-clean. For every within-dataset fold, calibrators are fitted on \emph{cross-fitted out-of-fold scores} from an inner cell-disjoint GroupKFold over the training cells; untouched test cells are scored by a model trained on all training cells. In transfer, calibrators are fitted on source out-of-fold scores only. No calibrator is ever fitted on the scores it is applied to, and no test cell contributes to training or calibration. A reproducibility note is retained from the original study comparison: the original study \cite{shikdar2026learning} reported Brier scores around 0.032; re-execution yields roughly 0.09--0.29, a gap of unknown cause that does not affect the relative comparisons forming the core of this paper.
+   179→   179→   179→
+   180→   180→   180→\subsection{Transfer Protocols}
+   181→   181→   181→Transfer is evaluated by training on LCO cells (NASA alone, CALCE alone, or both) and testing on the target cells, reported per cell and pooled with cell-level bootstrap intervals; pooling alone can hide degenerate constant-score behavior, which per-cell statistics expose. Three families of transfer are used: \textbf{cross-chemistry} (LCO$\to$LFP): NASA, CALCE, or both $\to$ Oxford and $\to$ Severson, with and without SOH, and on the common feature set shared with the GRU; \textbf{same-chemistry, cross-laboratory controls}: NASA$\to$CALCE, CALCE$\to$NASA (LCO$\to$LCO) and Severson$\to$Oxford, Oxford$\to$Severson (LFP$\to$LFP), which separate dataset shift from chemistry shift; and \textbf{feature-definition ablations}: the factorial feature grid and the failure-endpoint relabeling of Section~III-E.
+   182→   182→   182→
+   183→   183→   183→\subsection{Evaluation and Statistical Testing}
+   184→   184→   184→\label{sec:eval}
+   185→   185→   185→Within-dataset evaluation uses 5-fold cell-grouped cross-validation on NASA (37 cells) and leave-one-cell-out on CALCE (7 cells): splits are cell-disjoint, models retrained per horizon. The experimental unit is the cell: headline AUCs are fold means with fold SDs, every headline carries a 95\% cell-resampling interval (2\,000 draws; 400 for Severson), and paired comparisons reuse the same resamples. The DeLong nonparametric test \cite{delong1988comparing} is retained as secondary evidence: it treats every cycle-level prediction as independent, so its $p$-values are inflated by pseudoreplication and are read only as directional consistency checks.
+   186→   186→   186→
+   187→   187→   187→Discrimination alone is not enough for a reliability-oriented study, so each within-dataset configuration also reports the Brier score, expected calibration error (10 equal-width bins), log loss, the slope and intercept of a logistic recalibration of the predicted probabilities, the area under the precision--recall curve (PR-AUC), and sensitivity at a fixed 10\% false-positive rate. Three reporting conventions apply throughout. Pooled AUC is dominated by long-lived cells, so per-cell statistics and cell-level bootstrap intervals are the primary evidence. Failure prevalence rises with the horizon, so Brier score, calibration error, thresholds, and precision--recall are horizon-dependent. The cost model prices a missed failure at 20$\times$ a false alarm; thresholds use a 10\% source false-alarm budget.
+   188→   188→   188→
+   189→   189→   189→\subsection{Embedded Deployment Architecture}
+   190→   190→   190→The deployment pipeline exports the three trained models into one flat binary run on an ESP32-S3 by a hand-written C tree walker: a 12-byte header, a $3{\times}4$-byte offset table, and per-model sections of consecutive node arrays (split feature, float threshold, child indices; leaves store class-1 probabilities). Writing $\ell_t$ for the leaf value reached in tree $t$ and $T$ for the number of trees, Random Forest averages and clamps its leaf probabilities,
+   191→   191→   191→\begin{equation}\label{eq:rf}
+   192→   192→   192→p \;=\; \mathrm{clamp}\!\left(\frac{1}{T}\sum_{t=1}^{T}\ell_t,\ 0,\ 1\right),
+   193→   193→   193→\end{equation}
+   194→   194→   194→while XGBoost and LightGBM pass the summed score through a sigmoid,
+   195→   195→   195→\begin{equation}\label{eq:sigmoid}
+   196→   196→   196→p \;=\; \frac{1}{1+\exp\!\bigl(-\textstyle\sum_{t=1}^{T}\ell_t - s_0\bigr)},
+   197→   197→   197→\end{equation}
+   198→   198→   198→where $s_0$ is the model's initialization score ($s_0\neq 0$ only for XGBoost). Correctness is confirmed in three stages --- a Python walker mirroring the C logic against \texttt{predict\_proba()}, a cross-compiled x86\_64 binary, and on-target ESP32-S3 execution --- all below $10^{-5}$ maximum absolute error before deployment is accepted.
+   199→   199→   199→
+   200→   200→   200→\section{Results}
+   201→   201→   201→
+   202→   202→   202→\subsection{Within-Dataset Performance}
+   203→   203→   203→Table~\ref{tab:within} summarizes within-dataset performance as fold-mean AUC $\pm$ SD under the leakage-clean protocol, with Platt Brier scores. Every tree configuration clears 0.89 at every horizon on both datasets (Fig.~\ref{fig:within}); the GRU matches the means with higher fold variance, and the single-fit hazard model lands in the same range. On the four new Battery Archive groups, 38 of 39 tree--group--horizon configurations reach 0.85, spanning 0.61--1.00 --- though the mostly-censored LFP-SNL group (0.031 prevalence) is supporting evidence only.
+   204→   204→   204→
+   205→   205→   205→\begin{table*}[!t]
+   206→   206→   206→\caption{Within-Dataset Failure-Risk Performance Across Four Horizons (Fold-Mean AUC $\pm$ Fold SD; Tree Ensembles and GRU Platt-Calibrated, Hazard Models Raw; CALCE Uses Leave-One-Cell-Out, NASA 5-Fold Cell-Grouped CV). Brier Is the Platt Pooled Value Averaged Over Horizons (Raw for Hazard Rows).}
+   207→   207→   207→\label{tab:within}
+   208→   208→   208→\centering
+   209→   209→   209→\footnotesize
+   210→   210→   210→\begin{tabular}{llcccccc}
+   211→   211→   211→\toprule
+   212→   212→   212→\textbf{Model} & \textbf{Dataset} & \textbf{H=10} & \textbf{H=20} & \textbf{H=30} & \textbf{H=50} & \textbf{Mean AUC} & \textbf{Brier}\\
+   213→   213→   213→\midrule
+   214→   214→   214→XGBoost & NASA & 0.903$\pm$0.097 & 0.899$\pm$0.121 & 0.910$\pm$0.111 & 0.918$\pm$0.115 & 0.907 & 0.182 \\
+   215→   215→   215→LightGBM & NASA & 0.912$\pm$0.065 & 0.909$\pm$0.126 & 0.892$\pm$0.121 & 0.901$\pm$0.073 & 0.903 & 0.206 \\
+   216→   216→   216→Random Forest & NASA & 0.911$\pm$0.106 & 0.901$\pm$0.109 & 0.912$\pm$0.113 & 0.927$\pm$0.107 & 0.913 & 0.201 \\
+   217→   217→   217→GRU & NASA & 0.872$\pm$0.122 & 0.893$\pm$0.114 & 0.884$\pm$0.083 & 0.856$\pm$0.128 & 0.876 & 0.307 \\
+   218→   218→   218→Hazard XGBoost & NASA & 0.918$\pm$0.086 & 0.935$\pm$0.086 & 0.937$\pm$0.081 & 0.927$\pm$0.070 & 0.929 & 0.182 \\
+   219→   219→   219→Hazard Logistic & NASA & 0.902$\pm$0.064 & 0.899$\pm$0.057 & 0.896$\pm$0.045 & 0.867$\pm$0.052 & 0.891 & 0.175 \\
+   220→   220→   220→XGBoost & CALCE & 0.965$\pm$0.041 & 0.967$\pm$0.036 & 0.967$\pm$0.040 & 0.943$\pm$0.071 & 0.961 & 0.075 \\
+   221→   221→   221→LightGBM & CALCE & 0.967$\pm$0.047 & 0.968$\pm$0.038 & 0.943$\pm$0.070 & 0.942$\pm$0.076 & 0.955 & 0.075 \\
+   222→   222→   222→Random Forest & CALCE & 0.934$\pm$0.074 & 0.933$\pm$0.070 & 0.917$\pm$0.098 & 0.903$\pm$0.110 & 0.922 & 0.070 \\
+   223→   223→   223→GRU & CALCE & 0.952$\pm$0.072 & 0.959$\pm$0.083 & 0.935$\pm$0.090 & 0.921$\pm$0.090 & 0.942 & 0.130 \\
+   224→   224→   224→Hazard XGBoost & CALCE & 0.894$\pm$0.135 & 0.893$\pm$0.130 & 0.916$\pm$0.095 & 0.889$\pm$0.096 & 0.898 & 0.108 \\
+   225→   225→   225→Hazard Logistic & CALCE & 0.979$\pm$0.042 & 0.948$\pm$0.119 & 0.936$\pm$0.138 & 0.945$\pm$0.117 & 0.952 & 0.122 \\
+   226→   226→   226→\bottomrule
+   227→   227→   227→\end{tabular}
+   228→   228→   228→\end{table*}
+   229→   229→   229→
+   230→   230→   230→\begin{figure}[!t]
+   231→   231→   231→\centering
+   232→   232→   232→\includegraphics[width=\columnwidth]{Fig01_Within_Dataset_AUC.png}
+   233→   233→   233→\caption{Within-dataset AUC heatmap for the tree ensembles, mean across horizons, Platt-calibrated. Right block: the four new Battery Archive groups. GRU and hazard within-dataset numbers are in Table~\ref{tab:within}.}
+   234→   234→   234→\label{fig:within}
+   235→   235→   235→\end{figure}
+   236→   236→   236→
+   237→   237→   237→\subsection{Calibration Under Cross-Fitting}
+   238→   238→   238→Table~\ref{tab:cal} compares the three calibrators, averaged over the tree models and horizons, where every calibrator is fitted on cross-fitted out-of-fold scores. Three observations follow. First, on discrimination the raw scores are effectively unbeatable within dataset: any fitted calibrator is a monotone re-mapping and preserves per-fold ranking up to the ties it introduces, and the fold-mean AUC differences between calibrators are correspondingly small. Second, the step function of isotonic regression creates large tied groups whose cost is invisible to fold-mean ROC-AUC but severe for precision--recall: on NASA, raw scores reach a mean PR-AUC of 0.774 while isotonic collapses to 0.639 (Supplementary Material). Third, calibration quality proper is best for Platt on CALCE (ECE 0.029 against 0.049 for isotonic), but the fitted Platt slope on CALCE is only 0.011: in that long-tailed, leave-one-cell-out setting the out-of-fold sigmoid essentially washes confidence out toward the base rate while preserving ranking. Temperature scaling is the most balanced compromise on NASA (slope 1.218, Brier 0.178, both better than Platt's). There is no global winner across datasets, so we read the comparison as: \emph{Platt preserves discrimination best while achieving calibration error comparable to or better than isotonic} --- a materially weaker and more defensible claim than ``Platt is the better calibrator'' --- and raw scores remain the safest ranking signal whenever the operating context is uncertain.
+   239→   239→   239→
+   240→   240→   240→\begin{table}[!t]
+   241→   241→   241→\caption{Calibration Quality Averaged Over Tree Models and Horizons. All Calibrators Are Fitted on Cross-Fitted Out-of-Fold Scores. Slope 1 / Intercept 0 Indicate Perfect Probabilistic Calibration.}
+   242→   242→   242→\label{tab:cal}
+   243→   243→   243→\centering
+   244→   244→   244→\scriptsize
+   245→   245→   245→\begin{tabular}{llcccccc}
+   246→   246→   246→\toprule
+   247→   247→   247→\textbf{Dataset} & \textbf{Method} & \textbf{AUC} & \textbf{Brier} & \textbf{ECE} & \textbf{Log loss} & \textbf{Slope} & \textbf{Int.}\\
+   248→   248→   248→\midrule
+   249→   249→   249→NASA & Isotonic & 0.854 & 0.207 & 0.151 & 0.652 & 0.48 & $-$0.26 \\
+   250→   250→   250→NASA & Platt & 0.908 & 0.196 & 0.136 & 0.575 & 0.90 & $-$0.14 \\
+   251→   251→
+   252→   252→[showing lines 1-250 of 570; use offset=251 with limit to continue reading]

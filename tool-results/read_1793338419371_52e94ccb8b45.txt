@@ -1,0 +1,441 @@
+     1→#!/usr/bin/env python3
+     2→"""Round 1 verification: check every number in paper_tr/main_tr.tex against
+     3→ground truth in results_v2/paper_numbers.json and results_v2/*.csv."""
+     4→import json, csv, math, re, sys
+     5→
+     6→R2 = "/home/z/my-project/paper-repo/results_v2/"
+     7→d = json.load(open(R2 + "paper_numbers.json"))
+     8→
+     9→PASS, FAIL = [], []
+    10→def chk(name, paper_val, truth_val, tol=0.0005, fmt=None):
+    11→    """Compare paper value against truth, with rounding tolerance."""
+    12→    if paper_val is None or truth_val is None or (isinstance(truth_val, float) and math.isnan(truth_val)):
+    13→        FAIL.append((name, paper_val, truth_val, "missing/NaN"))
+    14→        return
+    15→    if abs(paper_val - truth_val) > tol:
+    16→        FAIL.append((name, paper_val, truth_val, f"diff={paper_val-truth_val:+.4f}"))
+    17→    else:
+    18→        PASS.append(name)
+    19→
+    20→def r3(x):  # round to 3 decimals like the paper
+    21→    return round(x + 1e-12, 3)
+    22→
+    23→# ============ TABLE tab:within (per-H AUC, mean AUC) ============
+    24→models = {"xgboost":"XGBoost","lightgbm":"LightGBM","random_forest":"Random Forest",
+    25→          "gru":"GRU","hazard_xgb":"Hazard XGBoost","hazard_logistic":"Hazard Logistic"}
+    26→paper_within = {  # (model, dataset): (H10, H20, H30, H50, mean)
+    27→ ("XGBoost","NASA"):(0.903,0.899,0.910,0.918,0.907),
+    28→ ("LightGBM","NASA"):(0.912,0.909,0.892,0.901,0.903),
+    29→ ("Random Forest","NASA"):(0.911,0.901,0.912,0.927,0.913),
+    30→ ("GRU","NASA"):(0.872,0.893,0.884,0.856,0.876),
+    31→ ("Hazard XGBoost","NASA"):(0.918,0.935,0.937,0.927,0.929),
+    32→ ("Hazard Logistic","NASA"):(0.902,0.899,0.896,0.867,0.891),
+    33→ ("XGBoost","CALCE"):(0.965,0.967,0.967,0.943,0.961),
+    34→ ("LightGBM","CALCE"):(0.967,0.968,0.943,0.942,0.955),
+    35→ ("Random Forest","CALCE"):(0.934,0.933,0.917,0.903,0.922),
+    36→ ("GRU","CALCE"):(0.952,0.959,0.935,0.921,0.942),
+    37→ ("Hazard XGBoost","CALCE"):(0.894,0.893,0.916,0.889,0.898),
+    38→ ("Hazard Logistic","CALCE"):(0.979,0.948,0.936,0.945,0.952),
+    39→}
+    40→for (pm, pd), vals in paper_within.items():
+    41→    mkey = [k for k,v in models.items() if v==pm][0]
+    42→    entry = d[f"within_{pd.lower()}_{mkey}"]
+    43→    for h, pv in zip(["10","20","30","50"], vals[:4]):
+    44→        chk(f"within {pm}/{pd} H{h}", pv, r3(entry["per_H"][h]))
+    45→    chk(f"within {pm}/{pd} mean", vals[4], r3(entry["mean_AUC"]))
+    46→
+    47→# Brier column: Platt pooled averaged over horizons (raw for hazard rows)
+    48→def mean_brier(dataset, model, method, horizons=("10","20","30","50")):
+    49→    fn = {"NASA":"within_trees.csv","CALCE":"within_trees.csv"}
+    50→    fn = {"xgboost":"within_trees.csv","lightgbm":"within_trees.csv","random_forest":"within_trees.csv",
+    51→          "gru":"gru_within.csv","hazard_xgb":"hazard_within.csv","hazard_logistic":"hazard_within.csv"}
+    52→    rows = list(csv.DictReader(open(R2+fn[model])))
+    53→    briers = [float(r["Brier"]) for r in rows
+    54→              if r["dataset"]==dataset.lower() and r["model"]==model and r["H"] in horizons and r["method"]==method]
+    55→    if not briers: return None
+    56→    return sum(briers)/len(briers)
+    57→
+    58→paper_brier = {("XGBoost","NASA"):0.182,("LightGBM","NASA"):0.206,("Random Forest","NASA"):0.201,
+    59→ ("GRU","NASA"):0.307,("Hazard XGBoost","NASA"):0.182,("Hazard Logistic","NASA"):0.175,
+    60→ ("XGBoost","CALCE"):0.075,("LightGBM","CALCE"):0.075,("Random Forest","CALCE"):0.070,
+    61→ ("GRU","CALCE"):0.130,("Hazard XGBoost","CALCE"):0.108,("Hazard Logistic","CALCE"):0.122}
+    62→for (pm,pd),pv in paper_brier.items():
+    63→    mkey = [k for k,v in models.items() if v==pm][0]
+    64→    method = "raw" if mkey.startswith("hazard") else "platt"
+    65→    mb = mean_brier(pd, mkey, method)
+    66→    chk(f"Brier {pm}/{pd}", pv, r3(mb) if mb else None, tol=0.0011)
+    67→
+    68→# ============ TABLE tab:cal ============
+    69→paper_cal = {("NASA","Isotonic"):(0.854,0.207,0.151,0.652,0.48,-0.26),
+    70→ ("NASA","Platt"):(0.908,0.196,0.136,0.575,0.90,-0.14),
+    71→ ("NASA","Temperature"):(0.908,0.178,0.107,0.536,1.22,-0.30),
+    72→ ("CALCE","Isotonic"):(0.915,0.067,0.049,0.279,0.41,1.17),
+    73→ ("CALCE","Platt"):(0.946,0.073,0.029,0.280,0.01,2.54),
+    74→ ("CALCE","Temperature"):(0.945,0.080,0.067,0.284,0.53,1.42)}
+    75→calmap = {("NASA","Isotonic"):"cal_nasa_iso",("NASA","Platt"):"cal_nasa_platt",("NASA","Temperature"):"cal_nasa_temp",
+    76→ ("CALCE","Isotonic"):"cal_calce_iso",("CALCE","Platt"):"cal_calce_platt",("CALCE","Temperature"):"cal_calce_temp"}
+    77→fields = [("AUC","AUC_fold_mean"),("Brier","Brier"),("ECE","ECE"),("LogLoss","LogLoss"),("Slope","Slope"),("Int","Intercept")]
+    78→for (ds,cal),vals in paper_cal.items():
+    79→    e = d[calmap[(ds,cal)]]
+    80→    for (pn,jn),pv in zip(fields, vals):
+    81→        tv = e[jn]
+    82→        tol = 0.006 if pn=="Slope" or pn=="Int" else 0.0005
+    83→        if pn in ("Slope","Int"):  # paper rounds to 2 decimals
+    84→            chk(f"cal {ds}/{cal} {pn}", pv, round(tv,2), tol=0.0051)
+    85→        else:
+    86→            chk(f"cal {ds}/{cal} {pn}", pv, r3(tv))
+    87→
+    88→# ============ TABLES tab:crosswith / tab:crossno ============
+    89→srcmap = {"NASA":"nasa","CALCE":"calce","ALL LCO":"nasa+calce"}
+    90→paper_xfer = {  # (training, model, target, with_soh): (pooled, lo, hi, pcmean, pcsd)
+    91→ ("NASA","XGBoost","Oxford",True):(0.957,0.931,0.987,0.959,0.037),
+    92→ ("NASA","LightGBM","Oxford",True):(1.000,1.000,1.000,1.000,0.000),
+    93→ ("NASA","Random Forest","Oxford",True):(1.000,1.000,1.000,1.000,0.000),
+    94→ ("CALCE","XGBoost","Oxford",True):(0.850,0.764,0.910,0.763,0.245),
+    95→ ("CALCE","LightGBM","Oxford",True):(0.889,0.827,0.932,0.837,0.193),
+    96→ ("CALCE","Random Forest","Oxford",True):(0.850,0.773,0.899,0.766,0.169),
+    97→ ("ALL LCO","XGBoost","Oxford",True):(0.917,0.878,0.965,0.826,0.265),
+    98→ ("ALL LCO","LightGBM","Oxford",True):(0.971,0.959,0.981,0.969,0.015),
+    99→ ("ALL LCO","Random Forest","Oxford",True):(0.989,0.979,0.998,0.992,0.013),
+   100→ ("NASA","XGBoost","Severson",True):(0.871,0.767,0.997,0.997,0.010),
+   101→ ("NASA","LightGBM","Severson",True):(0.849,0.724,0.998,0.992,0.048),
+   102→ ("NASA","Random Forest","Severson",True):(0.861,0.739,0.998,0.999,0.007),
+   103→ ("CALCE","XGBoost","Severson",True):(0.850,0.749,0.967,0.957,0.054),
+   104→ ("CALCE","LightGBM","Severson",True):(0.863,0.782,0.957,0.952,0.037),
+   105→ ("CALCE","Random Forest","Severson",True):(0.902,0.834,0.984,0.996,0.022),
+   106→ ("ALL LCO","XGBoost","Severson",True):(0.896,0.812,0.995,0.995,0.015),
+   107→ ("ALL LCO","LightGBM","Severson",True):(0.882,0.789,0.990,0.993,0.026),
+   108→ ("ALL LCO","Random Forest","Severson",True):(0.889,0.796,0.998,0.996,0.021),
+   109→ ("NASA","XGBoost","Oxford",False):(0.518,0.513,0.522,0.519,0.006),
+   110→ ("NASA","LightGBM","Oxford",False):(0.533,0.497,0.543,0.448,0.201),
+   111→ ("NASA","Random Forest","Oxford",False):(0.521,0.487,0.537,0.442,0.198),
+   112→ ("CALCE","XGBoost","Oxford",False):(0.416,0.264,0.554,0.360,0.208),
+   113→ ("CALCE","LightGBM","Oxford",False):(0.462,0.307,0.579,0.410,0.207),
+   114→ ("CALCE","Random Forest","Oxford",False):(0.501,0.320,0.641,0.435,0.243),
+   115→ ("ALL LCO","XGBoost","Oxford",False):(0.429,0.279,0.597,0.415,0.240),
+   116→ ("ALL LCO","LightGBM","Oxford",False):(0.332,0.112,0.515,0.316,0.209),
+   117→ ("ALL LCO","Random Forest","Oxford",False):(0.581,0.516,0.644,0.608,0.103),
+   118→ ("NASA","XGBoost","Severson",False):(0.595,0.510,0.726,0.676,0.184),
+   119→ ("NASA","LightGBM","Severson",False):(0.527,0.422,0.672,0.535,0.183),
+   120→ ("NASA","Random Forest","Severson",False):(0.674,0.561,0.826,0.836,0.176),
+   121→ ("CALCE","XGBoost","Severson",False):(0.682,0.670,0.695,0.806,0.082),
+   122→ ("CALCE","LightGBM","Severson",False):(0.643,0.530,0.721,0.830,0.042),
+   123→ ("CALCE","Random Forest","Severson",False):(0.665,0.547,0.749,0.870,0.049),
+   124→ ("ALL LCO","XGBoost","Severson",False):(0.750,0.692,0.835,0.860,0.139),
+   125→ ("ALL LCO","LightGBM","Severson",False):(0.718,0.634,0.850,0.808,0.167),
+   126→ ("ALL LCO","Random Forest","Severson",False):(0.746,0.673,0.845,0.876,0.115),
+   127→}
+   128→mkey = {"XGBoost":"xgboost","LightGBM":"lightgbm","Random Forest":"random_forest"}
+   129→for (tr,pm,tg,ws),vals in paper_xfer.items():
+   130→    key = f"transfer_{tg.lower()}_{srcmap[tr]}_{mkey[pm]}_{'with_soh' if ws else 'no_soh'}"
+   131→    e = d[key]
+   132→    chk(f"xfer {tr}/{pm}/{tg}/{'with' if ws else 'no'}", vals[0], r3(e["pooled"]))
+   133→    chk(f"xferCIlo {tr}/{pm}/{tg}/{'with' if ws else 'no'}", vals[1], r3(e["ci"][0]))
+   134→    chk(f"xferCIhi {tr}/{pm}/{tg}/{'with' if ws else 'no'}", vals[2], r3(e["ci"][1]))
+   135→    chk(f"xferPCm {tr}/{pm}/{tg}/{'with' if ws else 'no'}", vals[3], r3(e["percell"][0]))
+   136→    chk(f"xferPCs {tr}/{pm}/{tg}/{'with' if ws else 'no'}", vals[4], r3(e["percell"][1]))
+   137→
+   138→# ============ TABLE tab:baselines (H=20, from baselines_transfer.csv) ============
+   139→bt = {}
+   140→for r in csv.DictReader(open(R2+"baselines_transfer.csv")):
+   141→    if r["H"]=="20":
+   142→        bt[(r["source"], r["target"], r["baseline"])] = r
+   143→paper_base = {  # baseline: (ox_nasa, ox_calce, ox_all, sev_nasa, sev_calce, sev_all)
+   144→ "SOH distance rule":(1.000,1.000,1.000,0.912,0.912,0.912),
+   145→ "SOH only":(1.000,1.000,1.000,0.912,0.912,0.912),
+   146→ "cycle only":(0.989,0.756,0.787,0.713,0.713,0.713),
+   147→ "SOH + cycle":(0.990,0.797,0.818,0.865,0.764,0.758),
+   148→ "sensors only":(0.500,0.500,0.500,0.301,0.498,0.303),
+   149→ "full (7 feats)":(0.500,0.500,0.500,0.823,0.712,0.674)}
+   150→bmap = {"SOH distance rule":"soh_dist","SOH only":"soh_only","cycle only":"cycle_only",
+   151→ "SOH + cycle":"soh_cycle","sensors only":"sensors","full (7 feats)":"full"}
+   152→cols = [("nasa","oxford"),("calce","oxford"),("nasa+calce","oxford"),
+   153→        ("nasa","severson"),("calce","severson"),("nasa+calce","severson")]
+   154→# CIs from paper
+   155→paper_base_ci = {
+   156→ ("SOH distance rule","severson"):(0.836,0.998),("SOH only","severson"):(0.836,0.998),
+   157→ ("cycle only","oxford"):(0.983,1.000,0.732,0.780,0.760,0.814),
+   158→ ("cycle only","severson"):(0.591,0.798),
+   159→ ("SOH + cycle","oxford"):(0.985,1.000,0.770,0.825,0.788,0.848),
+   160→ ("SOH + cycle","severson"):(0.834,0.902,0.674,0.829,0.664,0.825),
+   161→ ("sensors only","severson"):(0.015,0.549,0.497,0.500,0.059,0.497),
+   162→ ("full (7 feats)","severson"):(0.675,0.995,0.589,0.797,0.525,0.782)}
+   163→for bl, vals in paper_base.items():
+   164→    for (src,tg),pv in zip(cols, vals):
+   165→        r = bt.get((src,tg,bmap[bl]))
+   166→        if r is None: FAIL.append((f"base {bl} {src}->{tg}", pv, None, "row missing")); continue
+   167→        chk(f"base {bl} {src}->{tg}", pv, r3(float(r["AUC"])))
+   168→        # CI check where paper has them
+   169→    # CI checks
+   170→    def ci_check(bl, src, tg, lo, hi):
+   171→        r = bt.get((src,tg,bmap[bl]))
+   172→        if r and r["AUC_lo"] and r["AUC_hi"]:
+   173→            chk(f"baseCI {bl} {src}->{tg}", lo, r3(float(r["AUC_lo"])))
+   174→            chk(f"baseCI {bl} {src}->{tg}", hi, r3(float(r["AUC_hi"])))
+   175→    if bl in ("SOH distance rule","SOH only"):
+   176→        for src in ("nasa","calce","nasa+calce"):
+   177→            ci_check(bl, src, "severson", 0.836, 0.998)
+   178→            ci_check(bl, src, "oxford", 1.000, 1.000)
+   179→    if bl=="cycle only":
+   180→        ci_check(bl,"nasa","oxford",0.983,1.000); ci_check(bl,"calce","oxford",0.732,0.780)
+   181→        ci_check(bl,"nasa+calce","oxford",0.760,0.814)
+   182→        for src in ("nasa","calce","nasa+calce"): ci_check(bl,src,"severson",0.591,0.798)
+   183→    if bl=="SOH + cycle":
+   184→        ci_check(bl,"nasa","oxford",0.985,1.000); ci_check(bl,"calce","oxford",0.770,0.825)
+   185→        ci_check(bl,"nasa+calce","oxford",0.788,0.848)
+   186→        ci_check(bl,"nasa","severson",0.834,0.902); ci_check(bl,"calce","severson",0.674,0.829)
+   187→        ci_check(bl,"nasa+calce","severson",0.664,0.825)
+   188→    if bl=="sensors only":
+   189→        for src in ("nasa","calce","nasa+calce"): ci_check(bl,src,"oxford",0.500,0.500)
+   190→        ci_check(bl,"nasa","severson",0.015,0.549); ci_check(bl,"calce","severson",0.497,0.500)
+   191→        ci_check(bl,"nasa+calce","severson",0.059,0.497)
+   192→    if bl=="full (7 feats)":
+   193→        for src in ("nasa","calce","nasa+calce"): ci_check(bl,src,"oxford",0.500,0.500)
+   194→        ci_check(bl,"nasa","severson",0.675,0.995); ci_check(bl,"calce","severson",0.589,0.797)
+   195→        ci_check(bl,"nasa+calce","severson",0.525,0.782)
+   196→
+   197→# ============ TABLE tab:faildef (from faildef_ablation.csv) ============
+   198→paper_fd = {("Oxford","combined"):(0.917,0.878,0.965,0.429,0.279,0.597),
+   199→ ("Oxford","soh_only"):(0.995,0.988,1.000,0.464,0.320,0.596),
+   200→ ("Severson","combined"):(0.896,0.812,0.995,0.750,0.692,0.835),
+   201→ ("Severson","soh_only"):(0.985,0.977,0.992,0.759,0.709,0.801),
+   202→ ("Severson","volt_only"):(0.723,0.705,0.740,0.611,0.585,0.637)}
+   203→for (tg,ep),(wa,wl,wh,na,nl,nh) in paper_fd.items():
+   204→    rows = [r for r in csv.DictReader(open(R2+"faildef_ablation.csv"))
+   205→            if r["H"]=="20" and r["model"]=="xgboost" and r["source"]=="nasa+calce"
+   206→            and r["target"]==tg.lower() and r["endpoint"]==ep and r["feature_set"] in ("with_soh","no_soh")]
+   207→    got = {}
+   208→    for r in rows:
+   209→        got[r["feature_set"]] = (float(r["raw_AUC"]), float(r["raw_AUC_lo"]), float(r["raw_AUC_hi"]))
+   210→    if "with_soh" not in got or "no_soh" not in got:
+   211→        FAIL.append((f"faildef {tg}/{ep}", (wa,na), got, "rows missing")); continue
+   212→    chk(f"faildef {tg}/{ep} with", wa, r3(got["with_soh"][0]))
+   213→    chk(f"faildef {tg}/{ep} with lo", wl, r3(got["with_soh"][1]))
+   214→    chk(f"faildef {tg}/{ep} with hi", wh, r3(got["with_soh"][2]))
+   215→    chk(f"faildef {tg}/{ep} no", na, r3(got["no_soh"][0]))
+   216→    chk(f"faildef {tg}/{ep} no lo", nl, r3(got["no_soh"][1]))
+   217→    chk(f"faildef {tg}/{ep} no hi", nh, r3(got["no_soh"][2]))
+   218→
+   219→# ============ TABLE tab:samechem (from same_chem.csv, H=20, xgboost) ============
+   220→sc = [r for r in csv.DictReader(open(R2+"same_chem.csv")) if r["H"]=="20" and r["model"]=="xgboost"]
+   221→def sc_get(src,tg,fs):
+   222→    for r in sc:
+   223→        if r["source"]==src and r["target"]==tg and r["feature_set"]==fs:
+   224→            return float(r["raw_AUC"]), float(r["raw_AUC_lo"]), float(r["raw_AUC_hi"])
+   225→    return None,None,None
+   226→paper_sc = {"NASA->CALCE (with)":(0.870,0.799,0.966),"NASA->CALCE (no full)":(0.849,0.753,0.985),
+   227→ "NASA->CALCE (no common)":(0.781,0.708,0.964),
+   228→ "CALCE->NASA (with)":(0.543,0.356,0.677),"CALCE->NASA (no full)":(0.566,0.427,0.678),
+   229→ "CALCE->NASA (no common)":(0.601,0.496,0.703),
+   230→ "Severson->Oxford (with)":(0.997,0.991,1.000),"Severson->Oxford (no full)":(0.471,0.466,0.477),
+   231→ "Severson->Oxford (no common)":(0.428,0.422,0.435),
+   232→ "Oxford->Severson (with)":(0.688,0.605,0.788),"Oxford->Severson (no full)":(0.500,0.500,0.500),
+   233→ "Oxford->Severson (no common)":(0.500,0.500,0.500)}
+   234→pairs = {"NASA->CALCE":("nasa","calce"),"CALCE->NASA":("calce","nasa"),
+   235→ "Severson->Oxford":("severson","oxford"),"Oxford->Severson":("oxford","severson")}
+   236→for k,(a,lo,hi) in paper_sc.items():
+   237→    pair = k.split(" (")[0]; src,tg = pairs[pair]; variant = k.split(" (")[1][:-1]
+   238→    fs = "with_soh" if variant=="with" else "no_soh"
+   239→    if variant=="with": v = sc_get(src,tg,fs)
+   240→    elif variant=="no full": v = sc_get(src,tg,"no_soh")
+   241→    else: v = sc_get(src,tg,"common_no_soh")
+   242→    if v[0] is None:
+   243→        # find the common-feature-set row name
+   244→        cands = [r for r in sc if r["source"]==src and r["target"]==tg]
+   245→        FAIL.append((f"samechem {k}", a, [c['feature_set'] for c in cands], "feature_set name"))
+   246→        continue
+   247→    chk(f"samechem {k}", a, r3(v[0])); chk(f"samechem {k} lo", lo, r3(v[1])); chk(f"samechem {k} hi", hi, r3(v[2]))
+   248→
+   249→# ============ TABLE tab:crosschemnew (xfer_ba_*) ============
+   250→paper_xba = {("HNEI NMC","XGBoost"):(0.993,0.983,0.999,0.989,0.977,0.997,0.004),
+   251→ ("HNEI NMC","LightGBM"):(0.999,0.998,0.999,0.988,0.974,0.996,0.011),
+   252→ ("HNEI NMC","Random Forest"):(0.999,0.999,1.000,0.996,0.994,0.999,0.003),
+   253→ ("SNL NCA","XGBoost"):(0.972,0.956,0.988,0.878,0.824,0.930,0.094),
+   254→ ("SNL NCA","LightGBM"):(0.985,0.974,0.993,0.850,0.791,0.911,0.135),
+   255→ ("SNL NCA","Random Forest"):(0.983,0.974,0.992,0.911,0.875,0.951,0.072),
+   256→ ("SNL NMC","XGBoost"):(0.772,0.677,0.979,0.709,0.612,0.953,0.063),
+   257→ ("SNL NMC","LightGBM"):(0.847,0.743,0.982,0.693,0.570,0.959,0.153),
+   258→ ("SNL NMC","Random Forest"):(0.858,0.748,0.975,0.742,0.689,0.874,0.115),
+   259→ ("SNL LFP","XGBoost"):(0.998,0.997,1.000,0.496,0.458,0.531,0.502),
+   260→ ("SNL LFP","LightGBM"):(0.999,0.997,1.000,0.359,0.279,0.443,0.640),
+   261→ ("SNL LFP","Random Forest"):(0.999,0.998,1.000,0.666,0.569,0.769,0.332)}
+   262→tgmap = {"HNEI NMC":"ba_nmc_hnei","SNL NCA":"ba_nca_snl","SNL NMC":"ba_nmc_snl","SNL LFP":"ba_lfp_snl"}
+   263→for (tg,pm),(wa,wl,wh,na,nl,nh,delta) in paper_xba.items():
+   264→    g = tgmap[tg]
+   265→    e = d[f"xfer_ba_{g}_nasa+calce_{mkey[pm]}_with_soh"]
+   266→    chk(f"xba {tg}/{pm} with", wa, r3(e["pooled"])); chk(f"xba {tg}/{pm} with lo", wl, r3(e["ci"][0]))
+   267→    chk(f"xba {tg}/{pm} with hi", wh, r3(e["ci"][1]))
+   268→    e2 = d[f"xfer_ba_{g}_nasa+calce_{mkey[pm]}_no_soh"]
+   269→    chk(f"xba {tg}/{pm} no", na, r3(e2["pooled"])); chk(f"xba {tg}/{pm} no lo", nl, r3(e2["ci"][0]))
+   270→    chk(f"xba {tg}/{pm} no hi", nh, r3(e2["ci"][1]))
+   271→    dl = d[f"xfer_ba_delta_{g}_{mkey[pm]}"]["delta"]
+   272→    chk(f"xba {tg}/{pm} delta", delta, r3(dl))
+   273→
+   274→# ============ TABLE tab:oper (operational_costs.csv) ============
+   275→oc = list(csv.DictReader(open(R2+"operational_costs.csv")))
+   276→def oc_get(tg, model, fs, method):
+   277→    for r in oc:
+   278→        if r["target"]==tg.lower() and r["model"]==model and r["feature_set"]==fs and r["method"]==method and r["fpr_budget"]=="0.1":
+   279→            return float(r["tgt_fnr"]), float(r["tgt_fpr"])
+   280→    return None,None
+   281→paper_oper = {("Oxford","with_soh","raw"):(0.00,0.93),("Oxford","with_soh","platt"):(0.00,0.93),
+   282→ ("Oxford","with_soh","iso"):(0.00,0.93),("Oxford","with_soh","temp"):(0.00,0.93),
+   283→ ("Oxford","no_soh","raw"):(0.00,0.92),("Oxford","no_soh","platt"):(0.00,0.92),
+   284→ ("Oxford","no_soh","iso"):(0.00,0.92),("Oxford","no_soh","temp"):(0.00,0.92),
+   285→ ("Severson","with_soh","raw"):(0.32,0.04),("Severson","with_soh","platt"):(0.32,0.04),
+   286→ ("Severson","with_soh","iso"):(0.31,0.06),("Severson","with_soh","temp"):(0.32,0.04),
+   287→ ("Severson","no_soh","raw"):(0.70,0.10),("Severson","no_soh","platt"):(0.70,0.10),
+   288→ ("Severson","no_soh","iso"):(0.67,0.12),("Severson","no_soh","temp"):(0.70,0.10)}
+   289→for (tg,fs,meth),(fnr,fpr) in paper_oper.items():
+   290→    v = oc_get(tg,"xgboost",fs,meth)
+   291→    if v[0] is None: FAIL.append((f"oper {tg}/{fs}/{meth}", (fnr,fpr), None, "row missing")); continue
+   292→    chk(f"oper {tg}/{fs}/{meth} FNR", fnr, round(v[0],2), tol=0.0051)
+   293→    chk(f"oper {tg}/{fs}/{meth} FPR", fpr, round(v[1],2), tol=0.0051)
+   294→
+   295→# LightGBM / RF with-SOH claims in text
+   296→for model, claim in [("lightgbm",("alerts 65% of negatives", 0.65, "fpr")), ("random_forest",("misses 100%", 1.00, "fnr"))]:
+   297→    v = oc_get("severson", model, "with_soh", "raw")
+   298→    if model=="lightgbm":
+   299→        chk("text: LightGBM alerts 65% negatives (with SOH)", 0.65, round(v[1],2), tol=0.0051)
+   300→    else:
+   301→        chk("text: RF misses 100% failures (with SOH)", 1.00, round(v[0],2), tol=0.0051)
+   302→
+   303→# ============ IN-TEXT NUMBERS ============
+   304→# Abstract / within range
+   305→tree_means = [d[f"within_{ds}_{m}"]["mean_AUC"] for ds in ("nasa","calce") for m in ("xgboost","lightgbm","random_forest")]
+   306→chk("abstract: tree within range 0.90-0.96 (lo)", 0.90, round(min(tree_means),2), tol=0.005)
+   307→chk("abstract: tree within range 0.90-0.96 (hi)", 0.96, round(max(tree_means),2), tol=0.005)
+   308→# per-horizon tree min > 0.89
+   309→tree_perh = [d[f"within_{ds}_{m}"]["per_H"][h] for ds in ("nasa","calce") for m in ("xgboost","lightgbm","random_forest") for h in ("10","20","30","50")]
+   310→chk("text: every tree config clears 0.89 (min)", 0.89, r3(min(tree_perh)), tol=0.004)  # 0.892 rounds to 0.89
+   311→# distance rule on Severson
+   312→chk("abstract: 0.912 dist rule Severson", 0.912, r3(d["base_nasa+calce_severson_soh_dist"]))
+   313→chk("abstract: 0.58 best no-SOH Oxford", 0.58, round(max(d[f"transfer_oxford_{s}_{m}_no_soh"]["pooled"] for s in ("nasa","calce","nasa+calce") for m in ("xgboost","lightgbm","random_forest")),2), tol=0.005)
+   314→# faildef drop 0.17
+   315→chk("abstract: sag relabel cut 0.17", 0.17, round(d["faildef_combined_with_soh_severson"]-d["faildef_volt_only_with_soh_severson"],2), tol=0.005)
+   316→# BA counts
+   317→chk("BA cells 60", 60, d["ba_cells_total"]); chk("BA excluded 15", 15, d["ba_cells_excluded"])
+   318→chk("BA rows 106787", 106787, d["ba_rows_total"]); chk("BA volt-first 0", 0, d["ba_volt_first"])
+   319→for g, cells, rows in [("ba_nmc_hnei",15,15685),("ba_nca_snl",18,11812),("ba_nmc_snl",6,2997),("ba_lfp_snl",21,76293)]:
+   320→    chk(f"dataset table {g} cells", cells, d[f"ba_cells_{g}"]); chk(f"dataset table {g} rows", rows, d[f"ba_rows_{g}"])
+   321→chk("HNEI all reach EOL", 15, d["ba_eol_cells_ba_nmc_hnei"])
+   322→# within_ba 38/39 and span
+   323→chk("within_ba ge085 = 38", 38, d["within_ba_ge085"]); chk("within_ba total = 39", 39, d["within_ba_total"])
+   324→ba_vals = []
+   325→for k in d:
+   326→    m = re.match(r"within_ba_ba_(\w+?)_(xgboost|lightgbm|random_forest)_H(\d+)$", k)
+   327→    if m: ba_vals.append((k, d[k]))
+   328→print(f"  [info] within_ba per-H entries: {len(ba_vals)}")
+   329→vals = [v["AUC_fold_mean"] if isinstance(v,dict) else v for k,v in ba_vals]
+   330→# entries are floats?
+   331→vals2 = []
+   332→for k,v in ba_vals: vals2.append(v if not isinstance(v,dict) else v.get("AUC_fold_mean"))
+   333→chk("within_ba span lo 0.61", 0.61, r3(min(vals2)), tol=0.0051)
+   334→chk("within_ba span hi 1.00", 1.00, r3(max(vals2)))
+   335→# soh delta Severson
+   336→sd = d["soh_delta_severson_xgboost_20"]
+   337→chk("delta Severson XGB H20 +0.146", 0.146, r3(sd["delta"]))
+   338→chk("delta Severson XGB H20 CI", 0.097, r3(sd["ci"][0])); chk("delta Severson XGB H20 CI hi", 0.233, r3(sd["ci"][1]))
+   339→h20_deltas = [d[f"soh_delta_severson_{m}_20"]["delta"] for m in ("xgboost","lightgbm","random_forest")]
+   340→print(f"  [info] Severson H20 deltas: {[round(x,3) for x in h20_deltas]}")
+   341→allh_deltas = [d[f"soh_delta_severson_{m}_{h}"]["delta"] for m in ("xgboost","lightgbm","random_forest") for h in ("10","20","30","50")]
+   342→print(f"  [info] Severson all-H deltas: {[round(x,3) for x in allh_deltas]}")
+   343→ox_deltas = [d[f"soh_delta_oxford_{m}_{h}"]["delta"] for m in ("xgboost","lightgbm","random_forest") for h in ("10","20","30","50")]
+   344→print(f"  [info] Oxford all-H deltas: {[round(x,3) for x in ox_deltas]}")
+   345→# monotonicity
+   346→chk("mono within 32-45% lo", 0.32, round(d["mono_within_nasa_xgboost"],2), tol=0.0051)
+   347→chk("mono within 32-45% hi", 0.45, round(d["mono_within_calce_xgboost"],2), tol=0.0051)
+   348→mono_tr = d.get("mono_transfer_nasa_severson_xgboost")
+   349→print(f"  [info] mono transfer nasa->severson xgb: {mono_tr}  (paper: 95.8%)")
+   350→# prog split
+   351→for k, paper in [("prog_severson_nasa+calce_xgboost_with_soh_all",0.896),
+   352→                 ("prog_severson_nasa+calce_xgboost_with_soh_prog",0.838),
+   353→                 ("prog_severson_nasa+calce_xgboost_with_soh_ci",[0.760,0.991]),
+   354→                 ("prog_severson_nasa+calce_xgboost_no_soh_all",0.750),
+   355→                 ("prog_severson_nasa+calce_xgboost_no_soh_prog",0.721),
+   356→                 ("prog_severson_nasa+calce_xgboost_no_soh_ci",[0.666,0.833]),
+   357→                 ("prog_severson_nasa+calce_logreg_base_soh_dist_all",0.912),
+   358→                 ("prog_severson_nasa+calce_logreg_base_soh_dist_prog",0.862)]:
+   359→    v = d[k]
+   360→    if isinstance(paper, list): chk(f"prog {k}", paper[0], r3(v[0])); chk(f"prog {k}", paper[1], r3(v[1]))
+   361→    else: chk(f"prog {k}", paper, r3(v))
+   362→print(f"  [info] prog frac severson with: {d['prog_severson_nasa+calce_xgboost_with_soh_frac']}")
+   363→for g, (a,p,fr) in {"nmc_hnei":(0.993,0.963,0.28),"nca_snl":(0.972,0.886,0.63),
+   364→                    "nmc_snl":(0.772,0.729,0.60),"lfp_snl":(0.998,0.991,0.97)}.items():
+   365→    chk(f"prog_ba {g} all", a, r3(d[f"prog_ba_{g}_nasa+calce_xgboost_with_soh_all"]))
+   366→    chk(f"prog_ba {g} prog", p, r3(d[f"prog_ba_{g}_nasa+calce_xgboost_with_soh_prog"]))
+   367→    chk(f"prog_ba {g} frac", fr, round(d[f"prog_ba_{g}_nasa+calce_xgboost_with_soh_frac"],2), tol=0.0051)
+   368→# baselines in-text
+   369→chk("text: cycle-only within CALCE 0.936", 0.936, r3(d["base_within_calce_cycle_only"]))
+   370→chk("text: cycle-only within NASA 0.354", 0.354, r3(d["base_within_nasa_cycle_only"]))
+   371→chk("text: sensors-only Severson NASA 0.301", 0.301, r3(d["base_nasa_severson_sensors"]))
+   372→# factorial grid
+   373→for k, paper in [("abl_nasa_oxford_cycle_only",0.54),("abl_nasa_severson_cycle_only",0.72),
+   374→                 ("abl_nasa+calce_severson_no_soh_no_cycle",0.535)]:
+   375→    print(f"  [info] {k} = {d.get(k)} (paper {paper})")
+   376→no_soh_grids = [d[f"abl_{s}_{t}_{g}"] for s in ("nasa","calce","nasa+calce") for t in ("oxford","severson")
+   377→                for g in ("no_soh","no_soh_no_cycle","cycle_only","sensors_only")]
+   378→print(f"  [info] max no-SOH ablation grid value: {r3(max(no_soh_grids))} (paper claims best 0.75, none >= 0.76)")
+   379→# faildef within NASA
+   380→for k in ["faildefwithin_combined_nasa_with_soh","faildefwithin_soh_only_nasa_with_soh","faildefwithin_volt_only_nasa_with_soh",
+   381→          "faildefwithin_combined_nasa_no_soh","faildefwithin_volt_only_nasa_no_soh"]:
+   382→    print(f"  [info] {k} = {d.get(k)}")
+   383→# armA / armB
+   384→a5 = d["armA"]["5"]
+   385→chk("armA ece_zero 0.817", 0.817, r3(a5["ece_zero"]))
+   386→chk("armA ece_iso 0.044", 0.044, r3(a5["ece_iso"]))
+   387→chk("armA ece_platt 0.045", 0.045, r3(a5["ece_platt"]))
+   388→chk("armA ece_temp 0.563", 0.563, r3(a5["ece_temp"]))
+   389→print(f"  [info] armA k=5 AUCs iso/platt/temp: {[round(a5[x],3) for x in ('auc_iso','auc_platt','auc_temp')]}")
+   390→b = d["armB"]["nasa_xgboost"]
+   391→chk("armB nasa_xgb 0.620->", 0.620, r3(b["auc_zero"])); chk("armB nasa_xgb ->0.854", 0.854, r3(b["auc_after"]))
+   392→chk("armB ratio 1.04", 1.04, round(b["recovery"],2), tol=0.0051)
+   393→# isotonic transfer cost
+   394→tt = list(csv.DictReader(open(R2+"transfer_trees.csv")))
+   395→costs_ox, costs_sev = [], []
+   396→for r in tt:
+   397→    if r["H"]=="20" and r["feature_set"]=="with_soh" and r["iso_AUC"]:
+   398→        c = float(r["raw_AUC"])-float(r["iso_AUC"])
+   399→        if r["target"]=="oxford": costs_ox.append(c)
+   400→        elif r["target"]=="severson": costs_sev.append(c)
+   401→chk("text: iso costs up to 0.48 Oxford", 0.48, r3(max(costs_ox)), tol=0.0051)
+   402→chk("text: iso costs up to 0.31 Severson", 0.31, r3(max(costs_sev)), tol=0.0051)
+   403→# PR-AUC raw vs iso NASA (mean over trees+horizons)
+   404→wt = list(csv.DictReader(open(R2+"within_trees.csv")))
+   405→pr_raw = [float(r["PRAUC"]) for r in wt if r["dataset"]=="nasa" and r["method"]=="raw" and r["H"] in ("10","20","30","50")]
+   406→pr_iso = [float(r["PRAUC"]) for r in wt if r["dataset"]=="nasa" and r["method"]=="iso" and r["H"] in ("10","20","30","50")]
+   407→chk("text: NASA raw PR-AUC 0.774", 0.774, r3(sum(pr_raw)/len(pr_raw)))
+   408→chk("text: NASA iso PR-AUC 0.639", 0.639, r3(sum(pr_iso)/len(pr_iso)))
+   409→# GRU transfer 3-seed (per-cell mean, across-seed SD, H=20, Severson, common features)
+   410→from statistics import mean, stdev
+   411→gt = list(csv.DictReader(open(R2+"gru_transfer.csv")))
+   412→def gru_stats(src, fs):
+   413→    rows = [r for r in gt if r["target"]=="severson" and r["H"]=="20" and r["source"]==src and r["feature_set"]==fs]
+   414→    pcm = [float(r["raw_AUC_percell_mean"]) for r in rows]
+   415→    return mean(pcm), stdev(pcm), min(pcm), max(pcm)
+   416→for src, fs, pm, ps in [("nasa","common_no_soh",0.987,0.015),("calce","common_no_soh",0.479,0.451),
+   417→                        ("nasa+calce","common_no_soh",0.893,0.131),("nasa","common_with_soh",0.998,0.003),
+   418→                        ("calce","common_with_soh",0.964,0.033),("nasa+calce","common_with_soh",0.991,0.015)]:
+   419→    m, s, lo, hi = gru_stats(src, fs)
+   420→    chk(f"GRU percell {src}/{fs} mean", pm, r3(m))
+   421→    chk(f"GRU percell {src}/{fs} seedSD", ps, round(s,3), tol=0.0015)
+   422→print(f"  [info] GRU calce no_soh per-seed percell range: {[round(x,3) for x in gru_stats('calce','common_no_soh')[2:]]} (paper: seeds 0.21-1.00)")
+   423→# hazard transfer CIs (significantly below 0.5 claim)
+   424→ht = list(csv.DictReader(open(R2+"hazard_transfer.csv")))
+   425→for r in ht:
+   426→    if r["H"]=="20" and r["target"]=="oxford":
+   427→        print(f"  [info] hazard oxford {r['source']}/{r['model']}: AUC={round(float(r['AUC']),3)} CI=[{round(float(r['AUC_lo']),3)},{round(float(r['AUC_hi']),3)}]")
+   428→# condition shift summary
+   429→for k in ["condshift_drop_with_max","condshift_drop_no_max","condshift_dist_max","condshift_dist_min","condshift_drop_no_min"]:
+   430→    print(f"  [info] {k} = {d.get(k)}")
+   431→# hazard transfer oxford (below 0.5 significantly claim)
+   432→for k in ["hazard_nasa_oxford_hazard_xgb","hazard_calce_oxford_hazard_xgb","hazard_nasa+calce_oxford_hazard_xgb",
+   433→          "hazard_nasa_oxford_hazard_logistic","hazard_calce_oxford_hazard_logistic","hazard_nasa+calce_oxford_hazard_logistic"]:
+   434→    print(f"  [info] {k} = {d.get(k)}")
+   435→
+   436→print("\n" + "="*70)
+   437→print(f"PASS: {len(PASS)}   FAIL: {len(FAIL)}")
+   438→print("="*70)
+   439→for name, pv, tv, why in FAIL:
+   440→    print(f"  FAIL {name}: paper={pv} truth={tv} ({why})")
+   441→
