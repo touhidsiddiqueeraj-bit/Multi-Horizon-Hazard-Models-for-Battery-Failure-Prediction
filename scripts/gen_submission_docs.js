@@ -143,7 +143,7 @@ const coverLetter = new Document({
 
       para("On behalf of all co-authors, I am pleased to submit our manuscript titled " ),
       para("", ITAL_TITLE),
-      para("for consideration as a Regular Paper in the IEEE Transactions on Reliability. The manuscript is 11 double-column pages, accompanied by a 3-page Supplementary Material."),
+      para("for consideration as a Regular Paper in the IEEE Transactions on Reliability. The manuscript is 12 double-column pages, accompanied by a 3-page Supplementary Material."),
 
       para("", {
         children: [
@@ -290,7 +290,7 @@ const submissionChecklist = new Document({
         cell("Purpose", { bold: true, width: 46, fill: "EEF2F6" }),
         cell("Status", { bold: true, width: 20, fill: "EEF2F6" }),
       ], [
-        chk("paper_tr/main_tr.pdf", "Main manuscript, 11 double-column pages (IEEEtran journal class), compiled from main_tr.tex.", "Ready", "E3F2E3"),
+        chk("paper_tr/main_tr.pdf", "Main manuscript, 12 double-column pages (IEEEtran journal class), compiled from main_tr.tex.", "Ready", "E3F2E3"),
         chk("paper_tr/main_tr.tex", "LaTeX source of the main manuscript, including the corrected author block and verified bibliography.", "Ready", "E3F2E3"),
         chk("paper_tr/supplement_tr.pdf", "Supplementary Material, 3 pages, all tables generated programmatically from the validated results file.", "Ready", "E3F2E3"),
         chk("paper_tr/supplement_tr.tex", "LaTeX source of the supplement.", "Ready", "E3F2E3"),
@@ -310,11 +310,11 @@ const submissionChecklist = new Document({
         cell("Status", { bold: true, width: 20, fill: "EEF2F6" }),
       ], [
         chk("Double-column IEEE format", "IEEEtran journal class (class file included); Times-equivalent text face via TeX Gyre Termes.", "Met", "E3F2E3"),
-        chk("Length", "11 pages main text plus a 3-page supplement. Verify the current regular-paper page limit and over-length policy on the IEEE TR Author Center before uploading.", "Verify limit", "FFF4E0"),
+        chk("Length", "12 pages main text plus a 3-page supplement (15 total), within the ~15-page regular-paper limit. Verify the current limit and over-length policy on the IEEE TR Author Center before uploading.", "Verify limit", "FFF4E0"),
         chk("Title, abstract, index terms", "Abstract is single-paragraph and self-contained; nine index terms follow the abstract.", "Met", "E3F2E3"),
         chk("Author block", "All four authors with affiliation; corresponding author marked; all four author e-mail addresses in the first-page footnote.", "Met", "E3F2E3"),
         chk("Co-author e-mails", "All four authors\u2019 e-mail addresses (corresponding author and the three co-authors) are listed in the first-page \\thanks footnote.", "Met", "E3F2E3"),
-        chk("References", "25 entries in IEEE style; all 25 verified against publisher records (Crossref, arXiv, PMLR, publisher pages) on October 30, 2026.", "Met", "E3F2E3"),
+        chk("References", "39 entries in IEEE style, ordered by first citation: the original 25 verified against publisher records, plus 14 added citations (battery PHM/BMS reviews, dataset shift, shortcut learning, and the methodological sources for the GRU, hazard model, bootstrap, AUC, Brier score, ECE, PR-AUC, and TinyML), all verified on October 30, 2026.", "Met", "E3F2E3"),
         chk("Author biographies", "IEEE-style biography paragraphs for all four authors after the references; photos can be added at revision or acceptance.", "Met", "E3F2E3"),
         chk("Figures", "All four figures referenced in the text, no missing or unused files; every page visually inspected after the final compile.", "Met", "E3F2E3"),
         chk("\u201CManuscript received\u201D dates", "Left as XXX on the first-page footnote; the editorial office fills these in.", "Standard", "E3F2E3"),
@@ -326,7 +326,7 @@ const submissionChecklist = new Document({
         children: [run("These are the genuinely open items; each is also marked in the source files.", { color: GREY, size: SMALL })],
         paragraph: { spacing: { after: 120, line: 312 } },
       }),
-      bullet("1. Companion-study reference [14]: ", "the entry for Shikdar and Laaksonen\u2019s calibration-robustness companion study is currently cited as \u201Cmanuscript under review.\u201D Replace with the final venue if it is accepted before submission."),
+      bullet("1. Companion-study reference [18]: ", "the entry for Shikdar and Laaksonen\u2019s calibration-robustness companion study is currently cited as \u201Cmanuscript under review.\u201D Replace with the final venue if it is accepted before submission."),
       bullet("2. Lost figures (optional): ", "the SHAP beeswarm panels, the Python-vs-C agreement scatter, the Battery Archive capacity-trace audit, the decision-curve figure, and the calibration figure were lost with the earlier working environment. If the local repository still holds them, copy them into paper_tr/figs/ and re-add their figure environments; otherwise the paper stands complete with the four regenerated figures and the text-only SHAP paragraph."),
       bullet("3. ORCIDs: ", "enter all four authors\u2019 ORCIDs in ScholarOne (listed in AUTHORS.md); ORCIDs are entered in the system, not printed in the manuscript."),
       bullet("4. Data and code availability: ", "all eight datasets are public and cited; prepare a short availability statement for the form if requested, noting that the Battery Archive summaries were accessed in September 2026."),
@@ -336,8 +336,8 @@ const submissionChecklist = new Document({
       para("The manuscript has been through four review rounds; all fixes below are already applied in the compiled PDF."),
       bullet("Round 1 \u2014 Figures: ", "four figures, all present, referenced, and visually inspected; no overflow, overlap, or cut-off content on any page. Figures were regenerated programmatically from the validated results file; five legacy figure sets are documented as lost with the earlier environment (see item C-2)."),
       bullet("Round 2 \u2014 Numbers: ", "379 automated checks of every table row and in-text claim in the main paper and supplement against the validated results file \u2014 all pass. Three transcription errors were caught and fixed during re-verification (Oxford SOH-delta range, a factorial-ablation value, a column ordering in the supplement)."),
-      bullet("Round 3 \u2014 References: ", "25 cite keys matched to 25 bibliography entries; no undefined citations, orphans, or duplicates. On October 30, 2026, every entry was verified against publisher records: five reconstructed entries were corrected to their published details, one unverifiable entry (a JMLR attribution) was replaced with the verifiable ICML 2023 paper by the same authors, and one citation-context mismatch was fixed (the Huang et al. finding on imbalanced-data calibration is now stated accurately)."),
-      bullet("Round 4 \u2014 Consistency and readability: ", "section cross-references verified against the compiled headings; author biographies deduplicated; placeholder audit clean; layout inspected on all 14 pages. The package was recompiled and re-inspected after the author-block and bibliography updates of October 30, 2026."),
+      bullet("Round 3 \u2014 References: ", "39 cite keys matched to 39 bibliography entries, in order of first citation; no undefined citations, orphans, or duplicates. On October 30, 2026, every entry was verified against publisher records: five reconstructed entries were corrected to their published details, one unverifiable entry (a JMLR attribution) was replaced with the verifiable ICML 2023 paper by the same authors, one citation-context mismatch was fixed (the Huang et al. finding on imbalanced-data calibration is now stated accurately), and 14 standard citations were added to widen coverage of the battery-PHM, dataset-shift, and methodology literature, each verified against Crossref, the publisher page, PMLR, the ACL Anthology, or arXiv."),
+      bullet("Round 4 \u2014 Consistency and readability: ", "section cross-references verified against the compiled headings; author biographies deduplicated; placeholder audit clean; layout inspected on all 15 pages. The package was recompiled and re-inspected after the author-block, bibliography-expansion, and reference-verification updates of October 30, 2026."),
 
       heading1("E. At submission and after"),
       bullet("Upload order: ", "main PDF, supplement PDF, cover letter, then the source files if the system requests LaTeX sources (include IEEEtran.cls, both .tex files, and the figs/ directory)."),

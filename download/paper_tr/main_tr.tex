@@ -44,13 +44,13 @@ Battery failure prediction, prognostics and health management, multi-horizon fai
 \IEEEpeerreviewmaketitle
 
 \section{Introduction}
-LITHIUM-ION batteries underpin electrified transport and grids, yet field reliability remains hard to certify. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression \cite{meng2019review,roman2021machine}, which answers a question operators rarely ask in real time: a battery management system (BMS) needs to know whether a cell survives the next mission, not its aggregate cycle count. Predicting lifetime from field rather than laboratory data remains open \cite{sulzer2021challenge}. Tree ensembles --- Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, LightGBM \cite{ke2017lightgbm} --- serve capacity and RUL estimation, but binary failure-risk classification at multiple horizons is recent \cite{shikdar2026learning}.
+LITHIUM-ION batteries underpin electrified transport and grids, yet field reliability remains hard to certify, and undetected degradation can escalate to hazardous thermal runaway \cite{feng2018thermal}. Conventional prognostics casts the problem as remaining-useful-life (RUL) regression \cite{meng2019review,roman2021machine,ng2020predicting}, which answers a question operators rarely ask in real time: a battery management system (BMS) \cite{hannan2017review} needs to know whether a cell survives the next mission, not its aggregate cycle count. Predicting lifetime from field rather than laboratory data remains open \cite{sulzer2021challenge}. Tree ensembles --- Random Forest \cite{breiman2001random}, XGBoost \cite{chen2016xgboost}, LightGBM \cite{ke2017lightgbm} --- serve capacity and RUL estimation, but binary failure-risk classification at multiple horizons is recent \cite{shikdar2026learning}.
 
 Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-horizon failure-risk classification: for cycle $t$ and horizon $H$, predict whether failure (SOH below 0.80 or voltage sag beyond 6\%) occurs within $H$ cycles. Their gradient boosting model on NASA 18650 (37 LCO cells) reached AUC 0.87--0.90 across $H \in \{10,20,30,50\}$, but left three gaps: one model on one dataset (no learner, hyperparameter, or calibration sensitivity), no cross-dataset check, and no path to the microcontroller where a BMS runs.
 
-This paper begins from those gaps but is organized around a sharper validity question: \emph{when a failure-risk model appears to transfer between datasets and chemistries, is anything about degradation being transferred, or is the model merely reading a health-state variable that encodes proximity to the failure criterion?} The composite label is defined from SOH, and SOH is also the strongest feature, so a model can score well on transfer while learning only ``distance to the SOH $=$ 0.80 threshold.''
+This paper begins from those gaps but is organized around a sharper validity question: \emph{when a failure-risk model appears to transfer between datasets and chemistries, is anything about degradation being transferred, or is the model merely reading a health-state variable that encodes proximity to the failure criterion?} The composite label is defined from SOH, and SOH is also the strongest feature, so a model can score well on transfer while learning only ``distance to the SOH $=$ 0.80 threshold'' --- a battery-side instance of the shortcut-learning failure mode documented across machine learning \cite{geirhos2020shortcut}.
 
-Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting}, whereas on imbalanced data isotonic regression performs best overall but degrades when the imbalance is severe \cite{huang2020experimental}, and no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
+Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting}, whereas on imbalanced data isotonic regression performs best overall but degrades when the imbalance is severe \cite{huang2020experimental}, and no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Underlying all of them is the dataset-shift problem itself \cite{moreno2012unifying}: between any two laboratories, chemistry, cycling protocol, and measurement practice change simultaneously. Table~\ref{tab:lit} situates this work against these lines of research.
 
 \begin{table}[!t]
 \caption{Representative Prior Work Relative to This Study.}
@@ -68,6 +68,8 @@ Platt; Zadrozny et al.\ \cite{platt1999probabilistic,zadrozny2002transforming,ni
 Lundberg et al.\ \cite{lundberg2020from} & Explainability & --- & TreeSHAP for ensembles\\
 Grzesik and Mrozek \cite{grzesik2024combining} & Edge ML & --- & No battery failure cases\\
 Gupta and Ramdas \cite{gupta2023online} & Online calib. & --- & Distribution-shift Platt\\
+Geirhos et al.\ \cite{geirhos2020shortcut} & Shortcut & --- & Decision rules that fail to transfer\\
+Moreno-Torres et al.\ \cite{moreno2012unifying} & Dataset shift & --- & Taxonomy of shift types\\
 Shikdar and Laaksonen \cite{shikdar2026learning} & Failure risk & NASA & One model, one dataset (baseline)\\
 \textbf{This work} & Failure risk + validity & 8 datasets & Multi-model SOH-shortcut diagnosis, hazard model, edge deployment\\
 \bottomrule
@@ -144,7 +146,7 @@ Each cycle is described by seven scalar features: cycle index, average and minim
 \subsection{Models}
 Three tree ensembles are benchmarked with hyperparameters matched to the original study \cite{shikdar2026learning}: XGBoost \cite{chen2016xgboost} with max\_depth 4, 300 estimators, learning rate 0.05, subsample 0.8, colsample\_bytree 0.8, min\_child\_weight 5; LightGBM \cite{ke2017lightgbm} with the same depth, count, and rate; and Random Forest \cite{breiman2001random} with max\_depth 6 and 300 estimators; all random\_state 42.
 
-A compact GRU tests whether sequence-aware representations transfer across chemistries. It ingests sliding windows of $W{=}10$ cycles per cell through one 8-unit GRU layer,
+A compact GRU \cite{cho2014learning} tests whether sequence-aware representations transfer across chemistries. It ingests sliding windows of $W{=}10$ cycles per cell through one 8-unit GRU layer,
 \begin{equation}\label{eq:gru}
 \begin{aligned}
 \mathbf{r}_t &= \sigma(W_r\mathbf{x}_t + U_r\mathbf{h}_{t-1}),\quad
@@ -158,7 +160,7 @@ and the final hidden state maps through a sigmoid linear layer to the failure pr
 Because the central question is whether apparent performance is a health-state shortcut, the most important models are embarrassingly simple ones \cite{shikdar2026learning}: the fitted-free \emph{SOH distance rule} $d_t = 0.80 - \mathrm{SOH}_t$; \emph{SOH-only}, \emph{cycle-only}, \emph{SOH+cycle}, \emph{sensors-only}, and \emph{full-feature} logistic regressions. If the SOH-only and distance-rule baselines reproduce most of the transferable performance of the tuned ensembles, then the ensembles contribute little beyond reading the health state --- the negative result this validity analysis predicts.
 
 \subsection{A True Discrete-Time Hazard Model}
-To complement the four independent fixed-horizon classifiers, we also fit an explicit discrete-time survival model. For each observed cycle $t$ and offset $\ell\in\{1,\dots,L\}$ with $L{=}50$, define the hazard
+To complement the four independent fixed-horizon classifiers, we also fit an explicit discrete-time survival model \cite{cox1972regression,kalbfleisch2002statistical}. For each observed cycle $t$ and offset $\ell\in\{1,\dots,L\}$ with $L{=}50$, define the hazard
 \begin{equation}\label{eq:hazard}
 h_\ell(t) \;=\; \Pr\!\bigl(T_f = t{+}\ell \mid T_f \ge t{+}\ell,\ \mathbf{x}_t\bigr),
 \end{equation}
@@ -173,21 +175,21 @@ Three post-hoc calibration schemes are compared: Platt scaling fits a sigmoid to
 \begin{equation}\label{eq:platt}
 p_i \;=\; \frac{1}{1+\exp(-\alpha s_i - \beta)},
 \end{equation}
-by logistic regression; isotonic regression \cite{zadrozny2002transforming} fits the non-decreasing step function that minimizes squared error; and temperature scaling divides the logit of the score by a single fitted temperature.
+by logistic regression; isotonic regression \cite{zadrozny2002transforming} fits the non-decreasing step function that minimizes squared error; and temperature scaling divides the logit of the score by a single fitted temperature \cite{guo2017calibration}.
 
 The protocol is leakage-clean. For every within-dataset fold, calibrators are fitted on \emph{cross-fitted out-of-fold scores} from an inner cell-disjoint GroupKFold over the training cells; untouched test cells are scored by a model trained on all training cells. In transfer, calibrators are fitted on source out-of-fold scores only. No calibrator is ever fitted on the scores it is applied to, and no test cell contributes to training or calibration. A reproducibility note is retained from the original study comparison: the original study \cite{shikdar2026learning} reported Brier scores around 0.032; re-execution yields roughly 0.09--0.29, a gap of unknown cause that does not affect the relative comparisons forming the core of this paper.
 
 \subsection{Transfer Protocols}
-Transfer is evaluated by training on LCO cells (NASA alone, CALCE alone, or both) and testing on the target cells, reported per cell and pooled with cell-level bootstrap intervals; pooling alone can hide degenerate constant-score behavior, which per-cell statistics expose. Three families of transfer are used: \textbf{cross-chemistry} (LCO$\to$LFP): NASA, CALCE, or both $\to$ Oxford and $\to$ Severson, with and without SOH, and on the common feature set shared with the GRU; \textbf{same-chemistry, cross-laboratory controls}: NASA$\to$CALCE, CALCE$\to$NASA (LCO$\to$LCO) and Severson$\to$Oxford, Oxford$\to$Severson (LFP$\to$LFP), which separate dataset shift from chemistry shift; and \textbf{feature-definition ablations}: the factorial feature grid and the failure-endpoint relabeling of Section~III-E.
+Transfer is evaluated by training on LCO cells (NASA alone, CALCE alone, or both) and testing on the target cells, reported per cell and pooled with cell-level bootstrap intervals \cite{efron1979bootstrap}; pooling alone can hide degenerate constant-score behavior, which per-cell statistics expose. Three families of transfer are used: \textbf{cross-chemistry} (LCO$\to$LFP): NASA, CALCE, or both $\to$ Oxford and $\to$ Severson, with and without SOH, and on the common feature set shared with the GRU; \textbf{same-chemistry, cross-laboratory controls}: NASA$\to$CALCE, CALCE$\to$NASA (LCO$\to$LCO) and Severson$\to$Oxford, Oxford$\to$Severson (LFP$\to$LFP), which separate dataset shift from chemistry shift; and \textbf{feature-definition ablations}: the factorial feature grid and the failure-endpoint relabeling of Section~III-E.
 
 \subsection{Evaluation and Statistical Testing}
 \label{sec:eval}
-Within-dataset evaluation uses 5-fold cell-grouped cross-validation on NASA (37 cells) and leave-one-cell-out on CALCE (7 cells): splits are cell-disjoint, models retrained per horizon. The experimental unit is the cell: headline AUCs are fold means with fold SDs, every headline carries a 95\% cell-resampling interval (2\,000 draws; 400 for Severson), and paired comparisons reuse the same resamples. The DeLong nonparametric test \cite{delong1988comparing} is retained as secondary evidence: it treats every cycle-level prediction as independent, so its $p$-values are inflated by pseudoreplication and are read only as directional consistency checks.
+Within-dataset evaluation uses 5-fold cell-grouped cross-validation on NASA (37 cells) and leave-one-cell-out on CALCE (7 cells): splits are cell-disjoint, models retrained per horizon. The experimental unit is the cell: headline AUCs \cite{hanley1982meaning} are fold means with fold SDs, every headline carries a 95\% cell-resampling interval (2\,000 draws; 400 for Severson), and paired comparisons reuse the same resamples. The DeLong nonparametric test \cite{delong1988comparing} is retained as secondary evidence: it treats every cycle-level prediction as independent, so its $p$-values are inflated by pseudoreplication and are read only as directional consistency checks.
 
-Discrimination alone is not enough for a reliability-oriented study, so each within-dataset configuration also reports the Brier score, expected calibration error (10 equal-width bins), log loss, the slope and intercept of a logistic recalibration of the predicted probabilities, the area under the precision--recall curve (PR-AUC), and sensitivity at a fixed 10\% false-positive rate. Three reporting conventions apply throughout. Pooled AUC is dominated by long-lived cells, so per-cell statistics and cell-level bootstrap intervals are the primary evidence. Failure prevalence rises with the horizon, so Brier score, calibration error, thresholds, and precision--recall are horizon-dependent. The cost model prices a missed failure at 20$\times$ a false alarm; thresholds use a 10\% source false-alarm budget.
+Discrimination alone is not enough for a reliability-oriented study, so each within-dataset configuration also reports the Brier score \cite{brier1950verification}, expected calibration error (10 equal-width bins) \cite{guo2017calibration}, log loss, the slope and intercept of a logistic recalibration of the predicted probabilities, the area under the precision--recall curve (PR-AUC) \cite{saito2015precision}, and sensitivity at a fixed 10\% false-positive rate. Three reporting conventions apply throughout. Pooled AUC is dominated by long-lived cells, so per-cell statistics and cell-level bootstrap intervals are the primary evidence. Failure prevalence rises with the horizon, so Brier score, calibration error, thresholds, and precision--recall are horizon-dependent. The cost model prices a missed failure at 20$\times$ a false alarm; thresholds use a 10\% source false-alarm budget.
 
 \subsection{Embedded Deployment Architecture}
-The deployment pipeline exports the three trained models into one flat binary run on an ESP32-S3 by a hand-written C tree walker: a 12-byte header, a $3{\times}4$-byte offset table, and per-model sections of consecutive node arrays (split feature, float threshold, child indices; leaves store class-1 probabilities). Writing $\ell_t$ for the leaf value reached in tree $t$ and $T$ for the number of trees, Random Forest averages and clamps its leaf probabilities,
+The deployment pipeline exports the three trained models into one flat binary run on an ESP32-S3 --- a microcontroller-class TinyML target \cite{banbury2021mlperf} --- by a hand-written C tree walker: a 12-byte header, a $3{\times}4$-byte offset table, and per-model sections of consecutive node arrays (split feature, float threshold, child indices; leaves store class-1 probabilities). Writing $\ell_t$ for the leaf value reached in tree $t$ and $T$ for the number of trees, Random Forest averages and clamps its leaf probabilities,
 \begin{equation}\label{eq:rf}
 p \;=\; \mathrm{clamp}\!\left(\frac{1}{T}\sum_{t=1}^{T}\ell_t,\ 0,\ 1\right),
 \end{equation}
@@ -494,7 +496,7 @@ Where the controls of Section~III-F varied laboratory at fixed chemistry, the co
 \section{Analysis and Discussion}
 
 \subsection{The SOH Shortcut, Precisely Stated}
-The evidence assembled above supports a precise statement. When a failure-risk model trained on one battery dataset is evaluated on another, its apparent transfer performance is dominated by the SOH coordinate; much of that dominance is definitional, because SOH enters the failure label itself, and the failure-definition ablation of Section~III-E measures how much: relabeling failure by voltage sag alone removes about a fifth of the with-SOH transfer advantage on Severson. What remains is a weak, real health-state signal; everything else the sensors measure is dataset-specific, and the factorial ablation shows no non-SOH feature group carries usable cross-dataset signal. The replication of Section~III-L extends each of these statements to data the pipeline never had access to when it was designed. ``SOH is a chemistry-specific lookup key,'' an earlier framing, claimed more than the design could identify; the defensible claim is that apparent cross-dataset transferability is largely a health-state shortcut whose size this paper measures with label-, feature-, and dataset-level controls.
+The evidence assembled above supports a precise statement. When a failure-risk model trained on one battery dataset is evaluated on another, its apparent transfer performance is dominated by the SOH coordinate; much of that dominance is definitional, because SOH enters the failure label itself, and the failure-definition ablation of Section~III-E measures how much: relabeling failure by voltage sag alone removes about a fifth of the with-SOH transfer advantage on Severson. What remains is a weak, real health-state signal; everything else the sensors measure is dataset-specific, and the factorial ablation shows no non-SOH feature group carries usable cross-dataset signal. The replication of Section~III-L extends each of these statements to data the pipeline never had access to when it was designed. ``SOH is a chemistry-specific lookup key,'' an earlier framing, claimed more than the design could identify; the defensible claim is that apparent cross-dataset transferability is largely a health-state shortcut, kin to shortcut learning documented across machine learning \cite{geirhos2020shortcut}, whose size this paper measures with label-, feature-, and dataset-level controls.
 
 \subsection{Implications for Practitioners}
 Four practical points follow:
@@ -516,21 +518,35 @@ Across datasets, the apparent transferability is mostly a State-of-Health shortc
 Calibration behaves as the validity story predicts: Platt preserves discrimination best at comparable calibration error, isotonic fails under shift, labeled-target recalibration repairs calibration error but not discrimination, and no score type yields a usable operating point without SOH. Evidence is carried by cell-level bootstrap intervals, with cycle-level tests demoted to a consistency check.
 
 % ======================================================================
-% References.
-% NOTE (recovery): the bibliography below was rebuilt after the working
+% References. 39 entries, ordered by first citation.
+% NOTE (recovery): the original 25 entries were rebuilt after the working
 % environment was lost, then re-verified against the published sources
 % (publisher pages, Crossref, arXiv, PMLR) on 2026-10-30. Five previously
 % reconstructed entries were corrected to their published details and one
-% unverifiable entry was replaced by the verifiable companion citation
-% (see submission checklist, item on references).
+% unverifiable entry was replaced by the verifiable companion citation.
+% On 2026-10-30 the bibliography was expanded from 25 to 39 entries: 14
+% standard citations (battery reviews, dataset-shift and shortcut-learning
+% literature, and the methodological sources for GRU, survival analysis,
+% bootstrap, AUC, Brier score, ECE, PR-AUC, and TinyML) were added, each
+% verified against Crossref, the publisher page, PMLR, ACL Anthology, or
+% arXiv on 2026-10-30.
 % ======================================================================
-\begin{thebibliography}{25}
+\begin{thebibliography}{39}
+
+\bibitem{feng2018thermal}
+X.~Feng, M.~Ouyang, X.~Liu, L.~Lu, Y.~Xia, and X.~He, ``Thermal runaway mechanism of lithium ion battery for electric vehicles: A review,'' \emph{Energy Storage Materials}, vol.~10, pp. 246--267, Mar. 2018.
 
 \bibitem{meng2019review}
 J.~Meng, G.~Luo, E.~Breaz, D.~Zhao, X.~Huang, and N.~Piao, ``An overview and outlook of lithium-ion battery prognostics and health management,'' \emph{eTransportation}, vol.~1, art. no. 100009, 2019.
 
 \bibitem{roman2021machine}
 D.~Roman, S.~Saxena, V.~Robu, M.~Pecht, and D.~Flynn, ``Machine learning pipeline for battery state-of-health estimation,'' \emph{Nature Machine Intelligence}, vol.~3, no.~5, pp. 447--456, May 2021.
+
+\bibitem{ng2020predicting}
+M.-F.~Ng, J.~Zhao, Q.~Yan, G.~J. Conduit, and Z.~W. Seh, ``Predicting the state of charge and health of batteries using data-driven machine learning,'' \emph{Nature Machine Intelligence}, vol.~2, no.~3, pp. 161--170, Mar. 2020.
+
+\bibitem{hannan2017review}
+M.~A. Hannan, M.~S.~H. Lipu, A.~Hussain, and A.~Mohamed, ``A review of lithium-ion battery state of charge estimation and management system in electric vehicle applications: Challenges and recommendations,'' \emph{Renewable and Sustainable Energy Reviews}, vol.~78, pp. 834--854, Oct. 2017.
 
 \bibitem{sulzer2021challenge}
 V.~Sulzer \emph{et al.}, ``The challenge and opportunity of battery lifetime prediction from field data,'' \emph{Joule}, vol.~5, no.~8, pp. 1934--1955, Aug. 2021.
@@ -546,6 +562,9 @@ G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, and T.-Y. Liu, ``Ligh
 
 \bibitem{shikdar2026learning}
 T.~A. Shikdar and H.~Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{International Transactions on Electrical Energy Systems}, vol.~2026, no.~1, art. no.~6000810, 2026, doi: 10.1155/etep/6000810.
+
+\bibitem{geirhos2020shortcut}
+R.~Geirhos, J.-H. Jacobsen, C.~Michaelis, R.~Zemel, W.~Brendel, M.~Bethge, and F.~A. Wichmann, ``Shortcut learning in deep neural networks,'' \emph{Nature Machine Intelligence}, vol.~2, no.~11, pp. 665--673, Nov. 2020.
 
 \bibitem{sahoo2022transfer}
 S.~Sahoo, K.~S. Hariharan, S.~Agarwal, S.~B. Swernath, R.~Bharti, S.~Han, and S.~Lee, ``Transfer learning based generalized framework for state of health estimation of Li-ion cells,'' \emph{Scientific Reports}, vol.~12, art. no.~13173, 2022, doi: 10.1038/s41598-022-16692-4.
@@ -577,6 +596,9 @@ P.~Grzesik and D.~Mrozek, ``Combining machine learning and edge computing: Oppor
 \bibitem{gupta2023online}
 C.~Gupta and A.~Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc. 40th Int. Conf. Mach. Learn. (ICML)}, Honolulu, HI, USA, 2023, pp. 12182--12204.
 
+\bibitem{moreno2012unifying}
+J.~G. Moreno-Torres, T.~Raeder, R.~Alaiz-Rodr\'iguez, N.~V. Chawla, and F.~Herrera, ``A unifying view on dataset shift in classification,'' \emph{Pattern Recognition}, vol.~45, no.~1, pp. 521--530, Jan. 2012.
+
 \bibitem{saha2007battery}
 B.~Saha and K.~Goebel, ``Battery data set,'' NASA Ames Prognostics Data Repository, NASA Ames Research Center, Moffett Field, CA, USA, 2007. [Online]. Available: \url{https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository}
 
@@ -598,8 +620,35 @@ The Battery Archive, ``Cycle test data.'' [Online]. Available: \url{https://batt
 \bibitem{preger2020degradation}
 Y.~Preger \emph{et al.}, ``Degradation of commercial lithium-ion cells as a function of chemistry and cycling conditions,'' \emph{Journal of Power Sources}, vol.~463, art. no. 228217, Aug. 2020.
 
+\bibitem{cho2014learning}
+K.~Cho, B.~van Merri\"enboer, C.~Gulcehre, D.~Bahdanau, F.~Bougares, H.~Schwenk, and Y.~Bengio, ``Learning phrase representations using RNN encoder--decoder for statistical machine translation,'' in \emph{Proc. Conf. Empirical Methods Natural Language Process. (EMNLP)}, Doha, Qatar, Oct. 2014, pp. 1724--1734.
+
+\bibitem{cox1972regression}
+D.~R. Cox, ``Regression models and life-tables,'' \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, vol.~34, no.~2, pp. 187--220, 1972.
+
+\bibitem{kalbfleisch2002statistical}
+J.~D. Kalbfleisch and R.~L. Prentice, \emph{The Statistical Analysis of Failure Time Data}, 2nd~ed. Hoboken, NJ, USA: Wiley, 2002.
+
+\bibitem{guo2017calibration}
+C.~Guo, G.~Pleiss, Y.~Sun, and K.~Q. Weinberger, ``On calibration of modern neural networks,'' in \emph{Proc. 34th Int. Conf. Mach. Learn. (ICML)}, Sydney, NSW, Australia, Aug. 2017, pp. 1321--1330.
+
+\bibitem{efron1979bootstrap}
+B.~Efron, ``Bootstrap methods: Another look at the jackknife,'' \emph{The Annals of Statistics}, vol.~7, no.~1, pp. 1--26, 1979.
+
+\bibitem{hanley1982meaning}
+J.~A. Hanley and B.~J. McNeil, ``The meaning and use of the area under a receiver operating characteristic (ROC) curve,'' \emph{Radiology}, vol.~143, no.~1, pp. 29--36, Apr. 1982.
+
 \bibitem{delong1988comparing}
 E.~R. DeLong, D.~M. DeLong, and D.~L. Clarke-Pearson, ``Comparing the areas under two or more correlated receiver operating characteristic curves: A nonparametric approach,'' \emph{Biometrics}, vol.~44, no.~3, pp. 837--845, 1988.
+
+\bibitem{brier1950verification}
+G.~W. Brier, ``Verification of forecasts expressed in terms of probability,'' \emph{Monthly Weather Review}, vol.~78, no.~1, pp. 1--3, Jan. 1950.
+
+\bibitem{saito2015precision}
+T.~Saito and M.~Rehmsmeier, ``The precision--recall plot is more informative than the ROC plot when evaluating binary classifiers on imbalanced datasets,'' \emph{PLOS ONE}, vol.~10, no.~3, art. no. e0118432, Mar. 2015.
+
+\bibitem{banbury2021mlperf}
+C.~Banbury \emph{et al.}, ``MLPerf tiny benchmark,'' arXiv:2106.07597, Aug. 2021.
 
 \end{thebibliography}
 
