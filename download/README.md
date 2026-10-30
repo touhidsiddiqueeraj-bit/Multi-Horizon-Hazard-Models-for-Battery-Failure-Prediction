@@ -86,7 +86,8 @@ README.md              this file
     corrected to match Huang et al.'s actual finding (isotonic best overall,
     unstable under severe imbalance).
   - `shikdar2026robustness` is cited as a companion study under review —
-    confirm its final venue before submission.
+    confirm its final venue before submission. **[Superseded: removed on
+    2026-10-30/31 — see update 3 and update 4.]**
 - **Bibliography expanded 25 → 39 on 2026-10-30:** 14 verified citations added
   (Feng 2018 thermal-runaway review; Ng 2020 and Hannan 2017 battery
   state-prediction/BMS reviews; Geirhos 2020 shortcut learning; Moreno-Torres
@@ -205,6 +206,30 @@ US$2,580 **fully waived for Bangladesh**, Research4Life Group A):
 
 The IEEE TR package in `paper_tr/` is untouched apart from the [18] removal
 and remains the fallback if the ITEES route is declined.
+
+## 2026-10-31 update 4 — stale copy purged; submission zip rebuilt
+
+The [18] removal of update 3 had been applied to `main_tr.tex` and
+`itees_package/main_itees.tex` but **not** to `paper_itees/main_itees.tex` —
+the copy that actually goes into `ITEES_Submission_Package.zip`. Reference
+[18] (Shikdar & Laaksonen, "Calibration robustness of battery failure-risk
+models under operating perturbation," manuscript under review) therefore
+still appeared in the packaged PDF. Fixed:
+
+- `paper_itees/main_itees.tex`: both companion sentences in the Introduction
+  reframed, the Table I [18] row and footnote d removed, the calibration-
+  transfer paragraph reframed as this study's own experiment ("A final
+  experiment asks whether a small labeled target sample repairs this…"), the
+  bibitem deleted, `\begin{thebibliography}{39}` → `{38}` — mirroring
+  `main_tr.tex` sentence-for-sentence.
+- Recompiled with tectonic: 18 pages, no undefined citations, no [?] markers;
+  Table I keeps "This work" as the only full-✓ row.
+- `ITEES_Submission_Package.zip` rebuilt from the corrected files.
+- `README_ITEES.md`: the companion-reference to-do item closed.
+
+All three manuscript copies now agree: 38 references, [18] = Lundberg et al.
+(TreeSHAP), and ref [10] = Shikdar & Laaksonen, *ITEES* 2026, DOI
+10.1155/etep/6000810 (verified against Crossref).
 
 ## Recovery note (important)
 

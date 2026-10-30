@@ -58,13 +58,24 @@ README_ITEES.md                   this file
 6. **IEEE-specific material removed:** "Manuscript received XXX" footnote,
    running heads, and the four author biographies (not used in this journal).
 7. **References:** months stripped per journal style ("Jan. 2012" → "2012"),
-   "art. no." → "Article ID"; all 39 entries otherwise identical to the
-   verified IEEE TR bibliography, still ordered by first citation.
+   "art. no." → "Article ID"; the 38 entries otherwise identical to the
+   verified IEEE TR bibliography (the unverifiable under-review companion
+   reference — old [18] — was removed; see item 10 below), still ordered by
+   first citation.
 8. **Supplement:** same conversion applied, plus a repair — the TR copy of
    `supplement_tr.tex` had a corrupted `\usepackage[hidelinks]{hyperref}` line
    (fixed in both packages).
 9. Quantitative content (every table, every in-text number) is **unchanged**
    from the four-round-verified IEEE TR manuscript.
+10. **Companion reference removed (2026-10-31):** the under-review citation
+    (`shikdar2026robustness`, old ref [18]) was deleted from this copy too —
+    it had been removed from `main_tr.tex` and `itees_package/` earlier, but
+    this file (the one packaged in the submission zip) still carried it. The
+    two affected Introduction sentences, the Table I row, and footnote d were
+    reframed/removed exactly as in the other copies; the calibration-transfer
+    paragraph is now framed as this study's own experiment; bibliography
+    39 → 38; recompiled (18 pages, no undefined citations) and the zip was
+    rebuilt.
 
 ## Still to complete before submission (see the checklist doc)
 
@@ -73,8 +84,6 @@ README_ITEES.md                   this file
    curation/validation to co-authors). Adjust to the actual division of work.
 2. **Reviewer e-mails** — copy from each researcher's official page when
    entering the seven names in the portal.
-3. **Companion-study reference [18]** — cited as "manuscript under review";
-   update with the venue if accepted before submission.
 
 ## Rebuilding
 
