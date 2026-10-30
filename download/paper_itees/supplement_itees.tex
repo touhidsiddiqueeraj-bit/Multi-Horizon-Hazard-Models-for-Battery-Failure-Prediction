@@ -1,0 +1,292 @@
+% International Transactions on Electrical Energy Systems (Wiley, open access)
+% submission manuscript. Converted 2026-10-30 from the validated IEEE TR
+% version (paper_tr/main_tr.tex). All tables and quantitative claims are
+% unchanged; the abstract was trimmed to <=250 words and the IEEE-specific
+% front matter, biographies, and Roman-numeral section references were
+% replaced with the Wiley/Hindawi single-column conventions. ITEES imposes
+% no page limit; this manuscript compiles to a single-column A4 article.
+% Compile: tectonic supplement_itees.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{fontspec}
+% Times-like text face (TeX Gyre Termes), matching the Wiley journal look.
+\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular,
+  BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{./figs/}}
+\emergencystretch=2em
+\makeatletter\def\UrlBreaks{\do\/\do\-\do\.}\makeatother
+
+% Hindawi/Wiley numbered headings ("1. Introduction", "2.1. Datasets").
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.55em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.55em}{}
+\titlespacing*{\section}{0pt}{18pt plus 3pt minus 2pt}{7pt}
+\titlespacing*{\subsection}{0pt}{13pt plus 2pt minus 2pt}{5pt}
+\captionsetup{font=small,labelfont=bf,skip=7pt}
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries Supplementary Material\par}
+\vspace{10pt}
+{\large\bfseries for ``Multi-Horizon Failure-Risk Models for Battery Failure Prediction: How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?''\par}
+\vspace{12pt}
+{\normalsize Hussain Touhid Siddiquee\textsuperscript{1}, Syeda Salsabil Islam\textsuperscript{1}, Jasimul Islam Chowdhury\textsuperscript{1}, and Farzana Hoque Eshica\textsuperscript{1}\par}
+\vspace{7pt}
+\textsuperscript{1}Department of Electrical and Electronic Engineering, Leading University, Sylhet, Bangladesh\par
+\end{center}
+\vspace{12pt}
+This supplement provides the detailed tables supporting the main paper. All values are computed with the released, version-locked pipeline; pooled AUCs carry cell-level bootstrap 95\% confidence intervals except where noted.
+
+\section{Within-Dataset Results on the New Battery Archive Groups}
+Table~\ref{tab:s_within_ba} reports the horizon-resolved within-dataset AUC for the three tree ensembles on the four Battery Archive groups (Platt-calibrated, cell-disjoint folds). The mostly-censored SNL LFP group (0.031 positive prevalence) is evaluated at $H{=}20$ only and is supporting evidence throughout. Across all groups, 38 of 39 tree--group--horizon configurations reach 0.85, spanning 0.61--1.00.
+\begin{table}[!t]
+\caption{Within-Dataset AUC per Horizon on the Battery Archive Groups (Tree Ensembles, Platt-Calibrated). SNL LFP: $H{=}20$ Only (0.031 Prevalence).}
+\label{tab:s_within_ba}
+\centering\footnotesize\setlength{\tabcolsep}{3.4pt}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Group} & \textbf{Model} & \textbf{H=10} & \textbf{H=20} & \textbf{H=30} & \textbf{H=50}\\
+\midrule
+HNEI NMC & XGBoost & 1.000 & 0.999 & 0.999 & 0.999\\
+ & LightGBM & 0.999 & 0.999 & 0.999 & 0.999\\
+ & Random Forest & 1.000 & 1.000 & 1.000 & 0.999\\
+\midrule
+SNL NCA & XGBoost & 0.994 & 0.991 & 0.989 & 0.980\\
+ & LightGBM & 0.995 & 0.992 & 0.989 & 0.985\\
+ & Random Forest & 0.996 & 0.995 & 0.993 & 0.986\\
+\midrule
+SNL NMC & XGBoost & 0.872 & 0.869 & 0.869 & 0.878\\
+ & LightGBM & 0.877 & 0.887 & 0.868 & 0.888\\
+ & Random Forest & 0.915 & 0.929 & 0.888 & 0.607\\
+\midrule
+SNL LFP & XGBoost & --- & 0.999 & --- & ---\\
+ & LightGBM & --- & 0.999 & --- & ---\\
+ & Random Forest & --- & 0.999 & --- & ---\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On calibration and precision--recall within dataset (NASA, averaged over the three tree ensembles and the four horizons): raw scores reach a mean PR-AUC of 0.774 while isotonic calibration collapses it to 0.639, because the fitted step function creates large tied groups; Platt preserves ranking. Under transfer, isotonic maps fitted on source out-of-fold scores cost the ensembles up to 0.48 pooled AUC on Oxford and 0.31 on Severson even with SOH present.
+
+\section{Monotonicity Violations of Fixed-Horizon Classifiers}
+Table~\ref{tab:s_mono} quantifies how often four independent per-horizon classifiers violate $p_{10}\le p_{20}\le p_{30}\le p_{50}$ on the same scored row, on raw and Platt-calibrated scores. The discrete-time hazard model's survival product is monotone by construction (rate 0). Raw within-dataset violation rates span 32--45\%; transfer inflates them, up to 95.8\% for the NASA-trained XGBoost on Severson.
+\begin{table}[!t]
+\caption{Monotonicity Violations: Share of Scored Rows With $p_{10}\le p_{20}\le p_{30}\le p_{50}$ Failing, on Raw (and Platt-Calibrated) Scores. The Survival Product Is Monotone by Construction (Rate 0).}
+\label{tab:s_mono}
+\centering\footnotesize\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{lllc}
+\toprule
+\textbf{Setting} & \textbf{Target} & \textbf{Model} & \textbf{Raw / Platt}\\
+\midrule
+within & calce & XGBoost & 0.452 / 0.056\\
+within & nasa & XGBoost & 0.323 / 0.260\\
+transfer (calce src) & oxford & LightGBM & 0.641 / 0.004\\
+transfer (calce src) & oxford & Random Forest & 0.501 / 0.540\\
+transfer (calce src) & oxford & XGBoost & 0.565 / 0.003\\
+transfer (nasa+calce src) & oxford & LightGBM & 0.210 / 0.648\\
+transfer (nasa+calce src) & oxford & Random Forest & 0.335 / 0.305\\
+transfer (nasa+calce src) & oxford & XGBoost & 0.609 / 0.341\\
+transfer (nasa src) & oxford & LightGBM & 0.521 / 0.468\\
+transfer (nasa src) & oxford & Random Forest & 0.559 / 0.376\\
+transfer (nasa src) & oxford & XGBoost & 0.248 / 0.124\\
+transfer (calce src) & severson & LightGBM & 0.405 / 0.013\\
+transfer (calce src) & severson & XGBoost & 0.420 / 0.072\\
+transfer (nasa src) & severson & LightGBM & 0.582 / 0.537\\
+transfer (nasa src) & severson & Random Forest & 0.778 / 0.557\\
+transfer (nasa src) & severson & XGBoost & 0.958 / 0.923\\
+--- & --- & Survival product & 0.000 / 0.000\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discrete-Time Hazard Model: Transfer Results}
+Table~\ref{tab:s_hazard} reports transfer at $H{=}20$ for the survival-product models of Section~2 of the main paper. The formulation inherits the SOH dependence of the independent classifiers: with the ALL-LCO source, hazard XGBoost transfers to Oxford at pooled AUC 0.314, significantly below chance, and the hazard logistic degenerates to exactly 0.500 on three of six pairs.
+\begin{table}[!t]
+\caption{Discrete-Time Hazard Models at $H{=}20$: Transfer Performance (Pooled AUC With Cell-Level Bootstrap 95\% CI).}
+\label{tab:s_hazard}
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Training} & \textbf{Model} & \textbf{Oxford} & \textbf{Severson}\\
+\midrule
+NASA & Hazard XGBoost & 0.971 [0.953,0.991] & 0.884 [0.786,0.998]\\
+NASA & Hazard Logistic & 0.500 [0.500,0.500] & 0.607 [0.402,0.890]\\
+CALCE & Hazard XGBoost & 0.466 [0.301,0.578] & 0.737 [0.711,0.774]\\
+CALCE & Hazard Logistic & 0.500 [0.500,0.500] & 0.500 [0.500,0.500]\\
+ALL LCO & Hazard XGBoost & 0.314 [0.135,0.457] & 0.866 [0.770,0.978]\\
+ALL LCO & Hazard Logistic & 0.500 [0.500,0.500] & 0.916 [0.873,0.969]\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{SOH Ablation Evidence (All Horizons and Models)}
+Table~\ref{tab:s_soh} states the central SOH ablation with the cell as the experimental unit, for every ensemble, horizon, and LFP target: pooled AUC with and without SOH, and the paired cell-level bootstrap interval on the difference (primary evidence). On Severson every interval is positive; on Oxford the point estimates agree but paired intervals are undefined with five cells. Cycle-level DeLong $p$-values underflow throughout and are reported as $p<10^{-16}$ without interpretation, per the evaluation protocol of the main paper.
+\begin{table}[!t]
+\caption{SOH Ablation (ALL-LCO Source): Pooled AUC With and Without SOH, and Paired Cell-Level Bootstrap 95\% CI on the Difference.}
+\label{tab:s_soh}
+\centering\footnotesize\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Target} & \textbf{Model} & \textbf{H} & \textbf{w/ SOH} & \textbf{w/o SOH} & \textbf{Delta [95\% CI]}\\
+\midrule
+Oxford & XGBoost & 10 & 0.917 & 0.429 & (undef.: 5 cells)\\
+ & XGBoost & 20 & 0.917 & 0.429 & (undef.: 5 cells)\\
+ & XGBoost & 30 & 0.917 & 0.429 & (undef.: 5 cells)\\
+ & XGBoost & 50 & 0.917 & 0.429 & (undef.: 5 cells)\\
+\addlinespace
+ & LightGBM & 10 & 0.971 & 0.332 & (undef.: 5 cells)\\
+ & LightGBM & 20 & 0.971 & 0.332 & (undef.: 5 cells)\\
+ & LightGBM & 30 & 0.971 & 0.332 & (undef.: 5 cells)\\
+ & LightGBM & 50 & 0.971 & 0.332 & (undef.: 5 cells)\\
+\addlinespace
+ & Random Forest & 10 & 0.989 & 0.581 & (undef.: 5 cells)\\
+ & Random Forest & 20 & 0.989 & 0.581 & (undef.: 5 cells)\\
+ & Random Forest & 30 & 0.989 & 0.581 & (undef.: 5 cells)\\
+ & Random Forest & 50 & 0.989 & 0.581 & (undef.: 5 cells)\\
+\addlinespace
+Severson & XGBoost & 10 & 0.896 & 0.750 & $+0.137$ [0.079,0.249]\\
+ & XGBoost & 20 & 0.896 & 0.750 & $+0.146$ [0.097,0.233]\\
+ & XGBoost & 30 & 0.896 & 0.750 & $+0.162$ [0.115,0.237]\\
+ & XGBoost & 50 & 0.896 & 0.750 & $+0.180$ [0.134,0.250]\\
+\addlinespace
+ & LightGBM & 10 & 0.882 & 0.718 & $+0.134$ [0.105,0.200]\\
+ & LightGBM & 20 & 0.882 & 0.718 & $+0.164$ [0.127,0.227]\\
+ & LightGBM & 30 & 0.882 & 0.718 & $+0.102$ [0.030,0.230]\\
+ & LightGBM & 50 & 0.882 & 0.718 & $+0.155$ [0.112,0.214]\\
+\addlinespace
+ & Random Forest & 10 & 0.889 & 0.746 & $+0.163$ [0.133,0.225]\\
+ & Random Forest & 20 & 0.889 & 0.746 & $+0.143$ [0.106,0.226]\\
+ & Random Forest & 30 & 0.889 & 0.746 & $+0.171$ [0.138,0.232]\\
+ & Random Forest & 50 & 0.889 & 0.746 & $+0.175$ [0.114,0.264]\\
+\addlinespace
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{GRU Transfer Across Seeds}
+Table~\ref{tab:s_gru} reports the three-seed GRU transfer to Severson at $H{=}20$ on the common four-feature subset (per-cell mean AUC $\pm$ across-seed SD). Without SOH the CALCE-trained GRU is seed-unstable --- individual seeds span 0.21--1.00 --- so sequence representations do not reproducibly rescue transfer.
+\begin{table}[!t]
+\caption{GRU Transfer to Severson at $H{=}20$ (Common Feature Subset, Per-Cell Mean AUC $\pm$ Across-Seed SD, Three Seeds).}
+\label{tab:s_gru}
+\centering\footnotesize
+\begin{tabular}{lcc}
+\toprule
+\textbf{Training} & \textbf{With SOH} & \textbf{Without SOH}\\
+\midrule
+NASA & 0.998$\pm$0.003 & 0.987$\pm$0.015\\
+CALCE & 0.964$\pm$0.033 & 0.479$\pm$0.451\\
+ALL LCO & 0.991$\pm$0.015 & 0.893$\pm$0.131\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Small-Sample Recalibration (Companion-Study Arms)}
+Tables~\ref{tab:s_recA} and~\ref{tab:s_recB} detail the two recalibration arms summarized in Section~3 of the main paper, on Severson without SOH at $H{=}20$. Arm~A refits only the calibrator on $k$ labeled target cells; Arm~B continues training the classifier. Arm~A repairs calibration error but not discrimination; Arm~B's recovery is source-dependent, and its ratio above 1.0 for the NASA-trained XGBoost is a ceiling-mismatch artifact, not super-ceiling recovery.
+\begin{table}[!t]
+\caption{Arm~A Recalibration on Severson Without SOH ($H{=}20$): Values Average the Three LCO Sources and Available Tree Models; ECE Uses 10 Equal-Width Probability Bins.}
+\label{tab:s_recA}
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rccccccc}
+\toprule
+$k$ & \textbf{Zero ECE} & \textbf{Iso. ECE} & \textbf{Platt ECE} & \textbf{Temp. ECE} & \textbf{Iso. AUC} & \textbf{Platt AUC} & \textbf{Temp. AUC}\\
+\midrule
+5 & 0.817 & 0.044 & 0.045 & 0.563 & 0.616 & 0.599 & 0.669\\
+10 & 0.817 & 0.010 & 0.010 & 0.561 & 0.634 & 0.646 & 0.651\\
+20 & 0.817 & 0.013 & 0.013 & 0.560 & 0.634 & 0.655 & 0.648\\
+40 & 0.817 & 0.015 & 0.015 & 0.561 & 0.637 & 0.657 & 0.653\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+\caption{Arm~B Recovery at $k{=}5$ on Severson Without SOH, $H{=}20$. Recovery Ratio Uses the Within-LCO Ceiling; Retention Is the LCO-Holdout AUC Before and After the Update.}
+\label{tab:s_recB}
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Training} & \textbf{Model} & \textbf{Zero AUC} & \textbf{Arm B AUC} & \textbf{Recovery} & \textbf{DeLong $p$} & \textbf{LCO retention}\\
+\midrule
+NASA & XGBoost & 0.620 & 0.854 & $+1.04$\textsuperscript{*} & $<10^{-3}$ & 1.000 $\rightarrow$ 1.000\\
+NASA & LightGBM & 0.493 & 0.838 & $+0.88$ & $<10^{-3}$ & 1.000 $\rightarrow$ 0.997\\
+NASA & Random Forest & 0.724 & 0.751 & $+0.19$ & $<10^{-3}$ & 0.959 $\rightarrow$ 0.314\\
+CALCE & XGBoost & 0.686 & 0.796 & $+0.53$ & $<10^{-3}$ & 0.997 $\rightarrow$ 0.996\\
+ALL LCO & XGBoost & 0.760 & 0.828 & $+0.47$ & $<10^{-3}$ & 0.690 $\rightarrow$ 0.567\\
+\bottomrule
+\end{tabular}
+\footnotesize\textsuperscript{*}Ratio above 1.0 is a ceiling-mismatch artifact, not super-ceiling recovery.
+\end{table}
+
+\section{Factorial Feature Ablation Grid}
+Table~\ref{tab:s_abl} reports the full $2^3-1$ factorial grid over feature groups \{SOH, cycle index, sensors\} at $H{=}20$ (XGBoost, pooled AUC with cell-level bootstrap 95\% CI; sensors = voltages, current, temperature, duration). No combination without SOH reaches 0.76 on either target (best 0.75); removing both SOH and the cycle index leaves essentially nothing.
+\begin{table}[!t]
+\caption{Factorial Feature Ablation at $H{=}20$ (XGBoost, Pooled AUC With Cell-Level Bootstrap 95\% CI).}
+\label{tab:s_abl}
+\centering\footnotesize\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Oxford}} & \multicolumn{3}{c}{\textbf{Severson}}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+\textbf{Feature set} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src} & \textbf{NASA src} & \textbf{CALCE src} & \textbf{ALL src}\\
+\midrule
+full & 0.957 & 0.850 & 0.917 & 0.871 & 0.850 & 0.896\\
+no SOH & 0.518 & 0.416 & 0.429 & 0.595 & 0.682 & 0.750\\
+$-$cycle & 0.965 & 0.967 & 0.993 & 0.854 & 0.766 & 0.774\\
+$-$SOH$-$cycle & 0.658 & 0.433 & 0.388 & 0.531 & 0.500 & 0.535\\
+SOH only & 0.965 & 1.000 & 1.000 & 0.834 & 0.798 & 0.833\\
+cycle only & 0.541 & 0.541 & 0.541 & 0.709 & 0.694 & 0.719\\
+sensors & 0.658 & 0.433 & 0.388 & 0.531 & 0.500 & 0.535\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Operating-Condition Shift at Fixed Chemistry and Laboratory}
+Table~\ref{tab:s_cond} details the leave-condition-out protocol summarized in Section~3 of the main paper: the test cell is drawn from an operating condition (temperature band, C-rate, or both) that contributes no training cell in that fold, and condition metadata never enters the features. The unfitted SOH distance rule is essentially undisturbed (0.886--0.999). The mixed-fold reference on the 6-cell SNL NMC group is unstable (raw AUC 0.65 with SOH, against the 0.87 reached under the main paper's cell-disjoint outer folds), so its reference columns read ``---'' and no drop is claimed. HNEI is omitted (single condition); SNL LFP was run with the with-SOH and common no-SOH feature sets only.
+\begin{table}[!t]
+\caption{Leave-Condition-Out Versus Mixed-Cell Folds at $H{=}20$ (XGBoost, Pooled AUC). Ref.\ Is the Ordinary Mixed-Cell AUC for the Same Feature Set (--- Where Unstable or Not Run); the Distance Rule Is the Unfitted $0.80-$SOH Score.}
+\label{tab:s_cond}
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccccc}
+\toprule
+ & & \multicolumn{3}{c}{\textbf{With SOH}} & \multicolumn{3}{c}{\textbf{No SOH}}\\
+\cmidrule(lr){3-5}\cmidrule(l){6-8}
+\textbf{Group} & \textbf{Held-out axis} & \textbf{LCO} & \textbf{Dist.\ rule} & \textbf{Ref.} & \textbf{LCO} & \textbf{Dist.\ rule} & \textbf{Ref.}\\
+\midrule
+SNL NCA & temp $	imes$ rate & 0.989 & 0.987 & 0.985 & 0.894 & 0.987 & 0.928\\
+SNL NCA & temperature & 0.989 & 0.987 & 0.985 & 0.888 & 0.987 & 0.928\\
+SNL NCA & C-rate & 0.961 & 0.987 & 0.985 & 0.820 & 0.987 & 0.928\\
+SNL NMC & temp $	imes$ rate & 0.847 & 0.886 & --- & 0.666 & 0.886 & ---\\
+SNL NMC & temperature & 0.787 & 0.886 & --- & 0.569 & 0.886 & ---\\
+SNL NMC & C-rate & 0.847 & 0.886 & --- & 0.666 & 0.886 & ---\\
+SNL LFP & temp $	imes$ rate & 0.991 & 0.996 & 0.994 & --- & --- & ---\\
+SNL LFP & temperature & 0.995 & 0.999 & 0.994 & --- & --- & ---\\
+SNL LFP & C-rate & 0.994 & 0.998 & 0.994 & --- & --- & ---\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Same-Chemistry Controls With the New Groups as Sources}
+Table~\ref{tab:s_samechem_ba} extends the same-chemistry cross-laboratory controls of Section~3 of the main paper to the new groups as \emph{sources}: NMC$\to$NMC and NCA/NMC cross-laboratory pairs within the SNL matrix, and LFP$\to$LFP transfer from SNL LFP to Oxford and Severson. The pattern repeats: high transfer with SOH, near-chance sensor-only transfer on the legacy LFP targets.
+\begin{table}[!t]
+\caption{Same-Chemistry Controls With New Groups as Sources at $H{=}20$ (XGBoost, Pooled AUC). Common = Shared Four-Feature Subset.}
+\label{tab:s_samechem_ba}
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Pair} & \textbf{with SOH} & \textbf{no SOH} & \textbf{no SOH (common)}\\
+\midrule
+HNEI NMC $\to$ SNL NMC (NMC) & 0.868 & 0.753 & 0.756\\
+SNL NCA $\to$ SNL NMC (NCA/NMC) & 0.905 & 0.801 & 0.752\\
+SNL LFP $\to$ Oxford (LFP) & 1.000 & 0.857 & 0.857\\
+SNL LFP $\to$ Severson (LFP) & 0.820 & 0.356 & 0.394\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
