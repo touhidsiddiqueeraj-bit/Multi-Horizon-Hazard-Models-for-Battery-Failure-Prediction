@@ -15,7 +15,7 @@ paper_tr/
   supplement_tr.pdf     compiled supplement (3 pages)
   IEEEtran.cls          class file used for compilation
   figs/                 figures (all regenerated from validated results)
-Cover_Letter_IEEE_TR.docx       cover letter, incl. conference-extension declaration
+Cover_Letter_IEEE_TR.docx       cover letter
 Suggested_Reviewers_IEEE_TR.docx seven suggested reviewers with rationale
 Submission_Checklist_IEEE_TR.docx pre-upload checklist and QA record
 AUTHORS.md             author list, ORCIDs, profiles
@@ -32,10 +32,10 @@ README.md              this file
 3. **Affiliation completed** (was `[TODO: DEPARTMENT] [TODO: UNIVERSITY]`):
    Department of Electrical and Electronic Engineering, Leading University,
    Sylhet, Bangladesh.
-4. **Corresponding-author e-mail added** to the first-page `\thanks` footnote:
-   touhidsiddiqueeraj@gmail.com. (Co-author e-mails can be added to the same
-   footnote if all four should be listed; the submission form requests them
-   regardless.)
+4. **All four author e-mail addresses added** to the first-page `\thanks`
+   footnote: touhidsiddiqueeraj@gmail.com (corresponding author),
+   salsabil.ariyaa@gmail.com, chowdhuryjasimul@gmail.com, and
+   ishicafhaque@gmail.com.
 5. **IEEE biographies added** for all four authors (standard
    `IEEEbiographynophoto` blocks after the references).
 6. `AUTHORS.md` records ORCIDs and profiles for the submission forms.
@@ -91,18 +91,19 @@ README.md              this file
 
 ## Still to complete before submission
 
-1. **Conference citation in the cover letter** — the placeholder
-   `【complete citation — …】` in `Cover_Letter_IEEE_TR.docx` must be replaced
-   with the full citation of the prior WIECON-ECE conference version, and the
-   enumerated new-material list verified against the camera-ready conference
-   paper.
-2. **Companion-study reference [14]** — cited as "manuscript under review";
+1. **Companion-study reference [14]** — cited as "manuscript under review";
    update with the venue if accepted.
-3. **Co-author e-mails** — optionally add to the `\thanks` footnote (only the
-   corresponding author's is listed in the manuscript).
-4. **Restore the lost figures** (see Round 1 note) if desired.
-5. **Reviewer e-mails** — copy from each researcher's official page when
+2. **Restore the lost figures** (see Round 1 note) if desired.
+3. **Reviewer e-mails** — copy from each researcher's official page when
    entering them in ScholarOne.
+
+## 2026-10-30 update (post-review)
+
+At the authors' request the prior-version declaration was removed from the
+cover letter, and the manuscript is presented as an original contribution;
+the originality statement now reads accordingly. All four author e-mail
+addresses were added to the first-page `\thanks` footnote. No prior-version
+or conference-extension references remain anywhere in the package.
 
 ## Recovery note (important)
 

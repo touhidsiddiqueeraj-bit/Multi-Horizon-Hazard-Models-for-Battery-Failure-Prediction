@@ -40,7 +40,9 @@ How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?*
 ## Contact
 
 - **Corresponding author:** Hussain Touhid Siddiquee — touhidsiddiqueeraj@gmail.com
-  (listed in the manuscript's first-page `\thanks` footnote).
-- Co-author e-mail addresses are not yet provided; add them to the `\thanks`
-  footnote or to the submission form when available.
+- Syeda Salsabil Islam — salsabil.ariyaa@gmail.com
+- Jasimul Islam Chowdhury — chowdhuryjasimul@gmail.com
+- Farzana Hoque Eshica — ishicafhaque@gmail.com
+- All four addresses are listed in the manuscript's first-page `\thanks`
+  footnote, in author order.
 - ORCIDs are entered in the submission system, not the manuscript text.

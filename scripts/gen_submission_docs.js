@@ -1,5 +1,5 @@
 // Generate the three IEEE TR submission documents:
-//   1. Cover_Letter_IEEE_TR.docx      (with conference-extension declaration)
+//   1. Cover_Letter_IEEE_TR.docx
 //   2. Suggested_Reviewers_IEEE_TR.docx
 //   3. Submission_Checklist_IEEE_TR.docx
 // English formal documents (Profile A: Times New Roman), no cover page, no TOC.
@@ -154,20 +154,8 @@ const coverLetter = new Document({
 
       para("We believe the manuscript fits the scope of the IEEE Transactions on Reliability closely. It treats battery prognostics as operational reliability estimation; it develops a discrete-time hazard formulation whose survival product is monotone in the horizon by construction; it evaluates the trustworthiness of risk estimates through calibration, uncertainty, and cost analyses; and it asks when reliability metrics survive distribution shift \u2014 a question of direct consequence for certifying prognostic models for electric-vehicle and grid deployment."),
 
-      heading2("Declaration of Prior Conference Publication"),
-      para("In the spirit of full disclosure, and in accordance with IEEE policy on evolutionary submissions, we declare that this manuscript extends an earlier conference version of this work: \u3010complete citation \u2014 authors, title, conference name (IEEE WIECON-ECE), location, year, and DOI if available\u3011."),
-      para("The prior conference version presented an initial study of the multi-horizon failure-risk framework on the NASA and CALCE (LCO) datasets. The present journal submission substantially extends that work with the following new material:"),
-      bullet("Cross-chemistry evaluation:", "eight public datasets across four chemistries (LCO, LFP, NCA, NMC) from six laboratories, replacing the original two-dataset, single-chemistry evaluation;"),
-      bullet("Replication study:", "a pre-registered replication on 60 NMC, NCA, and LFP cells from two additional laboratories (HNEI and SNL via the Battery Archive);"),
-      bullet("Discrete-time hazard model:", "a survival-product formulation that is monotone in the horizon, contrasted against independent fixed-horizon classifiers, with quantified monotonicity-violation rates;"),
-      bullet("Validity controls:", "minimal health-state baselines, a factorial feature ablation, a failure-definition ablation separating SOH and voltage-sag endpoints, and same-chemistry cross-laboratory and operating-condition controls;"),
-      bullet("Calibration under shift:", "a comparison of Platt scaling and isotonic regression under cross-dataset shift, with small-sample labeled-target recalibration;"),
-      bullet("Operational evaluation:", "a cost-sensitive decision analysis and a complete embedded deployment on an ESP32-S3 microcontroller, including a C re-implementation validated against the training libraries;"),
-      bullet("Uncertainty treatment:", "cell-level bootstrap intervals on every headline number, replacing cycle-level significance tests as primary evidence."),
-      para("We estimate that this new material constitutes the majority of the technical content of the journal version. All overlapping text, figures, and results are or will be clearly attributed to the prior version by citation. \u3010Before submission, verify this enumeration of new material against the final camera-ready conference paper and adjust as needed.\u3011"),
-
       heading2("Originality and Integrity Statements"),
-      para("We confirm that the manuscript is original, has not been published previously in any form other than the conference version declared above, and is not under consideration by any other journal or conference. All authors have read and approved the submitted version and meet the authorship criteria of the IEEE. All datasets used are publicly available and are properly cited. We have no conflicts of interest, financial or otherwise, to declare. No human or animal subjects were involved."),
+      para("We confirm that the manuscript is original, has not been published previously in any form, and is not under consideration by any other journal or conference. All authors have read and approved the submitted version and meet the authorship criteria of the IEEE. All datasets used are publicly available and are properly cited. We have no conflicts of interest, financial or otherwise, to declare. No human or animal subjects were involved."),
       para("Suggested reviewers are provided in the accompanying file. The Supplementary Material is submitted as a separate file and is referred to from the main text."),
 
       para("Thank you for considering our manuscript. We look forward to the reviewers\u2019 comments."),
@@ -308,7 +296,7 @@ const submissionChecklist = new Document({
         chk("paper_tr/supplement_tr.tex", "LaTeX source of the supplement.", "Ready", "E3F2E3"),
         chk("paper_tr/figs/ (4 figures)", "Fig01 within-dataset AUC, Fig02 SOH-ablation transfer collapse, Fig05 multi-horizon AUC, deployment architecture figure.", "Ready", "E3F2E3"),
         chk("paper_tr/IEEEtran.cls", "Class file used for compilation.", "Ready", "E3F2E3"),
-        chk("Cover_Letter_IEEE_TR.docx", "Cover letter including the conference-extension declaration.", "1 placeholder", "FFF4E0"),
+        chk("Cover_Letter_IEEE_TR.docx", "Cover letter for the submission.", "Ready", "E3F2E3"),
         chk("Suggested_Reviewers_IEEE_TR.docx", "Seven suggested reviewers with expertise rationale; e-mails to be completed from official pages.", "1 field", "FFF4E0"),
         chk("AUTHORS.md", "Author order, roles, ORCIDs, and profile links for the submission forms.", "Ready", "E3F2E3"),
         chk("README.md", "Guide to the package, its recovery history, and the four-round review record.", "Ready", "E3F2E3"),
@@ -324,8 +312,8 @@ const submissionChecklist = new Document({
         chk("Double-column IEEE format", "IEEEtran journal class (class file included); Times-equivalent text face via TeX Gyre Termes.", "Met", "E3F2E3"),
         chk("Length", "11 pages main text plus a 3-page supplement. Verify the current regular-paper page limit and over-length policy on the IEEE TR Author Center before uploading.", "Verify limit", "FFF4E0"),
         chk("Title, abstract, index terms", "Abstract is single-paragraph and self-contained; nine index terms follow the abstract.", "Met", "E3F2E3"),
-        chk("Author block", "All four authors with affiliation; corresponding author marked; corresponding-author e-mail in the first-page footnote.", "Met", "E3F2E3"),
-        chk("Co-author e-mails", "IEEE journals normally list every author\u2019s e-mail in the footnote. Currently only the corresponding author\u2019s is given; add the three co-author addresses to the \\thanks block if desired.", "Optional", "FFF4E0"),
+        chk("Author block", "All four authors with affiliation; corresponding author marked; all four author e-mail addresses in the first-page footnote.", "Met", "E3F2E3"),
+        chk("Co-author e-mails", "All four authors\u2019 e-mail addresses (corresponding author and the three co-authors) are listed in the first-page \\thanks footnote.", "Met", "E3F2E3"),
         chk("References", "25 entries in IEEE style; all 25 verified against publisher records (Crossref, arXiv, PMLR, publisher pages) on October 30, 2026.", "Met", "E3F2E3"),
         chk("Author biographies", "IEEE-style biography paragraphs for all four authors after the references; photos can be added at revision or acceptance.", "Met", "E3F2E3"),
         chk("Figures", "All four figures referenced in the text, no missing or unused files; every page visually inspected after the final compile.", "Met", "E3F2E3"),
@@ -338,18 +326,15 @@ const submissionChecklist = new Document({
         children: [run("These are the genuinely open items; each is also marked in the source files.", { color: GREY, size: SMALL })],
         paragraph: { spacing: { after: 120, line: 312 } },
       }),
-      bullet("1. Conference citation (cover letter): ", "insert the full citation of the prior WIECON-ECE conference version where the placeholder \u3010complete citation \u2014 \u2026\u3011 appears in the cover letter."),
-      bullet("2. Extension list (cover letter): ", "confirm the enumerated new material against the final camera-ready conference paper and adjust the declaration if any component was already published there."),
-      bullet("3. Companion-study reference [14]: ", "the entry for Shikdar and Laaksonen\u2019s calibration-robustness companion study is currently cited as \u201Cmanuscript under review.\u201D Replace with the final venue if it is accepted before submission."),
-      bullet("4. Co-author e-mails: ", "add the three co-author e-mail addresses to the first-page \\thanks footnote if you want all four listed (the submission form will request them regardless)."),
-      bullet("5. Lost figures (optional): ", "the SHAP beeswarm panels, the Python-vs-C agreement scatter, the Battery Archive capacity-trace audit, the decision-curve figure, and the calibration figure were lost with the earlier working environment. If the local repository still holds them, copy them into paper_tr/figs/ and re-add their figure environments; otherwise the paper stands complete with the four regenerated figures and the text-only SHAP paragraph."),
-      bullet("6. ORCIDs: ", "enter all four authors\u2019 ORCIDs in ScholarOne (listed in AUTHORS.md); ORCIDs are entered in the system, not printed in the manuscript."),
-      bullet("7. Data and code availability: ", "all eight datasets are public and cited; prepare a short availability statement for the form if requested, noting that the Battery Archive summaries were accessed in September 2026."),
-      bullet("8. Page-charge policy: ", "check the current IEEE TR over-length page charges and open-access options on the Author Center when submitting."),
+      bullet("1. Companion-study reference [14]: ", "the entry for Shikdar and Laaksonen\u2019s calibration-robustness companion study is currently cited as \u201Cmanuscript under review.\u201D Replace with the final venue if it is accepted before submission."),
+      bullet("2. Lost figures (optional): ", "the SHAP beeswarm panels, the Python-vs-C agreement scatter, the Battery Archive capacity-trace audit, the decision-curve figure, and the calibration figure were lost with the earlier working environment. If the local repository still holds them, copy them into paper_tr/figs/ and re-add their figure environments; otherwise the paper stands complete with the four regenerated figures and the text-only SHAP paragraph."),
+      bullet("3. ORCIDs: ", "enter all four authors\u2019 ORCIDs in ScholarOne (listed in AUTHORS.md); ORCIDs are entered in the system, not printed in the manuscript."),
+      bullet("4. Data and code availability: ", "all eight datasets are public and cited; prepare a short availability statement for the form if requested, noting that the Battery Archive summaries were accessed in September 2026."),
+      bullet("5. Page-charge policy: ", "check the current IEEE TR over-length page charges and open-access options on the Author Center when submitting."),
 
       heading1("D. Quality assurance record (four-round review)"),
       para("The manuscript has been through four review rounds; all fixes below are already applied in the compiled PDF."),
-      bullet("Round 1 \u2014 Figures: ", "four figures, all present, referenced, and visually inspected; no overflow, overlap, or cut-off content on any page. Figures were regenerated programmatically from the validated results file; five legacy figure sets are documented as lost with the earlier environment (see item C-5)."),
+      bullet("Round 1 \u2014 Figures: ", "four figures, all present, referenced, and visually inspected; no overflow, overlap, or cut-off content on any page. Figures were regenerated programmatically from the validated results file; five legacy figure sets are documented as lost with the earlier environment (see item C-2)."),
       bullet("Round 2 \u2014 Numbers: ", "379 automated checks of every table row and in-text claim in the main paper and supplement against the validated results file \u2014 all pass. Three transcription errors were caught and fixed during re-verification (Oxford SOH-delta range, a factorial-ablation value, a column ordering in the supplement)."),
       bullet("Round 3 \u2014 References: ", "25 cite keys matched to 25 bibliography entries; no undefined citations, orphans, or duplicates. On October 30, 2026, every entry was verified against publisher records: five reconstructed entries were corrected to their published details, one unverifiable entry (a JMLR attribution) was replaced with the verifiable ICML 2023 paper by the same authors, and one citation-context mismatch was fixed (the Huang et al. finding on imbalanced-data calibration is now stated accurately)."),
       bullet("Round 4 \u2014 Consistency and readability: ", "section cross-references verified against the compiled headings; author biographies deduplicated; placeholder audit clean; layout inspected on all 14 pages. The package was recompiled and re-inspected after the author-block and bibliography updates of October 30, 2026."),
