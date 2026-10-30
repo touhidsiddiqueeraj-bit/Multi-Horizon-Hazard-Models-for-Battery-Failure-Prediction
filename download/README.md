@@ -116,6 +116,38 @@ the originality statement now reads accordingly. All four author e-mail
 addresses were added to the first-page `\thanks` footnote. No prior-version
 or conference-extension references remain anywhere in the package.
 
+## 2026-10-30 update 2 — Table I rebuilt as a capability-matrix comparison
+
+At the authors' request the Introduction's Table I was rebuilt so the
+contribution is immediately clear to reviewers:
+
+- The old prose table ("Representative Prior Work Relative to This Study",
+  Study/Family/Data/Position columns) was **replaced** by a full-width
+  feature matrix (`table*`): six studies × seven capability columns
+  (multi-horizon failure risk, cross-chemistry transfer, SOH-shortcut
+  diagnosis, discrete-time hazard model, calibration under shift,
+  cell-level uncertainty, embedded MCU deployment), marked
+  ✓ / ○ (footnoted) / ×, with "This work" the only row with ✓ in every
+  column. Four footnotes keep every ○/✓ honest, e.g. Lu et al. *did*
+  evaluate cross-chemistry transfer — but for SOH regression, not
+  failure-risk classification (verified against the Nature Communications
+  paper: 65 cells, five cathode chemistries, 20 pairwise transfers).
+- The paragraph introducing the table now states the gap explicitly:
+  no prior study combines the failure-risk task with a diagnosis of what
+  actually transfers.
+- Preamble: `amssymb` (for `\checkmark`) and `array` added.
+- **Bibliography reordered to keep first-citation numbering correct**: the
+  new `table*` float lands on page 3 above Table II, so §II-B prose now
+  cites the Battery Archive export before the dataset table does. New
+  order of entries 23–29: `batteryarchive2023`, `preger2020degradation`,
+  `severson2019data`, `saha2007battery`, `calce2023battery`,
+  `birkl2017oxford`, `attia2020closedloop`. Verified with a
+  column-aware reading-order script (`scripts/check_cite_order.py`):
+  references 1–39 appear strictly in order of first citation.
+- Recompiled cleanly; still 12 pages; the table fits the IEEE text frame
+  exactly (measured 49.3–562.7 pt against the 49–563 pt frame); no new
+  overfull boxes; cover letter and checklist unaffected.
+
 ## Recovery note (important)
 
 The working environment was recycled between sessions and the working copy of

@@ -6,6 +6,8 @@
 % Compile: tectonic main_tr.tex   (or pdflatex main_tr.tex, twice)
 \documentclass[journal]{IEEEtran}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{fontspec}
@@ -50,31 +52,31 @@ Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-hor
 
 This paper begins from those gaps but is organized around a sharper validity question: \emph{when a failure-risk model appears to transfer between datasets and chemistries, is anything about degradation being transferred, or is the model merely reading a health-state variable that encodes proximity to the failure criterion?} The composite label is defined from SOH, and SOH is also the strongest feature, so a model can score well on transfer while learning only ``distance to the SOH $=$ 0.80 threshold'' --- a battery-side instance of the shortcut-learning failure mode documented across machine learning \cite{geirhos2020shortcut}.
 
-Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting}, whereas on imbalanced data isotonic regression performs best overall but degrades when the imbalance is severe \cite{huang2020experimental}, and no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Underlying all of them is the dataset-shift problem itself \cite{moreno2012unifying}: between any two laboratories, chemistry, cycling protocol, and measurement practice change simultaneously. Table~\ref{tab:lit} situates this work against these lines of research.
+Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting}, whereas on imbalanced data isotonic regression performs best overall but degrades when the imbalance is severe \cite{huang2020experimental}, and no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Underlying all of them is the dataset-shift problem itself \cite{moreno2012unifying}: between any two laboratories, chemistry, cycling protocol, and measurement practice change simultaneously. Table~\ref{tab:lit} summarizes the resulting comparison. Cross-chemistry transfer has been demonstrated for SOH regression \cite{lu2023deep}, and calibration robustness under operating perturbation \cite{shikdar2026robustness}, but each in isolation and for other targets; no prior study combines the multi-horizon failure-risk task with a controlled diagnosis of what actually transfers, and none reports a hazard formulation, cell-level uncertainty treatment, or a microcontroller deployment for this task.
 
-\begin{table}[!t]
-\caption{Representative Prior Work Relative to This Study.}
+\begin{table*}[!t]
+\caption{Comparison of This Study With Representative Prior Work on Battery Prognostics. $\checkmark$: Addressed; $\circ$: Partially Addressed (Footnoted); $\times$: Not Addressed. Among the Compared Studies, Only This Work Combines the Multi-Horizon Failure-Risk Task With a Controlled Diagnosis of What Actually Transfers Under Dataset and Chemistry Shift.}
 \label{tab:lit}
 \centering
 \footnotesize
-\begin{tabular}{p{1.55cm}p{1.1cm}p{0.75cm}p{2.7cm}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{1.35cm}*{7}{>{\centering\arraybackslash}p{1.55cm}}}
 \toprule
-\textbf{Study} & \textbf{Family} & \textbf{Data} & \textbf{Position}\\
+\textbf{Study} & \textbf{Task} & \textbf{Multi-horizon failure risk} & \textbf{Cross-chemistry transfer} & \textbf{SOH-shortcut diagnosis} & \textbf{Discrete-time hazard model} & \textbf{Calibration under shift} & \textbf{Cell-level uncertainty} & \textbf{Embedded MCU deployment}\\
 \midrule
-Meng and Li \cite{meng2019review} & PHM review & Various & Physics-based, data-driven, hybrid families\\
-Breiman; Chen; Ke \cite{breiman2001random,chen2016xgboost,ke2017lightgbm} & Tree ensembles & RUL & RUL regression, not failure-risk classification\\
-Sahoo et al.\ \cite{sahoo2022transfer}; Lu et al.\ \cite{lu2023deep} & Transfer (SOH) & NASA, CALCE; large corpora & SOH regression only\\
-Platt; Zadrozny et al.\ \cite{platt1999probabilistic,zadrozny2002transforming,niculescu2005predicting,huang2020experimental} & Calibration & Various & In-domain comparison only\\
-Lundberg et al.\ \cite{lundberg2020from} & Explainability & --- & TreeSHAP for ensembles\\
-Grzesik and Mrozek \cite{grzesik2024combining} & Edge ML & --- & No battery failure cases\\
-Gupta and Ramdas \cite{gupta2023online} & Online calib. & --- & Distribution-shift Platt\\
-Geirhos et al.\ \cite{geirhos2020shortcut} & Shortcut & --- & Decision rules that fail to transfer\\
-Moreno-Torres et al.\ \cite{moreno2012unifying} & Dataset shift & --- & Taxonomy of shift types\\
-Shikdar and Laaksonen \cite{shikdar2026learning} & Failure risk & NASA & One model, one dataset (baseline)\\
-\textbf{This work} & Failure risk + validity & 8 datasets & Multi-model SOH-shortcut diagnosis, hazard model, edge deployment\\
+Severson et al.\ \cite{severson2019data} & Cycle life (RUL) & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$\\
+Sahoo et al.\ \cite{sahoo2022transfer} & SOH regression & $\times$ & $\circ^{\,a}$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$\\
+Lu et al.\ \cite{lu2023deep} & SOH regression & $\times$ & $\checkmark^{\,b}$ & $\times$ & $\times$ & $\times$ & $\times$ & $\times$\\
+Shikdar and Laaksonen \cite{shikdar2026learning} & Failure-risk cls. & $\checkmark$ & $\times$ & $\circ^{\,c}$ & $\times$ & $\times$ & $\times$ & $\times$\\
+Shikdar and Laaksonen \cite{shikdar2026robustness} & Failure-risk cls. & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\checkmark^{\,d}$ & $\times$ & $\times$\\
+\textbf{This work} & \textbf{Failure-risk cls.} & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$\\
 \bottomrule
 \end{tabular}
-\end{table}
+\begin{flushleft}
+\footnotesize
+$^{a}$Cross-laboratory transfer at fixed chemistry (NASA and CALCE, both LCO). $^{b}$Pairwise transfer across five cathode chemistries, but for SOH regression rather than failure risk, and without a shortcut or calibration analysis. $^{c}$Simple baselines, including an SOH distance rule, reported within one dataset; no cross-dataset evaluation. $^{d}$Calibration under operating-condition perturbation; whether the repair survives cross-chemistry and cross-laboratory shift is examined in this work.
+\end{flushleft}
+\end{table*}
 
 The objective of this study is to close the three gaps identified above and, in doing so, to answer the validity question rigorously. The contributions are:
 \begin{itemize}
@@ -599,6 +601,15 @@ C.~Gupta and A.~Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc
 \bibitem{moreno2012unifying}
 J.~G. Moreno-Torres, T.~Raeder, R.~Alaiz-Rodr\'iguez, N.~V. Chawla, and F.~Herrera, ``A unifying view on dataset shift in classification,'' \emph{Pattern Recognition}, vol.~45, no.~1, pp. 521--530, Jan. 2012.
 
+\bibitem{batteryarchive2023}
+The Battery Archive, ``Cycle test data.'' [Online]. Available: \url{https://batteryarchive.org} (summaries accessed Sep. 2026)
+
+\bibitem{preger2020degradation}
+Y.~Preger \emph{et al.}, ``Degradation of commercial lithium-ion cells as a function of chemistry and cycling conditions,'' \emph{Journal of Power Sources}, vol.~463, art. no. 228217, Aug. 2020.
+
+\bibitem{severson2019data}
+K.~A. Severson \emph{et al.}, ``Data-driven prediction of battery cycle life before capacity degradation,'' \emph{Nature Energy}, vol.~4, no.~5, pp. 383--391, May 2019.
+
 \bibitem{saha2007battery}
 B.~Saha and K.~Goebel, ``Battery data set,'' NASA Ames Prognostics Data Repository, NASA Ames Research Center, Moffett Field, CA, USA, 2007. [Online]. Available: \url{https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository}
 
@@ -608,17 +619,8 @@ CALCE Battery Data Center, University of Maryland, College Park, MD, USA, ``Batt
 \bibitem{birkl2017oxford}
 C.~R. Birkl, M.~D. Roberts, E.~McTurk, P.~G. Bruce, and D.~A. Howey, ``Degradation diagnostics for lithium ion cells,'' \emph{Journal of Power Sources}, vol.~341, pp. 373--386, Feb. 2017.
 
-\bibitem{severson2019data}
-K.~A. Severson \emph{et al.}, ``Data-driven prediction of battery cycle life before capacity degradation,'' \emph{Nature Energy}, vol.~4, no.~5, pp. 383--391, May 2019.
-
 \bibitem{attia2020closedloop}
 P.~M. Attia \emph{et al.}, ``Closed-loop optimization of fast-charging protocols for batteries with machine learning,'' \emph{Nature}, vol.~578, no.~7795, pp. 397--402, Feb. 2020.
-
-\bibitem{batteryarchive2023}
-The Battery Archive, ``Cycle test data.'' [Online]. Available: \url{https://batteryarchive.org} (summaries accessed Sep. 2026)
-
-\bibitem{preger2020degradation}
-Y.~Preger \emph{et al.}, ``Degradation of commercial lithium-ion cells as a function of chemistry and cycling conditions,'' \emph{Journal of Power Sources}, vol.~463, art. no. 228217, Aug. 2020.
 
 \bibitem{cho2014learning}
 K.~Cho, B.~van Merri\"enboer, C.~Gulcehre, D.~Bahdanau, F.~Bougares, H.~Schwenk, and Y.~Bengio, ``Learning phrase representations using RNN encoder--decoder for statistical machine translation,'' in \emph{Proc. Conf. Empirical Methods Natural Language Process. (EMNLP)}, Doha, Qatar, Oct. 2014, pp. 1724--1734.
