@@ -26,7 +26,7 @@
         Jasimul~Islam~Chowdhury,
         and~Farzana~Hoque~Eshica%
 \thanks{Manuscript received XXX; revised XXX. (Corresponding author: Hussain Touhid Siddiquee.)}%
-\thanks{Hussain Touhid Siddiquee, Syeda Salsabil Islam, Jasimul Islam Chowdhury, and Farzana Hoque Eshica are with the Department of Electrical and Electronic Engineering, Leading University, Sylhet, Bangladesh (e-mail: [TODO: corresponding author e-mail]).}}
+\thanks{Hussain Touhid Siddiquee, Syeda Salsabil Islam, Jasimul Islam Chowdhury, and Farzana Hoque Eshica are with the Department of Electrical and Electronic Engineering, Leading University, Sylhet, Bangladesh (corresponding author e-mail: touhidsiddiqueeraj@gmail.com).}}
 
 \markboth{IEEE Transactions on Reliability}%
 {Siddiquee \MakeLowercase{\textit{et al.}}: Multi-Horizon Failure-Risk Models for Battery Failure Prediction}
@@ -50,7 +50,7 @@ Shikdar and Laaksonen \cite{shikdar2026learning} recast the problem as multi-hor
 
 This paper begins from those gaps but is organized around a sharper validity question: \emph{when a failure-risk model appears to transfer between datasets and chemistries, is anything about degradation being transferred, or is the model merely reading a health-state variable that encodes proximity to the failure criterion?} The composite label is defined from SOH, and SOH is also the strongest feature, so a model can score well on transfer while learning only ``distance to the SOH $=$ 0.80 threshold.''
 
-Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting} and imbalanced data \cite{huang2020experimental}, but no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
+Two adjacent literatures bear on these questions. Transfer learning for battery state estimation is a growing area: Sahoo et al.\ \cite{sahoo2022transfer} fine-tuned an SOH estimator across NASA and CALCE cells, and Lu et al.\ \cite{lu2023deep} pretrained on large-scale degradation data; both target SOH regression rather than failure-risk classification, where the horizon-dependent label and shifting calibration add complications. On calibration, Platt scaling \cite{platt1999probabilistic} fits a sigmoid to raw scores while isotonic regression \cite{zadrozny2002transforming} fits a step function; Platt is safer on small datasets \cite{niculescu2005predicting}, whereas on imbalanced data isotonic regression performs best overall but degrades when the imbalance is severe \cite{huang2020experimental}, and no prior study compares the two under cross-chemistry shift. A companion study found the calibration layer is the primary point of failure under operating perturbation and that small-sample recalibration largely restores it \cite{shikdar2026robustness}; whether the repair survives cross-chemistry shift is examined here. TreeSHAP \cite{lundberg2020from} is the standard attribution tool for ensembles, edge inference removes latency and connectivity needs \cite{grzesik2024combining}, and online recalibration under shift is an active area \cite{gupta2023online}. Table~\ref{tab:lit} situates this work against these lines of research.
 
 \begin{table}[!t]
 \caption{Representative Prior Work Relative to This Study.}
@@ -518,10 +518,11 @@ Calibration behaves as the validity story predicts: Platt preserves discriminati
 % ======================================================================
 % References.
 % NOTE (recovery): the bibliography below was rebuilt after the working
-% environment was lost. Entries marked "% * VERIFY" could not be fully
-% re-verified against the published sources and must be checked against
-% paper_ieee_access/main_access.tex (or the publisher records) before
-% submission. All other entries were verified.
+% environment was lost, then re-verified against the published sources
+% (publisher pages, Crossref, arXiv, PMLR) on 2026-10-30. Five previously
+% reconstructed entries were corrected to their published details and one
+% unverifiable entry was replaced by the verifiable companion citation
+% (see submission checklist, item on references).
 % ======================================================================
 \begin{thebibliography}{25}
 
@@ -543,15 +544,14 @@ T.~Chen and C.~Guestrin, ``XGBoost: A scalable tree boosting system,'' in \emph{
 \bibitem{ke2017lightgbm}
 G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, and T.-Y. Liu, ``LightGBM: A highly efficient gradient boosting decision tree,'' in \emph{Advances in Neural Information Processing Systems}, vol.~30, 2017, pp. 3146--3154.
 
-% * VERIFY (venue/details reconstructed)
 \bibitem{shikdar2026learning}
-T.~A. Shikdar and L.~Laaksonen, ``Learning when not to use a battery: Multihorizon failure-risk classification for lithium-ion batteries,'' 2026.
+T.~A. Shikdar and H.~Laaksonen, ``Learning when not to use a battery: Multihorizon failure intelligence,'' \emph{International Transactions on Electrical Energy Systems}, vol.~2026, no.~1, art. no.~6000810, 2026, doi: 10.1155/etep/6000810.
 
 \bibitem{sahoo2022transfer}
-S.~Sahoo \emph{et al.}, ``Transfer learning for lithium-ion battery state-of-health estimation across NASA and CALCE cells,'' 2022. % * VERIFY (venue/details reconstructed)
+S.~Sahoo, K.~S. Hariharan, S.~Agarwal, S.~B. Swernath, R.~Bharti, S.~Han, and S.~Lee, ``Transfer learning based generalized framework for state of health estimation of Li-ion cells,'' \emph{Scientific Reports}, vol.~12, art. no.~13173, 2022, doi: 10.1038/s41598-022-16692-4.
 
 \bibitem{lu2023deep}
-J.~Lu \emph{et al.}, ``Deep-learning state-of-health estimation of lithium-ion batteries with large-scale pre-training on degradation data,'' 2023. % * VERIFY (venue/details reconstructed)
+J.~Lu, R.~Xiong, J.~Tian, C.~Wang, and F.~Sun, ``Deep learning to estimate lithium-ion battery state of health without additional degradation experiments,'' \emph{Nature Communications}, vol.~14, art. no.~2760, 2023, doi: 10.1038/s41467-023-38458-w.
 
 \bibitem{platt1999probabilistic}
 J.~Platt, ``Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods,'' in \emph{Advances in Large Margin Classifiers}, A.~J. Smola, P.~Bartlett, B.~Sch\"olkopf, and D.~Schuurmans, Eds. Cambridge, MA, USA: MIT Press, 1999, pp. 61--74.
@@ -562,23 +562,20 @@ B.~Zadrozny and C.~Elkan, ``Transforming classifier scores into accurate multicl
 \bibitem{niculescu2005predicting}
 A.~Niculescu-Mizil and R.~Caruana, ``Predicting good probabilities with supervised learning,'' in \emph{Proc. 22nd Int. Conf. Mach. Learn. (ICML)}, Bonn, Germany, 2005, pp. 625--632.
 
-% * VERIFY (venue/details reconstructed)
 \bibitem{huang2020experimental}
-Y.~Huang \emph{et al.}, ``An experimental evaluation of probability calibration methods on imbalanced data,'' 2020.
+L.~Huang, J.~Zhao, B.~Zhu, H.~Chen, and S.~Vanden Broucke, ``An experimental investigation of calibration techniques for imbalanced data,'' \emph{IEEE Access}, vol.~8, pp. 127343--127352, 2020, doi: 10.1109/ACCESS.2020.3008150.
 
-% * VERIFY (venue/details reconstructed)
 \bibitem{shikdar2026robustness}
-T.~A. Shikdar and L.~Laaksonen, ``Calibration robustness of battery failure-risk models under operating perturbation,'' 2026.
+T.~A. Shikdar and H.~Laaksonen, ``Calibration robustness of battery failure-risk models under operating perturbation,'' companion study, manuscript under review, 2026.
 
 \bibitem{lundberg2020from}
 S.~M. Lundberg \emph{et al.}, ``From local explanations to global understanding with explainable AI for trees,'' \emph{Nature Machine Intelligence}, vol.~2, no.~1, pp. 56--67, Jan. 2020.
 
-% * VERIFY (venue/details reconstructed)
 \bibitem{grzesik2024combining}
-B.~Grzesik and D.~Mrozek, ``Combining machine learning with edge computing for embedded inference,'' 2024.
+P.~Grzesik and D.~Mrozek, ``Combining machine learning and edge computing: Opportunities, challenges, platforms, frameworks, and use cases,'' \emph{Electronics}, vol.~13, no.~3, art. no.~640, 2024, doi: 10.3390/electronics13030640.
 
 \bibitem{gupta2023online}
-C.~Gupta and A.~Ramdas, ``Distribution-free calibration guarantees for classifier probabilities under covariate shift,'' \emph{Journal of Machine Learning Research}, vol.~24, 2023.
+C.~Gupta and A.~Ramdas, ``Online Platt scaling with calibeating,'' in \emph{Proc. 40th Int. Conf. Mach. Learn. (ICML)}, Honolulu, HI, USA, 2023, pp. 12182--12204.
 
 \bibitem{saha2007battery}
 B.~Saha and K.~Goebel, ``Battery data set,'' NASA Ames Prognostics Data Repository, NASA Ames Research Center, Moffett Field, CA, USA, 2007. [Online]. Available: \url{https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository}

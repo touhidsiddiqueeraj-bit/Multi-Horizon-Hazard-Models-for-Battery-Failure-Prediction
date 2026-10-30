@@ -37,8 +37,10 @@ How Much Cross-Chemistry Transfer Is a State-of-Health Shortcut?*
 - Web of Science Researcher Profile: https://www.webofscience.com/wos/author/record/QYR-7897-2026
 - Interests: quantum physics, computational physics, electromagnetism, quantum technology, data-driven modeling of physical/engineering systems
 
-## Items still needed before submission
+## Contact
 
-1. **E-mail addresses for all authors** (required in the `\thanks{...}` block of
-   `paper_tr/main_tr.tex`; currently `[TODO: corresponding author e-mail]`).
-2. ORCIDs are entered in the submission system, not the manuscript text.
+- **Corresponding author:** Hussain Touhid Siddiquee — touhidsiddiqueeraj@gmail.com
+  (listed in the manuscript's first-page `\thanks` footnote).
+- Co-author e-mail addresses are not yet provided; add them to the `\thanks`
+  footnote or to the submission form when available.
+- ORCIDs are entered in the submission system, not the manuscript text.
