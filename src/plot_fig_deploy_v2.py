@@ -30,11 +30,12 @@ from matplotlib.lines import Line2D
 handles, labels_ = ax.get_legend_handles_labels()
 handles.append(Line2D([0], [0], color="#348ABD", ls="--", lw=0.8))
 labels_.append("all three, PSRAM")
-ax.legend(handles, labels_, fontsize=11, frameon=False, loc="upper left")
+ax.legend(handles, labels_, fontsize=11, frameon=True, framealpha=0.95,
+          edgecolor="none", loc="upper left")
+ax.set_ylim(0, 3.6)  # headroom so the upper-left legend clears the bar labels
 ax.set_xticks(x, ["XGBoost", "LightGBM", "Rand.\nForest"], fontsize=10)
 ax.set_ylabel("single-row inference (ms)", fontsize=10)
 ax.set_title("(a) ESP32-S3 latency at 240 MHz", fontsize=11)
-ax.legend(handles, labels_, fontsize=11, frameon=False, loc="upper left")
 ax.tick_params(axis="y", labelsize=10)
 for i in range(3):
     for k, vals in enumerate([flash, psram, sram]):

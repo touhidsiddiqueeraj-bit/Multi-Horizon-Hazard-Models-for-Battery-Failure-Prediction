@@ -61,6 +61,15 @@ paper_jest/*.aux
 paper_jest/*.log
 paper_jest/*.out
 paper_jest/*.spl
+paper_jps/*.aux
+paper_jps/*.log
+paper_jps/*.out
+paper_jps/*.spl
+paper_ress/*.aux
+paper_ress/*.log
+paper_ress/*.out
+paper_ress/*.spl
+paper_ress/render/
 paper_ieee_access/*.log
 paper_ieee_access/*.out
 paper_ieee_access/missfont.log

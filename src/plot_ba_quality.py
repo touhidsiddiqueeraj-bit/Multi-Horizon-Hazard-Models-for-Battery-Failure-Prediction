@@ -103,7 +103,9 @@ def panel_c(ax, raw):
                 xy=(cyc.max(), ax.get_ylim()[1] * 0.97),
                 xytext=(cyc.max() * 0.45, ax.get_ylim()[1] * 0.78),
                 fontsize=10, arrowprops=dict(arrowstyle="->", lw=0.5))
-    ax.legend(fontsize=10, frameon=False, loc="center left")
+    # Upper left is the only free corner: center left collides with the
+    # formation-cycle annotation, lower right with the check-up tail callout.
+    ax.legend(fontsize=10, frameon=False, loc="upper left")
     ax.grid(alpha=0.25, lw=0.4)
 
 
