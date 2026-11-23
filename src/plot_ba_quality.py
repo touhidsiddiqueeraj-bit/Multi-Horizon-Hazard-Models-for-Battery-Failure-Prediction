@@ -30,7 +30,7 @@ from loader_batteryarchive import (  # noqa: E402
 )
 
 _BA = os.path.join(_HERE, "..", "data")
-_FIG_IEE = os.path.join(_HERE, "..", "paper_ieee_access", "figs")
+_FIG_IEE = os.path.join(_HERE, "..", "paper_wiecon", "figs")
 _FIG_IJ = os.path.join(_HERE, "..", "paper_ijphm", "figs")
 
 plt.rcParams.update({"font.size": 11, "axes.titlesize": 12, "figure.dpi": 200})
@@ -126,7 +126,7 @@ def main():
     for out_dir in out_dirs:
         os.makedirs(out_dir, exist_ok=True)
         fig.savefig(os.path.join(out_dir, "fig_ba_quality.png"), bbox_inches="tight")
-    print(f"wrote fig_ba_quality.png to {_FIG_IEE} and {_FIG_IJ}")
+    print(f"wrote fig_ba_quality.png to {out_dirs}")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-_FIGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "paper_ieee_access", "figs")
+_FIGS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "paper_wiecon", "figs")
 
 models = ["XGBoost", "LightGBM", "Random Forest"]
 colors = ["#E24A33", "#348ABD", "#988ED5"]

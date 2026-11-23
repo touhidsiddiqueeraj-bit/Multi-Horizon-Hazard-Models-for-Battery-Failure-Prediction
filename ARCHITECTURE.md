@@ -40,17 +40,11 @@ System design and data flow for the Multi-Horizon Battery Failure Prediction pro
 │      ──→ results_v2/tex_fragments/ (20 table fragments)            │
 │            │                                                        │
 │            ▼                                                        │
-│  scripts/make_paper_v2.py — fills @@TOKENS@@ in                    │
-│      paper/paper_v2_template_part{1,2}.tex                         │
-│      ──→ paper_ieee_access/main_access.tex/.pdf (IEEE Access)      │
-│            │                                                        │
-│            ▼                                                        │
-│  scripts/make_jest.py [--condensed] — elsarticle port:             │
-│      paper_jest/main_jest.tex (full record)                        │
-│      paper_jest/main_condensed.tex + supplement.tex (submission)   │
+│  paper_wiecon/make_conference_numbers.py — generated/*.tex          │
+│      ──→ paper_wiecon/main.tex ──→ main.pdf (6 pp, IEEEtran)        │
 │                                                                     │
 │  plot_paper_v2.py, plot_fig01_v2.py, plot_shap.py,                 │
-│  plot_ba_quality.py, plot_fig_deploy_v2.py ──→ paper_ieee_access/figs/ │
+│  plot_ba_quality.py, plot_fig_deploy_v2.py ──→ figure PNGs          │
 │                                                                     │
 │  Legacy `data/benchmark_results.csv` and `src/generate_*.py` /      │
 │  `src/plot_fig01_fig03_fig04.py`-era outputs are NOT used anymore. │
@@ -120,11 +114,10 @@ Answers "detection or prognosis?" without retraining: joins saved pooled predict
 
 Leave-condition-out evaluation on SNL groups: test cells come from a temperature/C-rate condition contributing no training cells (condition labels parsed from cell IDs, never used as features) → `results_v2/condition_shift.csv`. HNEI has a single condition and is omitted.
 
-### Aggregation → Assembly (`make_tables_v2.py` → `make_paper_v2.py` → `make_jest.py`)
+### Aggregation → Assembly (`make_tables_v2.py` → `make_conference_numbers.py`)
 
 - `src/make_tables_v2.py` (with `src/make_tables_ba.py` for BA tables) aggregates every results CSV into `results_v2/paper_numbers.json` (552 keys) and `results_v2/tex_fragments/` (20 table fragments). Table column order is **target-major** (Oxford triple then Severson triple); within-failure-definition values are **means over reruns**.
-- `scripts/make_paper_v2.py` fills every `@@TOKEN@@` in `paper/paper_v2_template_part{1,2}.tex` and writes `paper_ieee_access/main_access.tex`. It **fails loudly** on missing fill rules or leftover tokens — a missing number can never silently reach the PDF.
-- `scripts/make_jest.py` ports the assembled paper to elsarticle (`paper_jest/main_jest.tex`, full record). `--condensed` additionally writes the submission manuscript (`main_condensed.tex`: 7 tables + 3 figs) and `supplement.tex` (15 tables + 11 figs): all `\subsection` headings are kept so hardcoded `Section~III-X` strings keep working; moved sections become summary paragraphs; moved floats go to the supplement; the `REWORD` map rewrites `\ref`s to moved floats.
+- `paper_wiecon/make_conference_numbers.py` renders `paper_wiecon/generated/*.tex` (tables, `numbers.json`) from `results_v2/`; `main.tex` includes them, so a missing number cannot silently reach the PDF.
 
 ### Few-Shot Target-Chemistry Recalibration
 
@@ -136,8 +129,7 @@ Leave-condition-out evaluation on SNL groups: test cells come from a temperature
 The reduced run is resumable through SQLite and writes to `results/recalibration/`.
 Severson uses 5, 10, 20, or 40 of 141 target cells; Oxford exhaustively uses 1
 or 2 of 5 cells. `src/plot_recalibration.py` reads the reduced CSV by default
-and writes paper figures to `paper_ieee_access/figs/` and tables to
-`tables_journal/`.
+and writes paper figures to `paper_wiecon/figs/`.
 
 ### Model Hyperparameters
 
@@ -465,12 +457,7 @@ Root
 ├── results_v2/       Experiment CSVs, paper_numbers.json, tex_fragments/
 │   └── preds/        Pooled predictions (~7.5 GB, intentionally untracked)
 ├── results/recalibration/  Resumable target-adaptation run
-├── paper/            Templates (paper_v2_template_part{1,2}.tex) + legacy docx
-├── paper_ieee_access/  Generated IEEE Access .tex/.pdf + figs/
-├── paper_jest/       JES submission: condensed manuscript + supplement + cover letter
+├── paper_wiecon/     Conference paper: main.tex/.pdf, generated tables, figs
 ├── presentation/     Generated PPTX decks
-├── figs_journal_clean/     Publication-quality figures
-├── figs_journal_editable/  Editable figure sources (SVG/PDF/PPTX)
-├── tables_journal/   Journal-ready CSV tables
-├── study_materials/  Primer, discrepancy note, BA protocol, hazard framework
+├── study_materials/  Primer, BA protocol, hazard framework
 ```

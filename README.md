@@ -10,13 +10,10 @@ cross-dataset, cross-chemistry transfer is largely a **State-of-Health (SOH)
 shortcut**, reproducible by an unfitted threshold rule, not transferable
 degradation knowledge. Plus a complete ESP32-S3 embedded deployment.
 
-> **Status.** The deliverable paper is `paper_ieee_access/main_access.pdf`
-> (IEEE Access, generated — see [Paper build](#paper-build)). A condensed
-> Journal of Energy Storage submission package lives in `paper_jest/`
-> (manuscript + supplement). An IEEE Transactions on Reliability submission
-> package lives in `paper_tr/` (manuscript, supplement, cover letter,
-> checklist, author info). Numbers below are headline values; every number
-> in the paper is generated from `results_v2/` — see [Reproduction](#reproduction).
+> **Status.** The paper is `paper_wiecon/main.pdf` (6 pages, WIECON-ECE 2026),
+> source in `paper_wiecon/main.tex` — see [Paper build](#paper-build).
+> Numbers below are headline values; every number in the paper is generated
+> from `results_v2/` — see [Reproduction](#reproduction).
 
 ---
 
@@ -76,10 +73,8 @@ cleaning rule (`data/ba_audit.csv`, protocol in
 
 ```
 ├── src/                    # Research pipeline (see table below)
-├── scripts/                # Paper assembly + gates (make_paper_v2, make_jest, check_overflow)
-├── paper/                  # Templates (paper_v2_template_part{1,2}.tex) — EDIT THESE, not the output
-├── paper_ieee_access/      # Generated main_access.tex/.pdf + figs/
-├── paper_jest/             # JES submission: condensed manuscript + supplement + cover letter
+├── scripts/                # Export/validation helpers
+├── paper_wiecon/           # Conference paper: main.tex → main.pdf (6 pp) + generated tables/figs
 ├── results_v2/             # All experiment CSVs, paper_numbers.json, tex_fragments/
 │   └── preds/              # Pooled prediction files (~7.5 GB, intentionally untracked)
 ├── data/                   # Cleaned CSVs (ba_clean.csv 19 MB, ba_audit.csv, *_clean.csv)
@@ -110,7 +105,7 @@ cleaning rule (`data/ba_audit.csv`, protocol in
 | `prognosis_split.py` | All-rows vs SOH>0.80-at-score AUC (no retraining) | `prognosis_split.csv` |
 | `loader_batteryarchive.py` + `make_tables_ba.py` | BA loading, audit, BA tables | `data/ba_*.csv`, BA fragments |
 | `make_tables_v2.py` | Aggregates everything → `paper_numbers.json` + `tex_fragments/` | 552 keys, 20 fragments |
-| `plot_paper_v2.py`, `plot_fig01_v2.py`, `plot_shap.py`, `plot_ba_quality.py`, `plot_fig_deploy_v2.py` | Figures → `paper_ieee_access/figs/` | PNGs |
+| `plot_paper_v2.py`, `plot_fig01_v2.py`, `plot_shap.py`, `plot_ba_quality.py`, `plot_fig_deploy_v2.py` | Journal-figure generators | PNGs |
 
 ---
 
@@ -142,42 +137,30 @@ python3 condition_shift.py && python3 prognosis_split.py
 > `make_composite_fail_in_H` returns labels in the *input frame's* row order —
 > `reset_index(drop=True)` frames before positional slicing.
 
-### 2. Aggregate → assemble
+### 2. Aggregate
 
 ```bash
-cd src && python3 make_tables_v2.py        # → results_v2/paper_numbers.json + tex_fragments/
-cd .. && python3 scripts/make_paper_v2.py  # fills every @@TOKEN@@ (fails loudly on gaps)
+cd src && python3 make_tables_v2.py   # → results_v2/paper_numbers.json + tex_fragments/
 ```
 
-### 3. Compile (IEEE Access)
+### 3. Build the paper (6 pp)
 
 ```bash
-export TEXMFCNF=/usr/share/texmf-dist/web2c:
-export TEXINPUTS=<texflow>/data/ieee//:$PWD/paper_ieee_access/figs//:/usr/share/texmf-dist/tex//:
-export TEXFONTS=<texflow>/data/ieee//:/usr/share/texmf-dist/fonts//:
-export FONTMAP=<texflow>/data/ieee//:
-cd paper_ieee_access && pdflatex -progname=pdflatex main_access.tex  # twice
+cd paper_wiecon
+python3 make_conference_numbers.py   # → generated/*.tex from results_v2
+pdflatex main.tex                    # three passes, IEEEtran
 ```
 
-The `-progname` flag and `TEXMFCNF` are required (AppImage `argv[0]` breaks
-kpathsea); xelatex does not work. Never hand-edit `main_access.tex` — it
-regenerates on every assembly.
+Requires `TEXMFCNF` + `-progname=pdflatex` (AppImage `argv[0]` breaks kpathsea);
+xelatex does not work. See `paper_wiecon/README.md`.
 
-### 4. JES package
+### 4. Gates
 
 ```bash
-python3 scripts/make_jest.py --condensed   # main_condensed + supplement (.tex/.pdf)
+python3 scripts/check_overflow.py paper_wiecon/main.pdf   # CLEAN if max ≤ 0.94
 ```
 
-### 5. Gates (must pass before commit)
-
-```bash
-python3 scripts/check_overflow.py paper_ieee_access/main_access.pdf   # CLEAN if max ≤ 0.94
-python3 scripts/check_overflow.py paper_jest/main_condensed.pdf
-```
-
-Zero `pdflatex` errors, zero undefined refs/cites, no leftover `@@TOKENS@@`,
-no dangling `\ref`s (check both docs after any template edit).
+Zero `pdflatex` errors, zero undefined refs/cites.
 
 ---
 
@@ -185,15 +168,8 @@ no dangling `\ref`s (check both docs after any template edit).
 
 | File | What |
 |---|---|
-| `paper_ieee_access/main_access.pdf` | Full paper, 23pp IEEE Access (generated) |
-| `paper_jest/main_condensed.pdf` | JES submission manuscript, 7 tables + 3 figs (generated) |
-| `paper_jest/supplement.pdf` | 15 tables + 11 figs omitted for length (generated) |
-| `paper_jest/main_jest.pdf` | Full-length elsarticle port (record only, not for submission) |
-| `paper_jest/{highlights.txt,cover_letter.txt}` | Submission files (author details are placeholders) |
-
-JES guidance is ideally ≤6,000 words / 8–10 floats; the condensed manuscript
-is ~7,700 words at exactly 10 floats — disclosed in the cover letter with a
-further-condensation offer. See `paper_jest/README.md`.
+| `paper_wiecon/main.pdf` | Conference paper, 6 pp (generated from `main.tex`) |
+| `paper_wiecon/main.tex` | LaTeX source; tables/figures from `generated/` and `figs/` |
 
 ---
 
